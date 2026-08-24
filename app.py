@@ -14,6 +14,9 @@ USUARIOS = {
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
 
+if "usuario_actual" not in st.session_state:
+    st.session_state.usuario_actual = ""
+
 if not st.session_state.autenticado:
     st.title("🔒 Acceso Privado - Inventario")
     
@@ -32,6 +35,7 @@ else:
     st.sidebar.write(f"👤 Conectado como: *{st.session_state.usuario_actual}*")
     if st.sidebar.button("Cerrar Sesión"):
         st.session_state.autenticado = False
+        st.session_state.usuario_actual = ""
         st.rerun()
 
     st.title("📦 Control de Inventario")
