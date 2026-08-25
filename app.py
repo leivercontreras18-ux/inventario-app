@@ -1,7 +1,9 @@
 import streamlit as st
 import pandas as pd
 import gspread
+import base64
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
 from google.oauth2.service_account import Credentials
 
 st.set_page_config(page_title="Control de Inventario", page_icon="📦", layout="wide")
@@ -43,36 +45,33 @@ else:
 
 st.title("📦 Control de Inventario")
 
-# --- CONEXIÓN DIRECTA A GOOGLE SHEETS CON PARSEO BINARIO BLINDADO ---
+# --- CONEXIÓN DIRECTA A GOOGLE SHEETS (DECODIFICACIÓN BASE64 BLINDADA) ---
 @st.cache_data(ttl=0)
 def cargar_datos():
     sec = st.secrets["connections"]["gsheets"]
     
-    # 1. Obtenemos el texto bruto de la clave privada
     raw_key = sec["private_key"]
     
-    # 2. Limpieza total de caracteres erróneos, espacios y saltos fantasma
+    # Limpiamos delimitadores y espacios en blanco de forma segura
     clean_body = raw_key.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "")
     clean_body = "".join(clean_body.split())
     
-    # 3. Reconstrucción estricta de las líneas PEM exactas
-    chunks = [clean_body[i:i+64] for i in range(0, len(clean_body), 64)]
-    pem_string = "-----BEGIN PRIVATE KEY-----\n" + "\n".join(chunks) + "\n-----END PRIVATE KEY-----\n"
-    
-    # 4. Convertimos el string PEM a bytes puros y verificamos con la librería cryptography localmente
-    pem_bytes = pem_string.encode("utf-8")
-    
+    # Como la longitud exacta es de 1629 caracteres de texto base64 plano, 
+    # la decodificamos directamente a bytes binarios y la cargamos evitando el parsing PEM tradicional
     try:
-        # Validamos que cargue correctamente de manera nativa
-        private_key_obj = serialization.load_pem_private_key(pem_bytes, password=None)
-    except Exception as e:
-        raise ValueError(f"Fallo crítico al compilar la llave binaria: {e}")
+        der_bytes = base64.b64decode(clean_body)
+        private_key_obj = serialization.load_der_private_key(der_bytes, password=None, backend=default_backend())
+    except Exception:
+        # Plan de respaldo por si el formato entra como PEM estándar corregido
+        chunks = [clean_body[i:i+64] for i in range(0, len(clean_body), 64)]
+        pem_string = "-----BEGIN PRIVATE KEY-----\n" + "\n".join(chunks) + "\n-----END PRIVATE KEY-----\n"
+        private_key_obj = serialization.load_pem_private_key(pem_string.encode("utf-8"), password=None, backend=default_backend())
 
     service_account_info = {
         "type": sec["type"],
         "project_id": sec["project_id"],
         "private_key_id": sec["private_key_id"],
-        "private_key": pem_string,
+        "private_key": raw_key.replace("\\n", "\n"),
         "client_email": sec["client_email"],
         "client_id": sec["client_id"],
         "auth_uri": sec["auth_uri"],
