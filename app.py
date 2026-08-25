@@ -222,7 +222,8 @@ def cargar_datos():
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive",
     ]
-    credentials_dict = dict(st.secrets["connections.gsheets"])
+    # Lee directamente el diccionario general de los secretos configurados
+    credentials_dict = dict(st.secrets)
     creds = Credentials.from_service_account_info(
         credentials_dict, scopes=scopes
     )
