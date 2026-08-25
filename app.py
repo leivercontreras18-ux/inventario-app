@@ -16,8 +16,6 @@ st.markdown(
         background-color: #09090b;
         color: #fafafa !important;
     }
-    
-    /* Barra lateral estilizada */
     section[data-testid="stSidebar"] {
         background-color: #121216 !important;
         border-right: 1px solid #27272a;
@@ -25,8 +23,6 @@ st.markdown(
     section[data-testid="stSidebar"] * {
         color: #f4f4f5 !important;
     }
-    
-    /* Banner principal elegante */
     .hero-banner {
         background: linear-gradient(145deg, #18181b 0%, #09090b 100%);
         border: 1px solid #27272a;
@@ -58,8 +54,6 @@ st.markdown(
         font-size: 15px;
         color: #a1a1aa !important;
     }
-    
-    /* Tarjetas de métricas tipo vidrio oscuro */
     .metric-card {
         background: rgba(24, 24, 27, 0.7);
         border: 1px solid #27272a;
@@ -67,11 +61,6 @@ st.markdown(
         border-radius: 16px;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
         text-align: center;
-        transition: all 0.3s ease;
-    }
-    .metric-card:hover {
-        border-color: #d4af37;
-        transform: translateY(-2px);
     }
     .metric-value {
         font-size: 36px;
@@ -86,8 +75,6 @@ st.markdown(
         letter-spacing: 2px;
         font-weight: 700;
     }
-    
-    /* Insignia de usuario */
     .user-badge {
         background: #18181b;
         padding: 16px;
@@ -117,14 +104,10 @@ st.markdown(
         flex-shrink: 0;
     }
     .user-name {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         font-size: 18px;
         font-weight: 600;
         color: #fafafa;
-        letter-spacing: 0.5px;
     }
-    
-    /* Campos de formularios modernos */
     .stTextInput input, .stSelectbox select, .stNumberInput input {
         background-color: #121216 !important;
         color: #ffffff !important;
@@ -132,12 +115,6 @@ st.markdown(
         border-radius: 10px !important;
         padding: 10px 14px;
     }
-    .stTextInput input:focus, .stSelectbox select:focus {
-        border-color: #d4af37 !important;
-        box-shadow: 0 0 0 1px #d4af37 !important;
-    }
-    
-    /* Botones sofisticados */
     .stButton>button {
         background: linear-gradient(135deg, #27272a 0%, #18181b 100%) !important;
         color: #f4f4f5 !important;
@@ -145,8 +122,6 @@ st.markdown(
         border-radius: 10px;
         border: 1px solid #3f3f46 !important;
         padding: 10px 24px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        transition: all 0.2s ease;
     }
     .stButton>button:hover {
         border-color: #d4af37 !important;
@@ -172,9 +147,9 @@ if not st.session_state.autenticado:
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown(
         """
-            <div style="background: #18181b; padding: 40px; border-radius: 20px; border: 1px solid #27272a; box-shadow: 0 20px 40px rgba(0,0,0,0.5); text-align: center;">
+            <div style="background: #18181b; padding: 40px; border-radius: 20px; border: 1px solid #27272a; text-align: center;">
                 <div style="font-size: 32px; margin-bottom: 10px;">👕</div>
-                <h2 style="color: #ffffff; margin-bottom: 5px; letter-spacing: -0.5px;">ESSENCE</h2>
+                <h2 style="color: #ffffff; margin-bottom: 5px;">ESSENCE</h2>
                 <p style="color: #a1a1aa; font-size: 12px; text-transform: uppercase; letter-spacing: 3px;">// PANEL DE ACCESO</p>
             </div>
         """,
@@ -255,34 +230,6 @@ else:
 
       if not df.empty:
         total_prendas = len(df)
-        stock_total = (
-            df["cantidad disponible"].sum()
-            if "cantidad disponible" in df.columns
-            else 0
-        )
-
-        col1, col2 = st.columns(2)
-        with col1:
-          st.markdown(
-              f"""
-                      <div class="metric-card">
-                          <div class="metric-label">Modelos Registrados</div>
-                          <div class="metric-value">{total_prendas}</div>
-                      </div>
-                  """,
-              unsafe_allow_html=True,
-          )
-        with col2:
-          st.markdown(
-              f"""
-                      <div class="metric-card">
-                          <div class="metric-label">Total en Stock</div>
-                          <div class="metric-value">{stock_total}</div>
-                      </div>
-                  """,
-              unsafe_allow_html=True,
-          )
-
         st.markdown("<br>", unsafe_allow_html=True)
         st.subheader("📋 Registro Actual de Inventario")
         st.dataframe(df, use_container_width=True)
@@ -318,12 +265,9 @@ else:
         talla = st.selectbox("Talla", ["XS", "S", "M", "L", "XL", "Única"])
         color = st.text_input("Color Principal")
         cantidad = st.number_input("Cantidad Disponible", min_value=0, step=1)
-        minimo = st.number_input("Alerta de Stock Mínimo", min_value=0, step=1)
 
         if st.form_submit_button("Guardar Prenda en el Sistema"):
-          sheet.append_row(
-              [sku, nombre, categoria, talla, color, cantidad, minimo]
-          )
+          sheet.append_row([sku, nombre, categoria, talla, color, cantidad])
           st.success("¡Prenda guardada con éxito!")
           st.rerun()
 
@@ -339,41 +283,26 @@ else:
       )
 
       if not df.empty:
-        lista_ids = df["ID"].astype(str).tolist()
+        # Detectamos automáticamente el nombre de la primera columna para usarla como ID
+        col_id = df.columns[0]
+        lista_ids = df[col_id].astype(str).tolist()
         id_seleccionado = st.selectbox(
-            "Seleccione el ID de la prenda a gestionar", lista_ids
+            "Seleccione el identificador de la prenda", lista_ids
         )
 
-        fila_idx = df[df["ID"].astype(str) == id_seleccionado].index[0]
-        row_number = fila_idx + 2
+        fila_idx = df[df[col_id].astype(str) == id_seleccionado].index[0]
+        row_number = fila_idx + 2  # Fila en Sheets (salta cabecera)
         prenda_actual = df.loc[fila_idx]
 
         with st.form("form_editar"):
-          nuevo_id = st.text_input("ID / SKU", value=str(prenda_actual["ID"]))
-          nuevo_nombre = st.text_input(
-              "Producto", value=str(prenda_actual["Producto"])
-          )
-          nueva_categoria = st.text_input(
-              "Categoría", value=str(prenda_actual["Categoria"])
-          )
-          nueva_talla = st.text_input(
-              "Talla", value=str(prenda_actual["talla"])
-          )
-          nuevo_color = st.text_input(
-              "Color", value=str(prenda_actual["color"])
-          )
-          nueva_cantidad = st.number_input(
-              "Cantidad Disponible",
-              min_value=0,
-              value=int(prenda_actual["cantidad disponible"]),
-              step=1,
-          )
-          nuevo_minimo = st.number_input(
-              "Alerta de Stock Mínimo",
-              min_value=0,
-              value=int(prenda_actual["alerta de stock"]),
-              step=1,
-          )
+          # Campos dinámicos basados en tus columnas actuales
+          nuevos_valores = []
+          for col in df.columns:
+            val_actual = prenda_actual[col]
+            nuevo_val = st.text_input(
+                f"Modificar [{col}]", value=str(val_actual)
+            )
+            nuevos_valores.append(nuevo_val)
 
           col_btn1, col_btn2 = st.columns(2)
           actualizar = col_btn1.form_submit_button(
@@ -384,18 +313,8 @@ else:
           )
 
           if actualizar:
-            sheet.update(
-                f"A{row_number}:G{row_number}",
-                [[
-                    nuevo_id,
-                    nuevo_nombre,
-                    nueva_categoria,
-                    nueva_talla,
-                    nuevo_color,
-                    nueva_cantidad,
-                    nuevo_minimo,
-                ]],
-            )
+            letra_final = chr(65 + len(df.columns) - 1)
+            sheet.update(f"A{row_number}:{letra_final}{row_number}", [nuevos_valores])
             st.success("¡Prenda actualizada correctamente!")
             st.rerun()
 
