@@ -339,17 +339,13 @@ else:
       )
 
       if not df.empty:
-        # Creamos una lista de IDs o productos para elegir
         lista_ids = df["ID"].astype(str).tolist()
         id_seleccionado = st.selectbox(
             "Seleccione el ID de la prenda a gestionar", lista_ids
         )
 
-        # Buscar la fila correspondiente en el DataFrame
         fila_idx = df[df["ID"].astype(str) == id_seleccionado].index[0]
-        # Las filas en Google Sheets empiezan en la 2 (la 1 es la cabecera)
         row_number = fila_idx + 2
-
         prenda_actual = df.loc[fila_idx]
 
         with st.form("form_editar"):
@@ -372,6 +368,12 @@ else:
               value=int(prenda_actual["cantidad disponible"]),
               step=1,
           )
+          nuevo_minimo = st.number_input(
+              "Alerta de Stock Mínimo",
+              min_value=0,
+              value=int(prenda_actual["alerta de stock"]),
+              step=1,
+          )
 
           col_btn1, col_btn2 = st.columns(2)
           actualizar = col_btn1.form_submit_button(
@@ -382,7 +384,6 @@ else:
           )
 
           if actualizar:
-            # Actualizar la fila completa en Google Sheets
             sheet.update(
                 f"A{row_number}:G{row_number}",
                 [[
@@ -392,7 +393,7 @@ else:
                     nueva_talla,
                     nuevo_color,
                     nueva_cantidad,
-                    0,
+                    nuevo_minimo,
                 ]],
             )
             st.success("¡Prenda actualizada correctamente!")
