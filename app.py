@@ -42,12 +42,15 @@ else:
 
 st.title("📦 Control de Inventario")
 
-# --- CONEXIÓN A GOOGLE SHEETS (CON PARSEO AUTOMÁTICO DE SALTOS DE LÍNEA) ---
-secrets_dict = dict(st.secrets["connections"]["gsheets"])
-if "private_key" in secrets_dict:
-    secrets_dict["private_key"] = secrets_dict["private_key"].replace("\\n", "\n")
+# --- CORRECCIÓN DE SALTOS DE LÍNEA EN SECRETS ---
+if "connections" in st.secrets and "gsheets" in st.secrets["connections"]:
+    if "private_key" in st.secrets["connections"]["gsheets"]:
+        st.secrets["connections"]["gsheets"]["private_key"] = (
+            st.secrets["connections"]["gsheets"]["private_key"].replace("\\n", "\n")
+        )
 
-conn = st.connection("gsheets", type=GSheetsConnection, **secrets_dict)
+# --- CONEXIÓN A GOOGLE SHEETS ---
+conn = st.connection("gsheets", type=GSheetsConnection)
 df = conn.read(ttl=0)
 
 st.subheader("Estado Actual del Inventario")
