@@ -31,7 +31,6 @@ if not st.session_state.autenticado:
         else:
             st.error("Usuario o contraseña incorrectos")
             
-    # 🛑 Esto detiene la ejecución para que no cargue la app si no hay sesión
     st.stop()
 
 else:
@@ -46,8 +45,8 @@ st.title("📦 Control de Inventario")
 # --- CONEXIÓN DIRECTA A GOOGLE SHEETS (VÍA GSPREAD) ---
 @st.cache_data(ttl=0)
 def cargar_datos():
-    # Extraer y limpiar credenciales
-    service_account_info = dict(st.secrets["connections"]["gsheets"])
+    # CORREGIDO: Acceso directo a la sección de gsheets estructurada con punto
+    service_account_info = dict(st.secrets["connections.gsheets"])
     if "private_key" in service_account_info:
         service_account_info["private_key"] = service_account_info["private_key"].replace("\\n", "\n")
     
