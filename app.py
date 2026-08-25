@@ -42,8 +42,12 @@ else:
 
 st.title("📦 Control de Inventario")
 
-# Conexión a Google Sheets (CORREGIDO)
-conn = st.connection("gsheets", type=conn)
+# --- CONEXIÓN A GOOGLE SHEETS (CON PARSEO AUTOMÁTICO DE SALTOS DE LÍNEA) ---
+secrets_dict = dict(st.secrets["connections"]["gsheets"])
+if "private_key" in secrets_dict:
+    secrets_dict["private_key"] = secrets_dict["private_key"].replace("\\n", "\n")
+
+conn = st.connection("gsheets", type=GSheetsConnection, **secrets_dict)
 df = conn.read(ttl=0)
 
 st.subheader("Estado Actual del Inventario")
