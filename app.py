@@ -34,7 +34,7 @@ if not st.session_state.autenticado:
     st.stop()
 
 else:
-    st.sidebar.write(f"👤 Conectado como: *{st.session_state.usuario_actual}*")
+    st.sidebar.write(f"👤 Conectado como: {st.session_state.usuario_actual}")
     if st.sidebar.button("Cerrar Sesión"):
         st.session_state.autenticado = False
         st.session_state.usuario_actual = ""
@@ -42,8 +42,8 @@ else:
 
 st.title("📦 Control de Inventario")
 
-# Conexión a Google Sheets
-conn = st.connection("gsheets", type=conn = st.connection)
+# Conexión a Google Sheets (CORREGIDO)
+conn = st.connection("gsheets", type=GSheetsConnection)
 df = conn.read(ttl=0)
 
 st.subheader("Estado Actual del Inventario")
