@@ -45,14 +45,18 @@ st.title("📦 Control de Inventario")
 # --- CONEXIÓN DIRECTA A GOOGLE SHEETS (VÍA GSPREAD) ---
 @st.cache_data(ttl=0)
 def cargar_datos():
-    # Leemos la estructura agrupada [connections.gsheets] tal como la tienes en tus Secrets
     sec = st.secrets["connections"]["gsheets"]
+    
+    # Limpieza profunda de la clave privada para evitar fallos de formato PEM
+    raw_key = sec["private_key"]
+    # Si viene con barras invertidas literales, las convertimos a saltos reales; si ya tiene saltos, los unimos y normalizamos
+    clean_key = raw_key.replace("\\n", "\n")
     
     service_account_info = {
         "type": sec["type"],
         "project_id": sec["project_id"],
         "private_key_id": sec["private_key_id"],
-        "private_key": sec["private_key"].replace("\\n", "\n"),
+        "private_key": clean_key,
         "client_email": sec["client_email"],
         "client_id": sec["client_id"],
         "auth_uri": sec["auth_uri"],
@@ -67,7 +71,7 @@ def cargar_datos():
     creds = Credentials.from_service_account_info(service_account_info, scopes=scopes)
     client = gspread.authorize(creds)
     
-    # Abrir la hoja por la URL guardada en la misma sección de secrets
+    # Abrir la hoja por la URL guardada en secrets
     url = sec["spreadsheet"]
     sheet = client.open_by_url(url).sheet1
     
