@@ -47,16 +47,20 @@ st.title("📦 Control de Inventario")
 def cargar_datos():
     sec = st.secrets["connections"]["gsheets"]
     
-    # Limpieza profunda de la clave privada para evitar fallos de formato PEM
-    raw_key = sec["private_key"]
-    # Si viene con barras invertidas literales, las convertimos a saltos reales; si ya tiene saltos, los unimos y normalizamos
-    clean_key = raw_key.replace("\\n", "\n")
-    
+    # Normalización profunda de la clave privada para evitar el error de formato PEM
+    pk = sec["private_key"]
+    if isinstance(pk, str):
+        # Reemplazamos barras invertidas literales y aseguramos saltos de línea estándar
+        pk = pk.replace("\\n", "\n")
+        if "-----BEGIN PRIVATE KEY-----" in pk and "-----END PRIVATE KEY-----" in pk:
+            # Asegurar que las líneas clave estén bien delimitadas
+            pk = pk.strip()
+            
     service_account_info = {
         "type": sec["type"],
         "project_id": sec["project_id"],
         "private_key_id": sec["private_key_id"],
-        "private_key": clean_key,
+        "private_key": pk,
         "client_email": sec["client_email"],
         "client_id": sec["client_id"],
         "auth_uri": sec["auth_uri"],
