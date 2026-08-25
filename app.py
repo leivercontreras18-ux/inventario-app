@@ -19,7 +19,6 @@ if "usuario_actual" not in st.session_state:
 
 if not st.session_state.autenticado:
     st.title("🔒 Acceso Privado - Inventario")
-    
     usuario_input = st.text_input("Usuario")
     clave_input = st.text_input("Contraseña", type="password")
     
@@ -30,6 +29,9 @@ if not st.session_state.autenticado:
             st.rerun()
         else:
             st.error("Usuario o contraseña incorrectos")
+            
+    # 🛑 Esto detiene la ejecución para que no cargue la app si no hay sesión
+    st.stop()
 
 else:
     st.sidebar.write(f"👤 Conectado como: *{st.session_state.usuario_actual}*")
@@ -38,11 +40,11 @@ else:
         st.session_state.usuario_actual = ""
         st.rerun()
 
-    st.title("📦 Control de Inventario")
+st.title("📦 Control de Inventario")
 
-    # Conexión a Google Sheets
-    conn = st.connection("gsheets", type=GSheetsConnection)
-    df = conn.read(ttl=0)
+# Conexión a Google Sheets
+conn = st.connection("gsheets", type=GSheetsConnection)
+df = conn.read(ttl=0)
 
-    st.subheader("Estado Actual del Inventario")
-    st.dataframe(df, use_container_width=True)
+st.subheader("Estado Actual del Inventario")
+st.dataframe(df, use_container_width=True)
