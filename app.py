@@ -215,120 +215,116 @@ else:
     st.session_state.usuario_actual = ""
     st.rerun()
 
+  # --- CONEXIÓN A GOOGLE SHEETS MEDIANTE SECRETO DE STREAMLIT ---
+  def cargar_datos():
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive",
+    ]
+    creds = Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"], scopes=scopes
+    )
+    client = gspread.authorize(creds)
+    url = "https://docs.google.com/spreadsheets/d/1vMUgfp5eP7yOAoXMBCjp4XjpLvkoUz71vDp5RSDhOOI/edit?gid=0#gid=0"
+    sheet = client.open_by_url(url).sheet1
+    data = sheet.get_all_records()
+    return sheet, pd.DataFrame(data)
 
-# --- CONEXIÓN A GOOGLE SHEETS MEDIANTE SECRETO DE STREAMLIT ---
-def cargar_datos():
-  scopes = [
-      "https://www.googleapis.com/auth/spreadsheets",
-      "https://www.googleapis.com/auth/drive",
-  ]
-  # Lee la clave de forma privada desde los Secrets de Streamlit
-  creds = Credentials.from_service_account_info(
-      st.secrets["gcp_service_account"], scopes=scopes
-  )
-  client = gspread.authorize(creds)
-  url = "https://docs.google.com/spreadsheets/d/1vMUgfp5eP7yOAoXMBCjp4XjpLvkoUz71vDp5RSDhOOI/edit?gid=0#gid=0"
-  sheet = client.open_by_url(url).sheet1
-  data = sheet.get_all_records()
-  return sheet, pd.DataFrame(data)
+  try:
+    sheet, df = cargar_datos()
 
-
-try:
-  sheet, df = cargar_datos()
-
-  menu = st.sidebar.selectbox(
-      "Navegación del Sistema",
-      ["📊 Estado de Existencias", "➕ Registrar Prenda"],
-  )
-
-  if menu == "📊 Estado de Existencias":
-    st.markdown(
-        """
-            <div class="hero-banner">
-                <div class="hero-title">👕 Panel Principal // Essence</div>
-                <div class="hero-subtitle">Control general de stock y monitoreo de inventario de prendas en tiempo real.</div>
-            </div>
-        """,
-        unsafe_allow_html=True,
+    menu = st.sidebar.selectbox(
+        "Navegación del Sistema",
+        ["📊 Estado de Existencias", "➕ Registrar Prenda"],
     )
 
-    if not df.empty:
-      total_prendas = len(df)
-      stock_total = df["Cantidad"].sum() if "Cantidad" in df.columns else 0
+    if menu == "📊 Estado de Existencias":
+      st.markdown(
+          """
+              <div class="hero-banner">
+                  <div class="hero-title">👕 Panel Principal // Essence</div>
+                  <div class="hero-subtitle">Control general de stock y monitoreo de inventario de prendas en tiempo real.</div>
+              </div>
+          """,
+          unsafe_allow_html=True,
+      )
 
-      col1, col2 = st.columns(2)
-      with col1:
-        st.markdown(
-            f"""
-                    <div class="metric-card">
-                        <div class="metric-label">Modelos Registrados</div>
-                        <div class="metric-value">{total_prendas}</div>
-                    </div>
-                """,
-            unsafe_allow_html=True,
-        )
-      with col2:
-        st.markdown(
-            f"""
-                    <div class="metric-card">
-                        <div class="metric-label">Total en Stock</div>
-                        <div class="metric-value">{stock_total}</div>
-                    </div>
-                """,
-            unsafe_allow_html=True,
-        )
+      if not df.empty:
+        total_prendas = len(df)
+        stock_total = df["Cantidad"].sum() if "Cantidad" in df.columns else 0
 
-      # Alertas de Stock Mínimo
-      if "Cantidad" in df.columns and "Minimo" in df.columns:
-        stock_bajo = df[df["Cantidad"] <= df["Minimo"]]
-        if not stock_bajo.empty:
-          st.warning(
-              f"⚠️ Atención: Hay {len(stock_bajo)} modelo(s) con stock por debajo del mínimo recomendado."
+        col1, col2 = st.columns(2)
+        with col1:
+          st.markdown(
+              f"""
+                      <div class="metric-card">
+                          <div class="metric-label">Modelos Registrados</div>
+                          <div class="metric-value">{total_prendas}</div>
+                      </div>
+                  """,
+              unsafe_allow_html=True,
+          )
+        with col2:
+          st.markdown(
+              f"""
+                      <div class="metric-card">
+                          <div class="metric-label">Total en Stock</div>
+                          <div class="metric-value">{stock_total}</div>
+                      </div>
+                  """,
+              unsafe_allow_html=True,
           )
 
-      st.markdown("<br>", unsafe_allow_html=True)
-      st.subheader("📋 Registro Actual de Inventario")
-      st.dataframe(df, use_container_width=True)
-    else:
-      st.info("No hay prendas registradas todavía en la base de datos.")
+        if "Cantidad" in df.columns and "Minimo" in df.columns:
+          stock_bajo = df[df["Cantidad"] <= df["Minimo"]]
+          if not stock_bajo.empty:
+            st.warning(
+                f"⚠️ Atención: Hay {len(stock_bajo)} modelo(s) con stock por debajo del mínimo recomendado."
+            )
 
-  elif menu == "➕ Registrar Prenda":
-    st.markdown(
-        """
-            <div class="hero-banner">
-                <div class="hero-title">➕ Registro de Nuevas Prendas</div>
-                <div class="hero-subtitle">Añade artículos al catálogo sincronizado de la tienda.</div>
-            </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.subheader("📋 Registro Actual de Inventario")
+        st.dataframe(df, use_container_width=True)
+      else:
+        st.info("No hay prendas registradas todavía en la base de datos.")
 
-    with st.form("form_ropa"):
-      sku = st.text_input("SKU / Código (Ej: CAM-001)")
-      nombre = st.text_input("Nombre / Descripción (Ej: Vestido Lino)")
-      categoria = st.selectbox(
-          "Categoría",
-          [
-              "Vestidos",
-              "Blusas",
-              "Pantalones",
-              "Jeans",
-              "Chaquetas",
-              "Calzado",
-              "Accesorios",
-          ],
+    elif menu == "➕ Registrar Prenda":
+      st.markdown(
+          """
+              <div class="hero-banner">
+                  <div class="hero-title">➕ Registro de Nuevas Prendas</div>
+                  <div class="hero-subtitle">Añade artículos al catálogo sincronizado de la tienda.</div>
+              </div>
+          """,
+          unsafe_allow_html=True,
       )
-      talla = st.selectbox("Talla", ["XS", "S", "M", "L", "XL", "Única"])
-      color = st.text_input("Color Principal")
-      cantidad = st.number_input("Cantidad Disponible", min_value=0, step=1)
-      minimo = st.number_input("Alerta de Stock Mínimo", min_value=0, step=1)
 
-      if st.form_submit_button("Guardar Prenda en el Sistema"):
-        sheet.append_row(
-            [sku, nombre, categoria, talla, color, cantidad, minimo]
+      with st.form("form_ropa"):
+        sku = st.text_input("SKU / Código (Ej: CAM-001)")
+        nombre = st.text_input("Nombre / Descripción (Ej: Vestido Lino)")
+        categoria = st.selectbox(
+            "Categoría",
+            [
+                "Vestidos",
+                "Blusas",
+                "Pantalones",
+                "Jeans",
+                "Chaquetas",
+                "Calzado",
+                "Accesorios",
+            ],
         )
-        st.success("¡Prenda guardada con éxito!")
-        st.rerun()
+        talla = st.selectbox("Talla", ["XS", "S", "M", "L", "XL", "Única"])
+        color = st.text_input("Color Principal")
+        cantidad = st.number_input("Cantidad Disponible", min_value=0, step=1)
+        minimo = st.number_input("Alerta de Stock Mínimo", min_value=0, step=1)
 
-except Exception as e:
-  st.error(f"Error al sincronizar con Google Sheets: {e}")
+        if st.form_submit_button("Guardar Prenda en el Sistema"):
+          sheet.append_row(
+              [sku, nombre, categoria, talla, color, cantidad, minimo]
+          )
+          st.success("¡Prenda guardada con éxito!")
+          st.rerun()
+
+  except Exception as e:
+    st.error(f"Error al sincronizar con Google Sheets: {e}")
