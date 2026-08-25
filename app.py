@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import gspread
+import json
+import tempfile
 from google.oauth2.service_account import Credentials
 
 st.set_page_config(page_title="Control de Inventario", page_icon="📦", layout="wide")
@@ -42,28 +44,16 @@ else:
 
 st.title("📦 Control de Inventario")
 
-# --- CONEXIÓN DIRECTA A GOOGLE SHEETS (VÍA GSPREAD) ---
+# --- CONEXIÓN DIRECTA A GOOGLE SHEETS (VÍA ARCHIVO JSON TEMPORAL) ---
 @st.cache_data(ttl=0)
 def cargar_datos():
     sec = st.secrets["connections"]["gsheets"]
     
-    # RECONSTRUCCIÓN ROBUSTA DE LA LLAVE PRIVADA
-    pk = sec["private_key"]
+    # Limpieza estricta de la llave privada asegurando saltos de línea reales
+    pk = sec["private_key"].strip()
+    pk = pk.replace("\\n", "\n")
     
-    # Limpiamos espacios y aseguramos formato de saltos
-    pk = pk.strip()
-    
-    # Si la clave viene comprimida en una sola línea o con escapes dañados, la reestructuramos
-    if "-----BEGIN PRIVATE KEY-----" in pk and "-----END PRIVATE KEY-----" in pk:
-        # Extraer el contenido entre los headers
-        body = pk.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "")
-        # Quitar cualquier espacio, salto o barra invertida basura que haya dejado Streamlit
-        body = "".join(body.split())
-        
-        # Volver a formatear en líneas de exactamente 64 caracteres (estándar PEM)
-        chunks = [body[i:i+64] for i in range(0, len(body), 64)]
-        pk = "-----BEGIN PRIVATE KEY-----\n" + "\n".join(chunks) + "\n-----END PRIVATE KEY-----"
-
+    # Construimos el diccionario de la cuenta de servicio exactamente como lo requiere Google
     service_account_info = {
         "type": sec["type"],
         "project_id": sec["project_id"],
@@ -78,8 +68,15 @@ def cargar_datos():
         "universe_domain": sec.get("universe_domain", "googleapis.com")
     }
     
+    # SOLUCIÓN DEFINITIVA: Creamos un archivo JSON temporal en memoria. 
+    # Esto evita por completo el error de longitud de la librería cryptography al leer strings directos.
+    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as temp:
+        json.dump(service_account_info, temp)
+        temp_path = temp.name
+
     scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-    creds = Credentials.from_service_account_info(service_account_info, scopes=scopes)
+    creds = Credentials.from_service_account_file(temp_path, scopes=scopes)
+    
     client = gspread.authorize(creds)
     
     url = sec["spreadsheet"]
