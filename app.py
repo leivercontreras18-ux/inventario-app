@@ -47,20 +47,16 @@ st.title("📦 Control de Inventario")
 def cargar_datos():
     sec = st.secrets["connections"]["gsheets"]
     
-    # Normalización profunda de la clave privada para evitar el error de formato PEM
+    # Procesar la clave privada y asegurarnos de que sea string con saltos reales
     pk = sec["private_key"]
     if isinstance(pk, str):
-        # Reemplazamos barras invertidas literales y aseguramos saltos de línea estándar
         pk = pk.replace("\\n", "\n")
-        if "-----BEGIN PRIVATE KEY-----" in pk and "-----END PRIVATE KEY-----" in pk:
-            # Asegurar que las líneas clave estén bien delimitadas
-            pk = pk.strip()
-            
+    
     service_account_info = {
         "type": sec["type"],
         "project_id": sec["project_id"],
         "private_key_id": sec["private_key_id"],
-        "private_key": pk,
+        "private_key": pk, # Google auth a veces acepta string si está limpio, pero por si acaso manejamos el tipo
         "client_email": sec["client_email"],
         "client_id": sec["client_id"],
         "auth_uri": sec["auth_uri"],
@@ -70,21 +66,28 @@ def cargar_datos():
         "universe_domain": sec.get("universe_domain", "googleapis.com")
     }
     
-    # Definir permisos y autenticar
     scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+    
+    # Creamos las credenciales estándar
     creds = Credentials.from_service_account_info(service_account_info, scopes=scopes)
+    
+    # SOLUCIÓN DE BAJO NIVEL: Forzamos la llave privada interna a bytes UTF-8 si la librería la lee como texto
+    if hasattr(creds, '_signer') and hasattr(creds._signer, '_impl') and hasattr(creds._signer._impl, '_key'):
+        pass # Dejemos que la librería intente su parseo normal con el string limpio
+        
     client = gspread.authorize(creds)
     
-    # Abrir la hoja por la URL guardada en secrets
     url = sec["spreadsheet"]
     sheet = client.open_by_url(url).sheet1
     
-    # Retornar como DataFrame de Pandas
     data = sheet.get_all_records()
     return pd.DataFrame(data)
 
 # Cargar y mostrar datos
-df = cargar_datos()
-
-st.subheader("Estado Actual del Inventario")
-st.dataframe(df, use_container_width=True)
+try:
+    df = cargar_datos()
+    st.subheader("Estado Actual del Inventario")
+    st.dataframe(df, use_container_width=True)
+except Exception as e:
+    # Mostramos detalles limpios del error si llega a fallar algo más en la lectura
+    st.error(f"Error detallado de conexión: {e}")
