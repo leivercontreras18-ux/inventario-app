@@ -45,8 +45,22 @@ st.title("📦 Control de Inventario")
 # --- CONEXIÓN DIRECTA A GOOGLE SHEETS (VÍA GSPREAD) ---
 @st.cache_data(ttl=0)
 def cargar_datos():
-    # CORREGIDO: Acceso directo a la sección de gsheets estructurada con punto
-    service_account_info = dict(st.secrets["connections.gsheets"])
+    # Extraer credenciales directamente de la raíz para evitar fallos de jerarquía
+    service_account_info = {
+        "type": st.secrets["type"],
+        "project_id": st.secrets["project_id"],
+        "private_key_id": st.secrets["private_key_id"],
+        "private_key": st.secrets["private_key"],
+        "client_email": st.secrets["client_email"],
+        "client_id": st.secrets["client_id"],
+        "auth_uri": st.secrets["auth_uri"],
+        "token_uri": st.secrets["token_uri"],
+        "auth_provider_x509_cert_url": st.secrets["auth_provider_x509_cert_url"],
+        "client_x509_cert_url": st.secrets["client_x509_cert_url"],
+        "universe_domain": st.secrets["universe_domain"]
+    }
+    
+    # Limpiar los saltos de línea de la llave privada si fuera necesario
     if "private_key" in service_account_info:
         service_account_info["private_key"] = service_account_info["private_key"].replace("\\n", "\n")
     
@@ -55,8 +69,8 @@ def cargar_datos():
     creds = Credentials.from_service_account_info(service_account_info, scopes=scopes)
     client = gspread.authorize(creds)
     
-    # Abrir la hoja por URL o por nombre
-    url = service_account_info.get("spreadsheet")
+    # Abrir la hoja por la URL guardada en secrets
+    url = st.secrets["spreadsheet"]
     sheet = client.open_by_url(url).sheet1
     
     # Retornar como DataFrame de Pandas
