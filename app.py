@@ -1,8 +1,7 @@
 import streamlit as st
 import pandas as pd
 import gspread
-import json
-import base64
+from cryptography.hazmat.primitives import serialization
 from google.oauth2.service_account import Credentials
 
 st.set_page_config(page_title="Control de Inventario", page_icon="📦", layout="wide")
@@ -44,30 +43,36 @@ else:
 
 st.title("📦 Control de Inventario")
 
-# --- CONEXIÓN DIRECTA A GOOGLE SHEETS (LIMPIEZA DE LLAVE PEM BLINDADA) ---
+# --- CONEXIÓN DIRECTA A GOOGLE SHEETS CON PARSEO BINARIO BLINDADO ---
 @st.cache_data(ttl=0)
 def cargar_datos():
     sec = st.secrets["connections"]["gsheets"]
     
-    # RECONSTRUCCIÓN BLINDADA DE LA LLAVE PEM PARA EVITAR EL ERROR DE LONGITUD (1629)
+    # 1. Obtenemos el texto bruto de la clave privada
     raw_key = sec["private_key"]
     
-    # Si viene con secuencias de escape literales o saltos dañados, los limpiamos y rearmamos las líneas fijas
+    # 2. Limpieza total de caracteres erróneos, espacios y saltos fantasma
     clean_body = raw_key.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "")
-    clean_body = clean_body.replace("\\n", "\n").strip()
+    clean_body = "".join(clean_body.split())
     
-    # Eliminamos todos los espacios en blanco sobrantes y saltos intermedios para unificar la data
-    chars_only = "".join(clean_body.split())
+    # 3. Reconstrucción estricta de las líneas PEM exactas
+    chunks = [clean_body[i:i+64] for i in range(0, len(clean_body), 64)]
+    pem_string = "-----BEGIN PRIVATE KEY-----\n" + "\n".join(chunks) + "\n-----END PRIVATE KEY-----\n"
     
-    # Reconstruimos la estructura PEM en líneas perfectas de 64 caracteres
-    chunks = [chars_only[i:i+64] for i in range(0, len(chars_only), 64)]
-    formatted_key = "-----BEGIN PRIVATE KEY-----\n" + "\n".join(chunks) + "\n-----END PRIVATE KEY-----\n"
+    # 4. Convertimos el string PEM a bytes puros y verificamos con la librería cryptography localmente
+    pem_bytes = pem_string.encode("utf-8")
+    
+    try:
+        # Validamos que cargue correctamente de manera nativa
+        private_key_obj = serialization.load_pem_private_key(pem_bytes, password=None)
+    except Exception as e:
+        raise ValueError(f"Fallo crítico al compilar la llave binaria: {e}")
 
     service_account_info = {
         "type": sec["type"],
         "project_id": sec["project_id"],
         "private_key_id": sec["private_key_id"],
-        "private_key": formatted_key,
+        "private_key": pem_string,
         "client_email": sec["client_email"],
         "client_id": sec["client_id"],
         "auth_uri": sec["auth_uri"],
@@ -78,8 +83,6 @@ def cargar_datos():
     }
     
     scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-    
-    # Generamos las credenciales directamente usando el diccionario reestructurado
     creds = Credentials.from_service_account_info(service_account_info, scopes=scopes)
     
     client = gspread.authorize(creds)
