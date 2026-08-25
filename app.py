@@ -47,16 +47,28 @@ st.title("📦 Control de Inventario")
 def cargar_datos():
     sec = st.secrets["connections"]["gsheets"]
     
-    # Procesar la clave privada y asegurarnos de que sea string con saltos reales
+    # RECONSTRUCCIÓN ROBUSTA DE LA LLAVE PRIVADA
     pk = sec["private_key"]
-    if isinstance(pk, str):
-        pk = pk.replace("\\n", "\n")
     
+    # Limpiamos espacios y aseguramos formato de saltos
+    pk = pk.strip()
+    
+    # Si la clave viene comprimida en una sola línea o con escapes dañados, la reestructuramos
+    if "-----BEGIN PRIVATE KEY-----" in pk and "-----END PRIVATE KEY-----" in pk:
+        # Extraer el contenido entre los headers
+        body = pk.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "")
+        # Quitar cualquier espacio, salto o barra invertida basura que haya dejado Streamlit
+        body = "".join(body.split())
+        
+        # Volver a formatear en líneas de exactamente 64 caracteres (estándar PEM)
+        chunks = [body[i:i+64] for i in range(0, len(body), 64)]
+        pk = "-----BEGIN PRIVATE KEY-----\n" + "\n".join(chunks) + "\n-----END PRIVATE KEY-----"
+
     service_account_info = {
         "type": sec["type"],
         "project_id": sec["project_id"],
         "private_key_id": sec["private_key_id"],
-        "private_key": pk, # Google auth a veces acepta string si está limpio, pero por si acaso manejamos el tipo
+        "private_key": pk,
         "client_email": sec["client_email"],
         "client_id": sec["client_id"],
         "auth_uri": sec["auth_uri"],
@@ -67,14 +79,7 @@ def cargar_datos():
     }
     
     scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-    
-    # Creamos las credenciales estándar
     creds = Credentials.from_service_account_info(service_account_info, scopes=scopes)
-    
-    # SOLUCIÓN DE BAJO NIVEL: Forzamos la llave privada interna a bytes UTF-8 si la librería la lee como texto
-    if hasattr(creds, '_signer') and hasattr(creds._signer, '_impl') and hasattr(creds._signer._impl, '_key'):
-        pass # Dejemos que la librería intente su parseo normal con el string limpio
-        
     client = gspread.authorize(creds)
     
     url = sec["spreadsheet"]
@@ -89,5 +94,4 @@ try:
     st.subheader("Estado Actual del Inventario")
     st.dataframe(df, use_container_width=True)
 except Exception as e:
-    # Mostramos detalles limpios del error si llega a fallar algo más en la lectura
     st.error(f"Error detallado de conexión: {e}")
