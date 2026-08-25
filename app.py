@@ -215,7 +215,7 @@ else:
     st.session_state.usuario_actual = ""
     st.rerun()
 
-  # --- CONEXIÓN A GOOGLE SHEETS MEDIANTE SECRETO DE STREAMLIT ---
+  # --- CONEXIÓN A GOOGLE SHEETS ---
   def cargar_datos():
     scopes = [
         "https://www.googleapis.com/auth/spreadsheets",
@@ -235,7 +235,11 @@ else:
 
     menu = st.sidebar.selectbox(
         "Navegación del Sistema",
-        ["📊 Estado de Existencias", "➕ Registrar Prenda"],
+        [
+            "📊 Estado de Existencias",
+            "➕ Registrar Prenda",
+            "✏️ Modificar / Eliminar Prenda",
+        ],
     )
 
     if menu == "📊 Estado de Existencias":
@@ -243,7 +247,7 @@ else:
           """
               <div class="hero-banner">
                   <div class="hero-title">👕 Panel Principal // Essence</div>
-                  <div class="hero-subtitle">Control general de stock y monitoreo de inventario de prendas en tiempo real.</div>
+                  <div class="hero-subtitle">Control general de stock y monitoreo de inventario en tiempo real.</div>
               </div>
           """,
           unsafe_allow_html=True,
@@ -251,7 +255,11 @@ else:
 
       if not df.empty:
         total_prendas = len(df)
-        stock_total = df["Cantidad"].sum() if "Cantidad" in df.columns else 0
+        stock_total = (
+            df["cantidad disponible"].sum()
+            if "cantidad disponible" in df.columns
+            else 0
+        )
 
         col1, col2 = st.columns(2)
         with col1:
@@ -275,33 +283,26 @@ else:
               unsafe_allow_html=True,
           )
 
-        if "Cantidad" in df.columns and "Minimo" in df.columns:
-          stock_bajo = df[df["Cantidad"] <= df["Minimo"]]
-          if not stock_bajo.empty:
-            st.warning(
-                f"⚠️ Atención: Hay {len(stock_bajo)} modelo(s) con stock por debajo del mínimo recomendado."
-            )
-
         st.markdown("<br>", unsafe_allow_html=True)
         st.subheader("📋 Registro Actual de Inventario")
         st.dataframe(df, use_container_width=True)
       else:
-        st.info("No hay prendas registradas todavía en la base de datos.")
+        st.info("No hay prendas registradas todavía.")
 
     elif menu == "➕ Registrar Prenda":
       st.markdown(
           """
               <div class="hero-banner">
                   <div class="hero-title">➕ Registro de Nuevas Prendas</div>
-                  <div class="hero-subtitle">Añade artículos al catálogo sincronizado de la tienda.</div>
+                  <div class="hero-subtitle">Añade artículos al catálogo sincronizado.</div>
               </div>
           """,
           unsafe_allow_html=True,
       )
 
       with st.form("form_ropa"):
-        sku = st.text_input("SKU / Código (Ej: CAM-001)")
-        nombre = st.text_input("Nombre / Descripción (Ej: Vestido Lino)")
+        sku = st.text_input("ID / SKU (Ej: A1)")
+        nombre = st.text_input("Producto / Descripción (Ej: Short)")
         categoria = st.selectbox(
             "Categoría",
             [
@@ -325,6 +326,84 @@ else:
           )
           st.success("¡Prenda guardada con éxito!")
           st.rerun()
+
+    elif menu == "✏️ Modificar / Eliminar Prenda":
+      st.markdown(
+          """
+              <div class="hero-banner">
+                  <div class="hero-title">✏️ Modificar o Eliminar Prenda</div>
+                  <div class="hero-subtitle">Selecciona una prenda existente para actualizar sus datos o borrarla.</div>
+              </div>
+          """,
+          unsafe_allow_html=True,
+      )
+
+      if not df.empty:
+        # Creamos una lista de IDs o productos para elegir
+        lista_ids = df["ID"].astype(str).tolist()
+        id_seleccionado = st.selectbox(
+            "Seleccione el ID de la prenda a gestionar", lista_ids
+        )
+
+        # Buscar la fila correspondiente en el DataFrame
+        fila_idx = df[df["ID"].astype(str) == id_seleccionado].index[0]
+        # Las filas en Google Sheets empiezan en la 2 (la 1 es la cabecera)
+        row_number = fila_idx + 2
+
+        prenda_actual = df.loc[fila_idx]
+
+        with st.form("form_editar"):
+          nuevo_id = st.text_input("ID / SKU", value=str(prenda_actual["ID"]))
+          nuevo_nombre = st.text_input(
+              "Producto", value=str(prenda_actual["Producto"])
+          )
+          nueva_categoria = st.text_input(
+              "Categoría", value=str(prenda_actual["Categoria"])
+          )
+          nueva_talla = st.text_input(
+              "Talla", value=str(prenda_actual["talla"])
+          )
+          nuevo_color = st.text_input(
+              "Color", value=str(prenda_actual["color"])
+          )
+          nueva_cantidad = st.number_input(
+              "Cantidad Disponible",
+              min_value=0,
+              value=int(prenda_actual["cantidad disponible"]),
+              step=1,
+          )
+
+          col_btn1, col_btn2 = st.columns(2)
+          actualizar = col_btn1.form_submit_button(
+              "💾 Guardar Cambios", use_container_width=True
+          )
+          eliminar = col_btn2.form_submit_button(
+              "🗑️ Eliminar Prenda", use_container_width=True
+          )
+
+          if actualizar:
+            # Actualizar la fila completa en Google Sheets
+            sheet.update(
+                f"A{row_number}:G{row_number}",
+                [[
+                    nuevo_id,
+                    nuevo_nombre,
+                    nueva_categoria,
+                    nueva_talla,
+                    nuevo_color,
+                    nueva_cantidad,
+                    0,
+                ]],
+            )
+            st.success("¡Prenda actualizada correctamente!")
+            st.rerun()
+
+          if eliminar:
+            sheet.delete_rows(row_number)
+            st.success("¡Prenda eliminada del sistema!")
+            st.rerun()
+      else:
+        st.info("No hay registros disponibles para modificar.")
 
   except Exception as e:
     st.error(f"Error al sincronizar con Google Sheets: {e}")
