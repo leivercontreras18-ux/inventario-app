@@ -43,7 +43,7 @@ else:
 st.title("📦 Control de Inventario")
 
 # Conexión a Google Sheets (CORREGIDO)
-conn = st.connection("gsheets", type=GSheetsConnection)
+conn = st.connection("gsheets", type=conn)
 df = conn.read(ttl=0)
 
 st.subheader("Estado Actual del Inventario")
