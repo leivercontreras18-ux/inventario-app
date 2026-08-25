@@ -216,16 +216,15 @@ else:
         st.rerun()
 
 
-# --- CONEXIÓN A GOOGLE SHEETS ---
+# --- CONEXIÓN A GOOGLE SHEETS MEDIANTE ARCHIVO JSON LOCAL ---
 def cargar_datos():
     scopes = [
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive",
     ]
-    # Lee directamente el diccionario general de los secretos configurados
-    credentials_dict = dict(st.secrets)
-    creds = Credentials.from_service_account_info(
-        credentials_dict, scopes=scopes
+    # Carga directamente el archivo JSON que subiste al repositorio
+    creds = Credentials.from_service_account_file(
+        "credentials.json", scopes=scopes
     )
     client = gspread.authorize(creds)
     url = "https://docs.google.com/spreadsheets/d/1vMUgfp5eP7yOAoXMBCjp4XjpLvkoUz71vDp5RSDhOOI/edit?gid=0#gid=0"
