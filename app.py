@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-from streamlit_gsheets import GSheetsConnection
+import gspread
+from google.oauth2.service_account import Credentials
 
 st.set_page_config(page_title="Control de Inventario", page_icon="📦", layout="wide")
 
@@ -42,17 +43,29 @@ else:
 
 st.title("📦 Control de Inventario")
 
-# --- CONEXIÓN A GOOGLE SHEETS ---
-# Extraemos el diccionario de secrets a una variable modificable
-service_account_info = dict(st.secrets["connections"]["gsheets"])
+# --- CONEXIÓN DIRECTA A GOOGLE SHEETS (VÍA GSPREAD) ---
+@st.cache_data(ttl=0)
+def cargar_datos():
+    # Extraer y limpiar credenciales
+    service_account_info = dict(st.secrets["connections"]["gsheets"])
+    if "private_key" in service_account_info:
+        service_account_info["private_key"] = service_account_info["private_key"].replace("\\n", "\n")
+    
+    # Definir permisos y autenticar
+    scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+    creds = Credentials.from_service_account_info(service_account_info, scopes=scopes)
+    client = gspread.authorize(creds)
+    
+    # Abrir la hoja por URL o por nombre
+    url = service_account_info.get("spreadsheet")
+    sheet = client.open_by_url(url).sheet1
+    
+    # Retornar como DataFrame de Pandas
+    data = sheet.get_all_records()
+    return pd.DataFrame(data)
 
-# Reemplazamos los saltos de línea literales \n por caracteres de salto de línea reales
-if "private_key" in service_account_info:
-    service_account_info["private_key"] = service_account_info["private_key"].replace("\\n", "\n")
-
-# Creamos la conexión pasando la información formateada mediante el parámetro service_account_info
-conn = st.connection("gsheets", type=GSheetsConnection, service_account_info=service_account_info)
-df = conn.read(ttl=0)
+# Cargar y mostrar datos
+df = cargar_datos()
 
 st.subheader("Estado Actual del Inventario")
 st.dataframe(df, use_container_width=True)
