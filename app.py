@@ -225,13 +225,15 @@ if "inventario_local" not in st.session_state:
         ]
     )
 
-# Listas maestras almacenadas en session_state para poder gestionarlas dinámicamente
+# Listas maestras dinámicas en session_state
 if "categorias_maestras" not in st.session_state:
     st.session_state.categorias_maestras = [
         "Vestidos", "Blusas", "Pantalones", "Jeans", "Chaquetas", "Calzado", "Accesorios"
     ]
 if "tallas_maestras" not in st.session_state:
     st.session_state.tallas_maestras = ["XS", "S", "M", "L", "XL", "Única"]
+if "colores_maestros" not in st.session_state:
+    st.session_state.colores_maestros = ["Negro", "Blanco", "Beige", "Rojo", "Azul", "Rosa", "Verde"]
 
 query_params = st.query_params
 if not st.session_state.autenticado and "recuerdame_user" in query_params:
@@ -478,14 +480,12 @@ else:
         with st.form("form_ropa"):
             sku = st.text_input("ID (Ej: A1)")
             nombre = st.text_input("Producto (Ej: Short)")
-            
-            # Se enlazan las categorías desde el session_state dinámico
             categoria = st.selectbox("Categoria", st.session_state.categorias_maestras)
-            
-            # Se enlazan las tallas desde el session_state dinámico
             talla = st.selectbox("talla", st.session_state.tallas_maestras)
             
-            color = st.text_input("color")
+            # Selector de color dinámico integrado
+            color = st.selectbox("color", st.session_state.colores_maestros)
+            
             cantidad = st.number_input("cantidad", min_value=0, step=1)
             alerta = st.number_input("alerta de stock", min_value=0, step=1)
 
@@ -498,7 +498,7 @@ else:
                         "Producto": nombre.strip(),
                         "Categoria": categoria,
                         "talla": talla,
-                        "color": color.strip(),
+                        "color": color,
                         "cantidad": cantidad,
                         "alerta": alerta,
                     }
@@ -527,17 +527,19 @@ else:
                 nuevo_id = st.text_input("ID", value=str(fila_data["ID"]))
                 nuevo_nombre = st.text_input("Producto", value=str(fila_data["Producto"]))
                 
-                # Menú desplegable dinámico para categoría
                 cat_actual = str(fila_data["Categoria"])
                 idx_cat = st.session_state.categorias_maestras.index(cat_actual) if cat_actual in st.session_state.categorias_maestras else 0
                 nueva_categoria = st.selectbox("Categoria", st.session_state.categorias_maestras, index=idx_cat)
                 
-                # Menú desplegable dinámico para talla
                 talla_actual = str(fila_data["talla"])
                 idx_talla = st.session_state.tallas_maestras.index(talla_actual) if talla_actual in st.session_state.tallas_maestras else 0
                 nueva_talla = st.selectbox("talla", st.session_state.tallas_maestras, index=idx_talla)
                 
-                nuevo_color = st.text_input("color", value=str(fila_data["color"]))
+                # Menú desplegable dinámico para color en edición
+                color_actual = str(fila_data["color"])
+                idx_color = st.session_state.colores_maestros.index(color_actual) if color_actual in st.session_state.colores_maestros else 0
+                nuevo_color = st.selectbox("color", st.session_state.colores_maestros, index=idx_color)
+                
                 nueva_cantidad = st.number_input(
                     "cantidad", min_value=0, value=int(fila_data["cantidad"]), step=1
                 )
@@ -582,21 +584,20 @@ else:
             """
 <div class="page-header">
     <div class="page-title">⚙️ Configuración del Sistema</div>
-    <div class="page-subtitle">Gestiona y personaliza las opciones maestras de categorías y tallas.</div>
+    <div class="page-subtitle">Gestiona y personaliza las opciones maestras de categorías, tallas y colores.</div>
 </div>
 """,
             unsafe_allow_html=True,
         )
 
-        col_cfg1, col_cfg2 = st.columns(2)
+        col_cfg1, col_cfg2, col_cfg3 = st.columns(3)
 
         # GESTIÓN DE CATEGORÍAS
         with col_cfg1:
             with st.container(border=True):
-                st.markdown("<div class='section-title'>📂 Categorías Disponibles</div>", unsafe_allow_html=True)
-                st.markdown("<p style='font-size:12px; color:#94a3b8;'>Añade o elimina categorías para tus prendas.</p>", unsafe_allow_html=True)
+                st.markdown("<div class='section-title'>📂 Categorías</div>", unsafe_allow_html=True)
+                st.markdown("<p style='font-size:12px; color:#94a3b8;'>Añade o elimina categorías.</p>", unsafe_allow_html=True)
                 
-                # Mostrar lista actual
                 for cat in st.session_state.categorias_maestras:
                     c_col1, c_col2 = st.columns([3, 1])
                     c_col1.markdown(f"- {cat}")
@@ -606,27 +607,26 @@ else:
                             st.success(f"Categoría '{cat}' eliminada.")
                             st.rerun()
                         else:
-                            st.error("Debe existir al menos una categoría.")
+                            st.error("Debe existir al menos una.")
 
                 st.markdown("<br>", unsafe_allow_html=True)
                 with st.form("form_nueva_cat"):
-                    nueva_cat_input = st.text_input("Nueva Categoría", placeholder="Ej: Faldas, Abrigos...")
+                    nueva_cat_input = st.text_input("Nueva Categoría", placeholder="Ej: Faldas")
                     if st.form_submit_button("Agregar Categoría"):
                         clean_cat = nueva_cat_input.strip().capitalize()
                         if clean_cat and clean_cat not in st.session_state.categorias_maestras:
                             st.session_state.categorias_maestras.append(clean_cat)
-                            st.success(f"¡Categoría '{clean_cat}' agregada con éxito!")
+                            st.success(f"¡Categoría '{clean_cat}' agregada!")
                             st.rerun()
                         else:
-                            st.warning("Escribe un nombre válido o que no esté repetido.")
+                            st.warning("Escribe un nombre válido o no repetido.")
 
         # GESTIÓN DE TALLAS
         with col_cfg2:
             with st.container(border=True):
-                st.markdown("<div class='section-title'>📏 Tallas Disponibles</div>", unsafe_allow_html=True)
-                st.markdown("<p style='font-size:12px; color:#94a3b8;'>Añade o elimina tallas para tus prendas.</p>", unsafe_allow_html=True)
+                st.markdown("<div class='section-title'>📏 Tallas</div>", unsafe_allow_html=True)
+                st.markdown("<p style='font-size:12px; color:#94a3b8;'>Añade o elimina tallas.</p>", unsafe_allow_html=True)
                 
-                # Mostrar lista actual
                 for t in st.session_state.tallas_maestras:
                     t_col1, t_col2 = st.columns([3, 1])
                     t_col1.markdown(f"- {t}")
@@ -636,16 +636,45 @@ else:
                             st.success(f"Talla '{t}' eliminada.")
                             st.rerun()
                         else:
-                            st.error("Debe existir al menos una talla.")
+                            st.error("Debe existir al menos una.")
 
                 st.markdown("<br>", unsafe_allow_html=True)
                 with st.form("form_nueva_talla"):
-                    nueva_talla_input = st.text_input("Nueva Talla", placeholder="Ej: 28, 30, XXL...")
+                    nueva_talla_input = st.text_input("Nueva Talla", placeholder="Ej: 30, XXL")
                     if st.form_submit_button("Agregar Talla"):
                         clean_talla = nueva_talla_input.strip().upper()
                         if clean_talla and clean_talla not in st.session_state.tallas_maestras:
                             st.session_state.tallas_maestras.append(clean_talla)
-                            st.success(f"¡Talla '{clean_talla}' agregada con éxito!")
+                            st.success(f"¡Talla '{clean_talla}' agregada!")
                             st.rerun()
                         else:
-                            st.warning("Escribe una talla válida o que no esté repetida.")
+                            st.warning("Escribe una talla válida o no repetida.")
+
+        # GESTIÓN DE COLORES
+        with col_cfg3:
+            with st.container(border=True):
+                st.markdown("<div class='section-title'>🎨 Colores</div>", unsafe_allow_html=True)
+                st.markdown("<p style='font-size:12px; color:#94a3b8;'>Añade o elimina colores.</p>", unsafe_allow_html=True)
+                
+                for col_item in st.session_state.colores_maestros:
+                    col_c1, col_c2 = st.columns([3, 1])
+                    col_c1.markdown(f"- {col_item}")
+                    if col_c2.button("❌", key=f"del_color_{col_item}"):
+                        if len(st.session_state.colores_maestros) > 1:
+                            st.session_state.colores_maestros.remove(col_item)
+                            st.success(f"Color '{col_item}' eliminado.")
+                            st.rerun()
+                        else:
+                            st.error("Debe existir al menos uno.")
+
+                st.markdown("<br>", unsafe_allow_html=True)
+                with st.form("form_nuevo_color"):
+                    nuevo_color_input = st.text_input("Nuevo Color", placeholder="Ej: Dorado, Vinotinto")
+                    if st.form_submit_button("Agregar Color"):
+                        clean_color = nuevo_color_input.strip().capitalize()
+                        if clean_color and clean_color not in st.session_state.colores_maestros:
+                            st.session_state.colores_maestros.append(clean_color)
+                            st.success(f"¡Color '{clean_color}' agregado!")
+                            st.rerun()
+                        else:
+                            st.warning("Escribe un color válido o no repetido.")
