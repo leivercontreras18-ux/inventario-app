@@ -225,7 +225,10 @@ if "inventario_local" not in st.session_state:
         ]
     )
 
-# Listas maestras dinámicas en session_state
+# Control de versión para limpiar el formulario de registro de forma limpia
+if "form_version" not in st.session_state:
+    st.session_state.form_version = 0
+
 if "categorias_maestras" not in st.session_state:
     st.session_state.categorias_maestras = [
         "Vestidos", "Blusas", "Pantalones", "Jeans", "Chaquetas", "Calzado", "Accesorios"
@@ -477,15 +480,13 @@ else:
             unsafe_allow_html=True,
         )
 
-        with st.form("form_ropa"):
+        # Se usa form_version como clave dinámica para que al cambiar de valor, Streamlit reinicie los campos en blanco
+        with st.form(f"form_ropa_{st.session_state.form_version}"):
             sku = st.text_input("ID (Ej: A1)")
             nombre = st.text_input("Producto (Ej: Short)")
             categoria = st.selectbox("Categoria", st.session_state.categorias_maestras)
             talla = st.selectbox("talla", st.session_state.tallas_maestras)
-            
-            # Selector de color dinámico integrado
             color = st.selectbox("color", st.session_state.colores_maestros)
-            
             cantidad = st.number_input("cantidad", min_value=0, step=1)
             alerta = st.number_input("alerta de stock", min_value=0, step=1)
 
@@ -504,6 +505,8 @@ else:
                     }
                     if guardar_prenda(nueva_prenda):
                         st.success("¡Prenda guardada con éxito!")
+                        # Incrementamos la versión para forzar el reinicio visual del formulario
+                        st.session_state.form_version += 1
                         st.rerun()
 
     elif menu == "modificar":
@@ -535,7 +538,6 @@ else:
                 idx_talla = st.session_state.tallas_maestras.index(talla_actual) if talla_actual in st.session_state.tallas_maestras else 0
                 nueva_talla = st.selectbox("talla", st.session_state.tallas_maestras, index=idx_talla)
                 
-                # Menú desplegable dinámico para color en edición
                 color_actual = str(fila_data["color"])
                 idx_color = st.session_state.colores_maestros.index(color_actual) if color_actual in st.session_state.colores_maestros else 0
                 nuevo_color = st.selectbox("color", st.session_state.colores_maestros, index=idx_color)
