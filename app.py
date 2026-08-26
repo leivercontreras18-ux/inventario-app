@@ -10,45 +10,45 @@ st.set_page_config(
 # --- CONEXIÓN A BASE DE DATOS SUPABASE ---
 @st.cache_resource
 def obtener_conexion_supabase():
-  try:
-    url = st.secrets["SUPABASE_URL"]
-    key = st.secrets["SUPABASE_KEY"]
-    return create_client(url, key)
-  except Exception:
-    return None
+    try:
+        url = st.secrets["SUPABASE_URL"]
+        key = st.secrets["SUPABASE_KEY"]
+        return create_client(url, key)
+    except Exception:
+        return None
 
 supabase = obtener_conexion_supabase()
 
 def cargar_inventario():
-  if supabase:
-    try:
-      res = supabase.table("inventario").select("*").execute()
-      df = pd.DataFrame(res.data)
-      if not df.empty:
-        df = df.rename(
-            columns={
-                "id": "ID",
-                "producto": "Producto",
-                "categoria": "Categoria",
-            }
-        )
-      return df
-    except Exception:
-      pass
-  return st.session_state.get(
-      "inventario_local",
-      pd.DataFrame(
-          columns=[
-              "ID",
-              "Producto",
-              "Categoria",
-              "talla",
-              "color",
-              "cantidad",
-              "alerta",
-          ]
-      ),
-  )
+    if supabase:
+        try:
+            res = supabase.table("inventario").select("*").execute()
+            df = pd.DataFrame(res.data)
+            if not df.empty:
+                df = df.rename(
+                    columns={
+                        "id": "ID",
+                        "producto": "Producto",
+                        "categoria": "Categoria",
+                    }
+                )
+            return df
+        except Exception:
+            pass
+    return st.session_state.get(
+        "inventario_local",
+        pd.DataFrame(
+            columns=[
+                "ID",
+                "Producto",
+                "Categoria",
+                "talla",
+                "color",
+                "cantidad",
+                "alerta",
+            ]
+        ),
+    )
 
 def guardar_prenda(nueva_prenda):
     if supabase:
@@ -113,7 +113,7 @@ def eliminar_prenda(id_prenda):
         ].reset_index(drop=True)
         return True
 
-# --- DISEÑO UI ADAPTADO (INSPIRACIÓN PINTEREST CON MARCA LEWIN PRESERVADA) ---
+# --- DISEÑO UI ADAPTADO ---
 st.markdown(
     textwrap.dedent("""
     <style>
@@ -136,7 +136,6 @@ st.markdown(
     }
     section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
     
-    /* Inputs estilizados */
     div[data-baseweb="input"] {
         background-color: #1a1d24 !important;
         border-radius: 12px !important;
@@ -151,7 +150,6 @@ st.markdown(
         font-size: 13px !important;
     }
     
-    /* Botones dorados metalizados */
     div.stButton > button, div[data-testid="stFormSubmitButton"] > button {
         background: linear-gradient(135deg, #2b2e36 0%, #4a3e2c 50%, #8c6d3b 100%) !important;
         color: #ffffff !important;
@@ -247,7 +245,6 @@ if "inventario_local" not in st.session_state:
 # --- 1. FLUJO DE LOGIN / PORTADA ---
 if not st.session_state.autenticado:
     if st.session_state.pantalla == "portada":
-        # LOGO "ED" CORPORATIVO, MANTENIDO
         col1, col2, col3 = st.columns([1, 1.25, 1])
         with col2:
             st.markdown("<br>", unsafe_allow_html=True)
@@ -266,7 +263,6 @@ if not st.session_state.autenticado:
                 unsafe_allow_html=True,
             )
 
-            # TARJETA GLASSMORPHISM CON DISEÑO INSPIRADO EN PINTEREST
             st.markdown(
                 textwrap.dedent("""
                 <div style="
@@ -275,12 +271,10 @@ if not st.session_state.autenticado:
                     border: 1px solid rgba(255, 255, 255, 0.08); text-align: center;
                     box-shadow: 0 30px 60px rgba(0,0,0,0.8);
                 ">
-                    <!-- TITULAR AUDAZ INSPIRADO EN PINTEREST -->
                     <div style="color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2px;">
                         STAND OUT <span style="color: #c99846;">WITHOUT TRYING.</span>
                     </div>
 
-                    <!-- TU SALUDO DE BIENVENIDA MANTENIDO -->
                     <div style="font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">
                         Welcome <span style="color: #e0a346;">Lewin</span>
                     </div>
@@ -324,7 +318,6 @@ if not st.session_state.autenticado:
             )
 
     elif st.session_state.pantalla == "login":
-        # LOGO FLOTANTE MANTENIDO
         col1, col2, col3 = st.columns([1, 1.25, 1])
         with col2:
             st.markdown("<br>", unsafe_allow_html=True)
@@ -343,11 +336,6 @@ if not st.session_state.autenticado:
                 unsafe_allow_html=True,
             )
 
-        # MANTENER DISEÑO DE DOS COLUMNAS DENTRO DE LA TARJETA
-        # COLUMNA 1: IMAGEN DE PRODUCTO LUJO (INSPIRACIÓN PINTEREST)
-        # COLUMNA 2: TU FORMULARIO DE INICIO DE SESIÓN
-
-        # TARJETA GLASSMORPHIC CON DISEÑO INSPIRADO EN PINTEREST
         st.markdown(
             textwrap.dedent("""
                 <div style="
@@ -357,20 +345,17 @@ if not st.session_state.autenticado:
                     box-shadow: 0 30px 60px rgba(0,0,0,0.8);
                     display: grid; grid-template-columns: 1fr 1.1fr; overflow: hidden;
                 ">
-                    <!-- COLUMNA 1: IMAGEN DE PRODUCTO LUJO MANTENIDA -->
                     <div style="
                         background-image: url('https://images.unsplash.com/photo-1549416878-b9ca95e26903?q=80&w=600&auto=format&fit=crop');
                         background-size: cover; background-position: center;
                         position: relative;
                     ">
-                        <!-- DEGRADADO SOBRE LA IMAGEN PARA DARLE TOQUE METALIZADO OSCURO -->
                         <div style="
                             position: absolute; inset: 0;
                             background: linear-gradient(135deg, rgba(20, 22, 28, 0.6) 0%, rgba(20, 22, 28, 0.92) 100%);
                         "></div>
                     </div>
                     
-                    <!-- COLUMNA 2: TU FORMULARIO DE INICIO DE SESIÓN DENTRO DE LA TARJETA -->
                     <div style="padding: 30px 28px 10px 28px; text-align: center;">
                         <div style="color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2px;">
                             STAND OUT <span style="color: #c99846;">WITHOUT TRYING.</span>
@@ -440,7 +425,6 @@ if not st.session_state.autenticado:
                 else:
                     st.error("⚠️ Usuario o contraseña incorrectos.")
         
-        # CERRAR LA TARJETA EN HTML
         st.markdown("</div></div>", unsafe_allow_html=True)
     st.stop()
 
@@ -496,175 +480,175 @@ else:
     df = cargar_inventario()
     menu = st.session_state.menu_activo
 
-  if menu == "existencias":
-    st.markdown(
-        """
-            <div class="page-header">
-                <div class="page-title">Panel Principal // Lewin Boutique</div>
-                <div class="page-subtitle">Control general de stock y monitoreo en tiempo real.</div>
-            </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    total_prendas = len(df) if not df.empty else 0
-    stock_total = (
-        int(df["cantidad"].sum())
-        if not df.empty and "cantidad" in df.columns
-        else 0
-    )
-
-    st.markdown(
-        """
-            <div class="section-title">Visión General del Inventario</div>
-            <div class="section-subtitle">Resumen general de métricas y existencias.</div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    col1, col2 = st.columns(2)
-    with col1:
-      st.markdown(
-          f"""
-                <div class="metric-card">
-                    <div class="metric-label">Total de Prendas / Modelos</div>
-                    <div class="metric-value">{total_prendas}</div>
+    if menu == "existencias":
+        st.markdown(
+            """
+                <div class="page-header">
+                    <div class="page-title">Panel Principal // Lewin Boutique</div>
+                    <div class="page-subtitle">Control general de stock y monitoreo en tiempo real.</div>
                 </div>
             """,
-          unsafe_allow_html=True,
-      )
-    with col2:
-      st.markdown(
-          f"""
-                <div class="metric-card">
-                    <div class="metric-label">Stock Total Acumulado</div>
-                    <div class="metric-value">{stock_total}</div>
-                </div>
+            unsafe_allow_html=True,
+        )
+
+        total_prendas = len(df) if not df.empty else 0
+        stock_total = (
+            int(df["cantidad"].sum())
+            if not df.empty and "cantidad" in df.columns
+            else 0
+        )
+
+        st.markdown(
+            """
+                <div class="section-title">Visión General del Inventario</div>
+                <div class="section-subtitle">Resumen general de métricas y existencias.</div>
             """,
-          unsafe_allow_html=True,
-      )
+            unsafe_allow_html=True,
+        )
 
-    st.markdown("<br>", unsafe_allow_html=True)
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown(
+                f"""
+                    <div class="metric-card">
+                        <div class="metric-label">Total de Prendas / Modelos</div>
+                        <div class="metric-value">{total_prendas}</div>
+                    </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        with col2:
+            st.markdown(
+                f"""
+                    <div class="metric-card">
+                        <div class="metric-label">Stock Total Acumulado</div>
+                        <div class="metric-value">{stock_total}</div>
+                    </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
-    if not df.empty:
-      st.markdown(
-          """
-                <div class="section-title">📋 Registro Actual de Inventario</div>
-            """,
-          unsafe_allow_html=True,
-      )
-      st.dataframe(df, use_container_width=True)
-    else:
-      st.info("No hay prendas registradas todavía en el sistema.")
+        st.markdown("<br>", unsafe_allow_html=True)
 
-  elif menu == "registrar":
-    st.markdown(
-        """
-            <div class="page-header">
-                <div class="page-title">Registro de Nuevas Prendas</div>
-                <div class="page-subtitle">Añade artículos al catálogo de la boutique.</div>
-            </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    with st.form("form_ropa"):
-      sku = st.text_input("ID (Ej: A1)")
-      nombre = st.text_input("Producto (Ej: Short)")
-      categoria = st.selectbox(
-          "Categoria",
-          [
-              "Vestidos",
-              "Blusas",
-              "Pantalones",
-              "Jeans",
-              "Chaquetas",
-              "Calzado",
-              "Accesorios",
-          ],
-      )
-      talla = st.selectbox("talla", ["XS", "S", "M", "L", "XL", "Única"])
-      color = st.text_input("color")
-      cantidad = st.number_input("cantidad", min_value=0, step=1)
-      alerta = st.number_input("alerta de stock", min_value=0, step=1)
-
-      if st.form_submit_button("Guardar Prenda en el Sistema"):
-        if sku.strip() == "":
-          st.error("El campo ID es obligatorio.")
+        if not df.empty:
+            st.markdown(
+                """
+                    <div class="section-title">📋 Registro Actual de Inventario</div>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.dataframe(df, use_container_width=True)
         else:
-          nueva_prenda = {
-              "ID": sku.strip(),
-              "Producto": nombre.strip(),
-              "Categoria": categoria,
-              "talla": talla,
-              "color": color.strip(),
-              "cantidad": cantidad,
-              "alerta": alerta,
-          }
-          if guardar_prenda(nueva_prenda):
-            st.success("¡Prenda guardada con éxito!")
-            st.rerun()
+            st.info("No hay prendas registradas todavía en el sistema.")
 
-  elif menu == "modificar":
-    st.markdown(
-        """
-            <div class="page-header">
-                <div class="page-title">Modificar o Eliminar Prenda</div>
-                <div class="page-subtitle">Selecciona una prenda existente para actualizar sus datos o borrarla.</div>
-            </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    if not df.empty:
-      lista_ids = df["ID"].astype(str).tolist()
-      id_seleccionado = st.selectbox("Seleccione el ID de la prenda", lista_ids)
-
-      fila_data = df[df["ID"].astype(str) == id_seleccionado].iloc[0]
-
-      with st.form("form_editar"):
-        nuevo_id = st.text_input("ID", value=str(fila_data["ID"]))
-        nuevo_nombre = st.text_input("Producto", value=str(fila_data["Producto"]))
-        nueva_categoria = st.text_input(
-            "Categoria", value=str(fila_data["Categoria"])
-        )
-        nueva_talla = st.text_input("talla", value=str(fila_data["talla"]))
-        nuevo_color = st.text_input("color", value=str(fila_data["color"]))
-        nueva_cantidad = st.number_input(
-            "cantidad", min_value=0, value=int(fila_data["cantidad"]), step=1
-        )
-        nueva_alerta = st.number_input(
-            "alerta de stock",
-            min_value=0,
-            value=int(fila_data["alerta"]),
-            step=1,
+    elif menu == "registrar":
+        st.markdown(
+            """
+                <div class="page-header">
+                    <div class="page-title">Registro de Nuevas Prendas</div>
+                    <div class="page-subtitle">Añade artículos al catálogo de la boutique.</div>
+                </div>
+            """,
+            unsafe_allow_html=True,
         )
 
-        col_btn1, col_btn2 = st.columns(2)
-        actualizar = col_btn1.form_submit_button(
-            "💾 Guardar Cambios", use_container_width=True
-        )
-        eliminar = col_btn2.form_submit_button(
-            "🗑️ Eliminar Prenda", use_container_width=True
+        with st.form("form_ropa"):
+            sku = st.text_input("ID (Ej: A1)")
+            nombre = st.text_input("Producto (Ej: Short)")
+            categoria = st.selectbox(
+                "Categoria",
+                [
+                    "Vestidos",
+                    "Blusas",
+                    "Pantalones",
+                    "Jeans",
+                    "Chaquetas",
+                    "Calzado",
+                    "Accesorios",
+                ],
+            )
+            talla = st.selectbox("talla", ["XS", "S", "M", "L", "XL", "Única"])
+            color = st.text_input("color")
+            cantidad = st.number_input("cantidad", min_value=0, step=1)
+            alerta = st.number_input("alerta de stock", min_value=0, step=1)
+
+            if st.form_submit_button("Guardar Prenda en el Sistema"):
+                if sku.strip() == "":
+                    st.error("El campo ID es obligatorio.")
+                else:
+                    nueva_prenda = {
+                        "ID": sku.strip(),
+                        "Producto": nombre.strip(),
+                        "Categoria": categoria,
+                        "talla": talla,
+                        "color": color.strip(),
+                        "cantidad": cantidad,
+                        "alerta": alerta,
+                    }
+                    if guardar_prenda(nueva_prenda):
+                        st.success("¡Prenda guardada con éxito!")
+                        st.rerun()
+
+    elif menu == "modificar":
+        st.markdown(
+            """
+                <div class="page-header">
+                    <div class="page-title">Modificar o Eliminar Prenda</div>
+                    <div class="page-subtitle">Selecciona una prenda existente para actualizar sus datos o borrarla.</div>
+                </div>
+            """,
+            unsafe_allow_html=True,
         )
 
-        if actualizar:
-          datos_mod = {
-              "ID": nuevo_id,
-              "Producto": nuevo_nombre,
-              "Categoria": nueva_categoria,
-              "talla": nueva_talla,
-              "color": nuevo_color,
-              "cantidad": nueva_cantidad,
-              "alerta": nueva_alerta,
-          }
-          if actualizar_prenda(id_seleccionado, datos_mod):
-            st.success("¡Prenda actualizada correctamente!")
-            st.rerun()
+        if not df.empty:
+            lista_ids = df["ID"].astype(str).tolist()
+            id_seleccionado = st.selectbox("Seleccione el ID de la prenda", lista_ids)
 
-        if eliminar:
-          if eliminar_prenda(id_seleccionado):
-            st.success("¡Prenda eliminada del sistema!")
-            st.rerun()
-    else:
-      st.info("No hay registros disponibles para modificar.")
+            fila_data = df[df["ID"].astype(str) == id_seleccionado].iloc[0]
+
+            with st.form("form_editar"):
+                nuevo_id = st.text_input("ID", value=str(fila_data["ID"]))
+                nuevo_nombre = st.text_input("Producto", value=str(fila_data["Producto"]))
+                nueva_categoria = st.text_input(
+                    "Categoria", value=str(fila_data["Categoria"])
+                )
+                nueva_talla = st.text_input("talla", value=str(fila_data["talla"]))
+                nuevo_color = st.text_input("color", value=str(fila_data["color"]))
+                nueva_cantidad = st.number_input(
+                    "cantidad", min_value=0, value=int(fila_data["cantidad"]), step=1
+                )
+                nueva_alerta = st.number_input(
+                    "alerta de stock",
+                    min_value=0,
+                    value=int(fila_data["alerta"]),
+                    step=1,
+                )
+
+                col_btn1, col_btn2 = st.columns(2)
+                actualizar = col_btn1.form_submit_button(
+                    "💾 Guardar Cambios", use_container_width=True
+                )
+                eliminar = col_btn2.form_submit_button(
+                    "🗑️ Eliminar Prenda", use_container_width=True
+                )
+
+                if actualizar:
+                    datos_mod = {
+                        "ID": nuevo_id,
+                        "Producto": nuevo_nombre,
+                        "Categoria": nueva_categoria,
+                        "talla": nueva_talla,
+                        "color": nuevo_color,
+                        "cantidad": nueva_cantidad,
+                        "alerta": nueva_alerta,
+                    }
+                    if actualizar_prenda(id_seleccionado, datos_mod):
+                        st.success("¡Prenda actualizada correctamente!")
+                        st.rerun()
+
+                if eliminar:
+                    if eliminar_prenda(id_seleccionado):
+                        st.success("¡Prenda eliminada del sistema!")
+                        st.rerun()
+        else:
+            st.info("No hay registros disponibles para modificar.")
