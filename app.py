@@ -5,7 +5,7 @@ st.set_page_config(
     page_title="Lewin // Inventario Boutique", page_icon="👕", layout="wide"
 )
 
-# --- DISEÑO UI CON FONDO DE PAISAJE ---
+# --- DISEÑO UI CON ESTILO MODERNO PARA EL LOGO ---
 st.markdown(
     """
     <style>
@@ -19,6 +19,17 @@ st.markdown(
     }
     section[data-testid="stSidebar"] { background-color: rgba(18, 18, 22, 0.9) !important; border-right: 1px solid #27272a; backdrop-filter: blur(10px); }
     section[data-testid="stSidebar"] * { color: #f4f4f5 !important; }
+    
+    /* ESTILO PARA QUITAR EL FONDO BLANCO Y INTEGRAR EL LOGO */
+    [data-testid="stImage"] img {
+        background: rgba(24, 24, 27, 0.6) !important;
+        padding: 10px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(8px);
+    }
+
     .hero-banner {
         background: rgba(24, 24, 27, 0.75);
         backdrop-filter: blur(12px);
@@ -79,7 +90,6 @@ if not st.session_state.autenticado:
   with col2:
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # Aquí se carga tu nuevo logo actualizado
     st.image("1787708461873.png", width=140)
 
     st.markdown(
