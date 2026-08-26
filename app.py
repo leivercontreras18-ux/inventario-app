@@ -118,13 +118,13 @@ def eliminar_prenda(id_prenda):
     return True
 
 
-# --- DISEÑO UI (FONDO BOUTIQUE ELEGANTE & GLASSMORPHISM) ---
+# --- DISEÑO UI (DISEÑO METALIZADO OSCURO & ORO LUJO) ---
 st.markdown(
     """
     <style>
     .stApp { 
-        background: linear-gradient(rgba(10, 15, 25, 0.50), rgba(10, 15, 25, 0.65)), 
-                    url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1920&auto=format&fit=crop');
+        background: linear-gradient(rgba(12, 14, 18, 0.75), rgba(12, 14, 18, 0.88)), 
+                    url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1920&auto=format&fit=crop');
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -133,59 +133,76 @@ st.markdown(
     
     section[data-testid="stSidebar"] { 
         width: 240px !important;
-        background: rgba(13, 18, 30, 0.88) !important; 
-        border-right: 1px solid rgba(212, 175, 55, 0.15); 
-        backdrop-filter: blur(20px); 
+        background: rgba(18, 20, 26, 0.92) !important; 
+        border-right: 1px solid rgba(255, 255, 255, 0.08); 
+        backdrop-filter: blur(25px); 
     }
     section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
     
+    /* Estilos de Cajas de Texto / Inputs */
+    div[data-baseweb="input"] {
+        background-color: #1a1d24 !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: #ffffff !important;
+    }
+    div[data-baseweb="input"] input {
+        color: #ffffff !important;
+    }
+    
+    /* Botón estilo Degradado Dorado Metalizado */
+    div.stButton > button, div[data-testid="stFormSubmitButton"] > button {
+        background: linear-gradient(135deg, #2b251d 0%, #614929 50%, #aa8344 100%) !important;
+        color: #ffffff !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(212, 175, 55, 0.3) !important;
+        font-weight: 600 !important;
+        padding: 10px 20px !important;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        transition: all 0.3s ease;
+    }
+    div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
+        background: linear-gradient(135deg, #3d3428 0%, #7d5e35 50%, #cfa053 100%) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(212, 175, 55, 0.2);
+    }
+
     .page-header { margin-bottom: 25px; padding-bottom: 10px; }
     .page-title { font-size: 32px; font-weight: 700; color: #ffffff !important; letter-spacing: 0.5px; }
-    .page-subtitle { font-size: 14px; color: #e2e8f0 !important; margin-top: 4px; }
+    .page-subtitle { font-size: 14px; color: #94a3b8 !important; margin-top: 4px; }
     
     .section-title { font-size: 18px; font-weight: 600; color: #ffffff; margin-bottom: 4px; }
-    .section-subtitle { font-size: 12px; color: #cbd5e1; margin-bottom: 15px; }
+    .section-subtitle { font-size: 12px; color: #94a3b8; margin-bottom: 15px; }
     
     .metric-card {
-        background: rgba(18, 24, 38, 0.60); 
-        backdrop-filter: blur(16px); 
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(22, 25, 33, 0.70); 
+        backdrop-filter: blur(20px); 
+        border: 1px solid rgba(255, 255, 255, 0.08);
         padding: 20px; border-radius: 16px; text-align: left;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.5);
         height: 100%;
     }
     .metric-value { font-size: 32px; font-weight: 800; color: #d4af37 !important; margin-top: 8px; }
-    .metric-label { font-size: 11px; color: #cbd5e1 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+    .metric-label { font-size: 11px; color: #94a3b8 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
     
     .user-profile { 
-        background: linear-gradient(135deg, rgba(212, 175, 55, 0.12), rgba(255, 255, 255, 0.02)); 
+        background: rgba(255, 255, 255, 0.03); 
         padding: 14px 16px; border-radius: 14px; 
-        border: 1px solid rgba(212, 175, 55, 0.3); margin-bottom: 20px;
+        border: 1px solid rgba(212, 175, 55, 0.25); margin-bottom: 20px;
         display: flex; align-items: center; gap: 12px;
     }
     .user-avatar {
         width: 36px; height: 36px; background: #d4af37; color: #0d121e;
         font-weight: 800; border-radius: 50%; display: flex; align-items: center;
-        justify-content: center; font-size: 15px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+        justify-content: center; font-size: 15px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
     }
     .user-info-title { font-size: 9px; color: #d4af37; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
     .user-info-name { font-size: 14px; font-weight: 600; color: #ffffff; }
 
-    .stSidebar .stButton>button {
-        background: transparent !important; color: #cbd5e1 !important;
-        font-weight: 500; font-size: 13px; border-radius: 12px; 
-        border: 1px solid transparent !important; padding: 10px 14px;
-        text-align: left; margin-bottom: 6px; width: 100%; transition: all 0.25s ease;
-    }
-    .stSidebar .stButton>button:hover { 
-        background: rgba(255, 255, 255, 0.08) !important; color: #ffffff !important;
-        border-color: rgba(255, 255, 255, 0.15) !important; transform: translateX(4px);
-    }
-
     div.stAlert {
-        background: rgba(18, 24, 38, 0.60) !important;
+        background: rgba(22, 25, 33, 0.70) !important;
         backdrop-filter: blur(14px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
         color: #cbd5e1 !important; border-radius: 14px !important;
     }
     div.stAlert * { color: #cbd5e1 !important; }
@@ -221,50 +238,66 @@ if "inventario_local" not in st.session_state:
 # --- 1. FLUJO DE LOGIN / PORTADA ---
 if not st.session_state.autenticado:
   if st.session_state.pantalla == "portada":
-    col1, col2, col3 = st.columns([1, 1.2, 1])
+    col1, col2, col3 = st.columns([1, 1.1, 1])
     with col2:
-      st.markdown("<br><br>", unsafe_allow_html=True)
+      st.markdown("<br>", unsafe_allow_html=True)
+      # LOGO METÁLICO 3D Y TARJETA ESTILO IMAGEN
       st.markdown(
           """
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="
+                    display: inline-block; width: 90px; height: 90px; 
+                    background: linear-gradient(145deg, #2a2d35, #15171c); 
+                    border: 2px solid rgba(212, 175, 55, 0.5); border-radius: 24px;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.8), inset 0 2px 6px rgba(255,255,255,0.2);
+                    line-height: 86px; font-size: 45px; font-weight: 900; color: #d4af37;
+                    font-family: sans-serif;
+                ">LB</div>
+            </div>
+            
             <div style="
-                background: rgba(18, 24, 38, 0.65); backdrop-filter: blur(16px);
-                padding: 45px 30px; border-radius: 20px; 
-                border: 1px solid rgba(212, 175, 55, 0.25); text-align: center;
-                box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+                background: rgba(22, 25, 32, 0.75); backdrop-filter: blur(25px);
+                padding: 35px 30px; border-radius: 24px; 
+                border: 1px solid rgba(255, 255, 255, 0.1); text-align: center;
+                box-shadow: 0 25px 50px rgba(0,0,0,0.7);
             ">
-                <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 15px;">
-                    <div style="
-                        width: 70px; height: 70px; background: rgba(212, 175, 55, 0.1); 
-                        border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 50%; 
-                        display: flex; align-items: center; justify-content: center;
-                        font-size: 36px; font-weight: 900; color: #d4af37;
-                    ">L</div>
+                <div style="color: #ffffff; font-size: 26px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 2px;">
+                    Welcome <span style="color: #d4af37;">Back</span>
                 </div>
-                <div style="color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: 5px; margin-bottom: 4px;">LEWIN</div>
-                <div style="color: #d4af37; font-size: 14px; text-transform: uppercase; letter-spacing: 4px; font-weight: 600; margin-bottom: 10px;">Boutique</div>
-                <div style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 2px;">Sistema Privado</div>
+                <div style="color: #94a3b8; font-size: 12px; margin-bottom: 20px;">Inicia sesión para gestionar el inventario boutique</div>
             </div>
             """,
           unsafe_allow_html=True,
       )
       st.markdown("<br>", unsafe_allow_html=True)
-      if st.button("Iniciar Sesión", use_container_width=True):
+      if st.button("Ingresar al Sistema →", use_container_width=True):
         st.session_state.pantalla = "login"
         st.rerun()
 
   elif st.session_state.pantalla == "login":
-    col1, col2, col3 = st.columns([1, 1.2, 1])
+    col1, col2, col3 = st.columns([1, 1.1, 1])
     with col2:
       st.markdown("<br>", unsafe_allow_html=True)
       st.markdown(
           """
+            <div style="text-align: center; margin-bottom: 15px;">
+                <div style="
+                    display: inline-block; width: 70px; height: 70px; 
+                    background: linear-gradient(145deg, #2a2d35, #15171c); 
+                    border: 2px solid rgba(212, 175, 55, 0.4); border-radius: 20px;
+                    box-shadow: 0 15px 30px rgba(0,0,0,0.8);
+                    line-height: 66px; font-size: 34px; font-weight: 900; color: #d4af37;
+                ">LB</div>
+            </div>
             <div style="
-                background: rgba(18, 24, 38, 0.65); backdrop-filter: blur(16px);
-                padding: 30px 25px 10px 25px; border-radius: 20px 20px 0px 0px; 
-                border: 1px solid rgba(212, 175, 55, 0.25); border-bottom: none; text-align: center;
+                background: rgba(22, 25, 32, 0.75); backdrop-filter: blur(25px);
+                padding: 25px 25px 10px 25px; border-radius: 24px 24px 0px 0px; 
+                border: 1px solid rgba(255, 255, 255, 0.1); border-bottom: none; text-align: center;
             ">
-                <div style="font-size: 22px; font-weight: 600; color: #ffffff; margin-bottom: 4px;">Acceso al Sistema</div>
-                <div style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">Introduce tus credenciales para continuar</div>
+                <div style="font-size: 24px; font-weight: 700; color: #ffffff; margin-bottom: 2px;">
+                    Welcome <span style="color: #d4af37;">Back</span>
+                </div>
+                <div style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">Ingresa tus datos de acceso</div>
             </div>
             """,
           unsafe_allow_html=True,
@@ -278,7 +311,7 @@ if not st.session_state.autenticado:
         )
         usuario_input = st.text_input(
             "Usuario",
-            placeholder="Ingresa tu usuario",
+            placeholder="Introduce tu usuario",
             label_visibility="collapsed",
         )
 
@@ -297,7 +330,7 @@ if not st.session_state.autenticado:
         st.markdown("<br>", unsafe_allow_html=True)
         col_f1, col_f2 = st.columns(2)
         boton_enviar = col_f1.form_submit_button(
-            "Ingresar", use_container_width=True
+            "Entrar →", use_container_width=True
         )
         boton_volver = col_f2.form_submit_button(
             "Volver", use_container_width=True
