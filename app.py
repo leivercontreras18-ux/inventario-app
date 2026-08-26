@@ -5,12 +5,12 @@ st.set_page_config(
     page_title="Lewin // Inventario Boutique", page_icon="👕", layout="wide"
 )
 
-# --- DISEÑO UI (ESTILO MODERN BOUTIQUE & GLASSMORPHISM) ---
+# --- DISEÑO UI (ESTILO MODERN BOUTIQUE & MINIMALISTA) ---
 st.markdown(
     """
     <style>
     .stApp { 
-        background: linear-gradient(rgba(10, 15, 30, 0.5), rgba(10, 15, 30, 0.8)), 
+        background: linear-gradient(rgba(10, 15, 30, 0.6), rgba(10, 15, 30, 0.9)), 
                     url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1920&auto=format&fit=crop');
         background-size: cover;
         background-position: center;
@@ -27,25 +27,24 @@ st.markdown(
     }
     section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
     
-    .hero-banner {
-        background: rgba(18, 24, 38, 0.7);
-        backdrop-filter: blur(14px);
-        border: 1px solid rgba(255, 255, 255, 0.08); 
-        padding: 35px; border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6); margin-bottom: 30px;
+    /* ENCABEZADO LIMPIO SIN BLOQUE GRANDE */
+    .page-header {
+        margin-bottom: 25px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding-bottom: 15px;
     }
-    .hero-title { font-size: 34px; font-weight: 700; color: #ffffff !important; margin-bottom: 8px; }
-    .hero-subtitle { font-size: 15px; color: #94a3b8 !important; }
+    .page-title { font-size: 28px; font-weight: 700; color: #ffffff !important; letter-spacing: 0.5px; }
+    .page-subtitle { font-size: 14px; color: #94a3b8 !important; margin-top: 4px; }
     
+    /* TARJETAS DE MÉTRICAS SUTILES */
     .metric-card {
-        background: rgba(18, 24, 38, 0.7); 
+        background: rgba(18, 24, 38, 0.4); 
         backdrop-filter: blur(12px); 
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        padding: 24px; border-radius: 16px; text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 20px; border-radius: 14px; text-align: center;
     }
-    .metric-value { font-size: 36px; font-weight: 800; color: #d4af37 !important; margin-top: 8px; }
-    .metric-label { font-size: 11px; color: #94a3b8 !important; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
+    .metric-value { font-size: 32px; font-weight: 800; color: #d4af37 !important; margin-top: 6px; }
+    .metric-label { font-size: 10px; color: #94a3b8 !important; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
     
     /* TARJETA DE USUARIO MINIMALISTA */
     .user-profile { 
@@ -92,18 +91,15 @@ st.markdown(
         transform: translateX(4px);
     }
 
-    /* ESTILO ELEGANTE PARA MENSAJES DE INFORMACIÓN (st.info) */
+    /* MENSAJE DE ESTADO LIMPIO */
     div.stAlert {
-        background: rgba(18, 24, 38, 0.7) !important;
-        backdrop-filter: blur(12px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        background: rgba(18, 24, 38, 0.4) !important;
+        backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
         color: #cbd5e1 !important;
-        border-radius: 16px !important;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important;
+        border-radius: 12px !important;
     }
-    div.stAlert * {
-        color: #cbd5e1 !important;
-    }
+    div.stAlert * { color: #cbd5e1 !important; }
     </style>
 """,
     unsafe_allow_html=True,
@@ -143,13 +139,13 @@ if not st.session_state.autenticado:
       st.markdown(
           """
             <div style="
-                background: rgba(18, 24, 38, 0.7); 
+                background: rgba(18, 24, 38, 0.6); 
                 backdrop-filter: blur(16px);
                 padding: 45px 30px; 
-                border-radius: 24px; 
+                border-radius: 20px; 
                 border: 1px solid rgba(212, 175, 55, 0.2); 
                 text-align: center;
-                box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+                box-shadow: 0 20px 40px rgba(0,0,0,0.5);
             ">
                 <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 15px;">
                     <div style="
@@ -159,7 +155,6 @@ if not st.session_state.autenticado:
                         border-radius: 50%; 
                         display: flex; align-items: center; justify-content: center;
                         font-size: 36px; font-weight: 900; color: #d4af37;
-                        box-shadow: 0 0 25px rgba(212, 175, 55, 0.3);
                     ">
                         L
                     </div>
@@ -190,14 +185,13 @@ if not st.session_state.autenticado:
       st.markdown(
           """
             <div style="
-                background: rgba(18, 24, 38, 0.7); 
+                background: rgba(18, 24, 38, 0.6); 
                 backdrop-filter: blur(16px);
                 padding: 30px 25px 10px 25px; 
-                border-radius: 24px 24px 0px 0px; 
+                border-radius: 20px 20px 0px 0px; 
                 border: 1px solid rgba(212, 175, 55, 0.2); 
                 border-bottom: none;
                 text-align: center;
-                box-shadow: 0 25px 50px rgba(0,0,0,0.5);
             ">
                 <div style="font-size: 22px; font-weight: 600; color: #ffffff; margin-bottom: 4px;">
                     Acceso al Sistema
@@ -256,9 +250,7 @@ if not st.session_state.autenticado:
             st.session_state.usuario_actual = usuario_input
             st.rerun()
           else:
-            st.error(
-                "⚠️ Usuario o contraseña incorrectos. Por favor verifícalos."
-            )
+            st.error("⚠️ Usuario o contraseña incorrectos.")
   st.stop()
 
 # --- 2. FLUJO PRINCIPAL CUANDO YA ESTÁ AUTENTICADO ---
@@ -266,7 +258,6 @@ else:
   usuario_formateado = st.session_state.usuario_actual.capitalize()
   inicial_usuario = usuario_formateado[0]
 
-  # BARRA LATERAL RENOVADA
   st.sidebar.markdown(
       f"""
         <div class="user-profile">
@@ -317,9 +308,9 @@ else:
   if menu == "existencias":
     st.markdown(
         """
-            <div class="hero-banner">
-                <div class="hero-title">👕 Panel Principal // Lewin Boutique</div>
-                <div class="hero-subtitle">Control general de stock y monitoreo en tiempo real.</div>
+            <div class="page-header">
+                <div class="page-title">Panel Principal // Lewin Boutique</div>
+                <div class="page-subtitle">Control general de stock y monitoreo en tiempo real.</div>
             </div>
         """,
         unsafe_allow_html=True,
@@ -362,9 +353,9 @@ else:
   elif menu == "registrar":
     st.markdown(
         """
-            <div class="hero-banner">
-                <div class="hero-title">➕ Registro de Nuevas Prendas</div>
-                <div class="hero-subtitle">Añade artículos al catálogo local.</div>
+            <div class="page-header">
+                <div class="page-title">Registro de Nuevas Prendas</div>
+                <div class="page-subtitle">Añade artículos al catálogo local.</div>
             </div>
         """,
         unsafe_allow_html=True,
@@ -412,9 +403,9 @@ else:
   elif menu == "modificar":
     st.markdown(
         """
-            <div class="hero-banner">
-                <div class="hero-title">✏️ Modificar o Eliminar Prenda</div>
-                <div class="hero-subtitle">Selecciona una prenda existente para actualizar sus datos o borrarla.</div>
+            <div class="page-header">
+                <div class="page-title">Modificar o Eliminar Prenda</div>
+                <div class="page-subtitle">Selecciona una prenda existente para actualizar sus datos o borrarla.</div>
             </div>
         """,
         unsafe_allow_html=True,
@@ -435,7 +426,7 @@ else:
         nueva_categoria = st.text_input(
             "Categoria", value=str(prenda_actual["Categoria"])
         )
-        nueva_talla = st.text_input("talla", value=str(prenewData_actual["talla"]))
+        nueva_talla = st.text_input("talla", value=str(prenda_actual["talla"]))
         nuevo_color = st.text_input("color", value=str(prenda_actual["color"]))
         nueva_cantidad = st.number_input(
             "cantidad", min_value=0, value=int(prenda_actual["cantidad"]), step=1
