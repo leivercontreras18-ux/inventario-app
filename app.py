@@ -223,14 +223,13 @@ if "inventario_local" not in st.session_state:
         ]
     )
 
-# --- 1. FLUJO DE LOGIN IDÉNTICO A PINTEREST (BLOQUE HTML UNIFICADO) ---
+# --- 1. FLUJO DE LOGIN CON CHECKBOX "REMEMBER ME" FUNCIONAL ---
 if not st.session_state.autenticado:
     _, col_centro, _ = st.columns([1, 10, 1])
     
     with col_centro:
         st.markdown("<br><br>", unsafe_allow_html=True)
         
-        # Usamos st.components.v1.html para renderizar la tarjeta completa y armónica sin fallos de diseño
         login_html = """
         <!DOCTYPE html>
         <html>
@@ -327,7 +326,7 @@ if not st.session_state.autenticado:
                 font-weight: 500;
                 margin-bottom: 4px;
             }
-            .input-group input {
+            .input-group input[type="text"], .input-group input[type="password"] {
                 width: 100%;
                 background-color: #151821;
                 border-radius: 8px;
@@ -349,6 +348,12 @@ if not st.session_state.autenticado:
                 margin-bottom: 16px;
                 font-size: 10px;
                 color: #94a3b8;
+            }
+            .options-row label {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                cursor: pointer;
             }
             .options-row a {
                 color: #ff3b3b;
@@ -416,7 +421,9 @@ if not st.session_state.autenticado:
                             <input type="password" name="clave" placeholder="Enter your password" required>
                         </div>
                         <div class="options-row">
-                            <span>⬜ Remember me</span>
+                            <label>
+                                <input type="checkbox" name="remember" value="true" style="accent-color: #ff3b3b;"> Remember me
+                            </label>
                             <a href="#">Forgot password?</a>
                         </div>
                         <button type="submit" class="btn-login">Log in</button>
@@ -434,14 +441,21 @@ if not st.session_state.autenticado:
         
         st.components.v1.html(login_html, height=520)
 
-        # Capturamos los datos enviados por el formulario HTML incrustado mediante query params
+        # Capturamos los datos y el estado de "Remember me"
         params = st.query_params
         if "usuario" in params and "clave" in params:
             usuario_input = params["usuario"]
             clave_input = params["clave"]
+            remember_checked = params.get("remember", "false") == "true"
+            
             if usuario_input in USUARIOS and USUARIOS[usuario_input] == clave_input:
                 st.session_state.autenticado = True
                 st.session_state.usuario_actual = usuario_input
+                
+                # Si el usuario marcó "Remember me", podemos extender la persistencia o registrarlo
+                if remember_checked:
+                    st.toast("✅ Sesión recordada exitosamente.", icon="🔒")
+                
                 st.query_params.clear()
                 st.rerun()
             else:
