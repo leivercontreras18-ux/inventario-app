@@ -112,18 +112,14 @@ def eliminar_prenda(id_prenda):
         ].reset_index(drop=True)
         return True
 
-# --- DISEÑO UI ADAPTADO Y TIPOGRAFÍAS DE LUJO ---
+# --- ESTILOS NÍTIDOS UI ---
 st.markdown(
     """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500;600&display=swap');
 
 .stApp { 
-    background: linear-gradient(rgba(10, 12, 16, 0.78), rgba(10, 12, 16, 0.88)), 
-                url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1920&auto=format&fit=crop');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    background: #090b0e;
     color: #f8fafc !important; 
 }
 
@@ -144,7 +140,7 @@ div[data-baseweb="input"] {
     color: #ffffff !important;
 }
 div[data-baseweb="input"]:focus-within {
-    border-color: #ff4d4d !important;
+    border-color: #ff3b3b !important;
 }
 div[data-baseweb="input"] input {
     color: #ffffff !important;
@@ -222,135 +218,131 @@ if "inventario_local" not in st.session_state:
         ]
     )
 
-# --- 1. FLUJO DE LOGIN EXACTO AL DISEÑO ---
+# --- 1. FLUJO DE LOGIN NÍTIDO Y UNIFICADO ---
 if not st.session_state.autenticado:
-    col1, col2, col3 = st.columns([0.08, 4.84, 0.08])
+    col1, col2, col3 = st.columns([0.05, 4.9, 0.05])
     with col2:
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # Contenedor principal de la tarjeta de inicio de sesión estilo Figma
+        # Contenedor principal que agrupa tanto el banner como el formulario sin sobreposiciones borrosas
         st.markdown(
             """
             <div style="
                 display: flex;
                 flex-direction: row;
-                background: rgba(14, 16, 22, 0.96);
-                backdrop-filter: blur(25px);
-                border-radius: 20px;
-                border: 1px solid rgba(255, 255, 255, 0.06);
-                box-shadow: 0 30px 60px rgba(0,0,0,0.85);
+                background: #12151c;
+                border-radius: 24px;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                box-shadow: 0 25px 50px rgba(0,0,0,0.9);
                 overflow: hidden;
                 width: 100%;
-                max-width: 900px;
+                max-width: 950px;
                 margin: 0 auto;
             ">
-                <!-- Lado Izquierdo: Banner Gráfico (Idéntico a la referencia) -->
+                <!-- Lado Izquierdo: Banner Gráfico de Alta Nitidez -->
                 <div style="
                     flex: 1.1;
-                    background: linear-gradient(rgba(10, 12, 16, 0.3), rgba(10, 12, 16, 0.6)), 
+                    background: linear-gradient(135deg, rgba(15, 18, 25, 0.85) 0%, rgba(20, 15, 30, 0.95) 100%), 
                                 url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
                     background-size: cover;
                     background-position: center;
-                    padding: 80px 40px;
+                    padding: 80px 45px;
                     display: flex;
                     flex-direction: column;
                     justify-content: center;
-                    border-right: 1px solid rgba(255, 255, 255, 0.05);
-                    min-height: 480px;
+                    border-right: 1px solid rgba(255, 255, 255, 0.06);
+                    min-height: 500px;
                 ">
-                    <h1 style="font-family: 'Cinzel', serif; color: #ffffff; font-size: 38px; font-weight: 700; margin-bottom: 8px; line-height: 1.1;">Hello<br>Welcome<span style="color: #ff3b3b;">!</span></h1>
-                    <p style="color: #8c96a5; font-family: 'Montserrat', sans-serif; font-size: 12px; letter-spacing: 0.8px; line-height: 1.5; margin-top: 10px;">Sistema exclusivo de control de inventario boutique Lewin.</p>
+                    <h1 style="font-family: 'Cinzel', serif; color: #ffffff; font-size: 40px; font-weight: 700; margin-bottom: 12px; line-height: 1.1;">HELLO<br>WELCOME<span style="color: #ff3b3b;">!</span></h1>
+                    <p style="color: #94a3b8; font-family: 'Montserrat', sans-serif; font-size: 13px; letter-spacing: 0.8px; line-height: 1.5; margin-top: 10px;">Sistema exclusivo de control de inventario boutique Lewin.</p>
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-        # Superposición de formulario interactivo de Streamlit sobre la mitad derecha de la tarjeta
-        col_dummy, col_form = st.columns([1, 1])
-        with col_form:
-            # Espaciador para alinear exactamente con el panel derecho visual
+        # Estilo para ajustar el formulario de Streamlit de manera limpia sobre el lado derecho
+        st.markdown(
+            """
+            <style>
+            div[data-testid="stForm"] {
+                background: transparent !important;
+                border: none !important;
+                padding: 0px !important;
+                margin-top: -475px !important;
+                margin-left: 50% !important;
+                width: 48% !important;
+                padding-right: 45px !important;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        with st.form("form_login_nitido"):
             st.markdown(
                 """
-                <style>
-                div[data-testid="stForm"] {
-                    background: transparent !important;
-                    border: none !important;
-                    padding: 0px !important;
-                    margin-top: -460px !important;
-                    margin-right: 30px !important;
-                }
-                </style>
+                <div style="font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 20px; color: #ffffff; margin-bottom: 4px;">Lewin Boutique</div>
+                <div style="display: flex; gap: 15px; margin-bottom: 22px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">
+                    <span style="color: #ff3b3b; font-size: 12px; font-weight: 600; border-bottom: 2px solid #ff3b3b; padding-bottom: 8px; margin-bottom: -9px;">Log in</span>
+                    <span style="color: #64748b; font-size: 12px; font-weight: 500;">Sign Up</span>
+                </div>
                 """,
                 unsafe_allow_html=True,
             )
 
-            with st.form("form_login_exacto"):
-                st.markdown(
-                    """
-                    <div style="font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 18px; color: #ffffff; margin-bottom: 2px;">Lewin Boutique</div>
-                    <div style="display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">
-                        <span style="color: #ff3b3b; font-size: 12px; font-weight: 600; border-bottom: 2px solid #ff3b3b; padding-bottom: 8px; margin-bottom: -9px;">Log in</span>
-                        <span style="color: #64748b; font-size: 12px; font-weight: 500;">Sign Up</span>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
+            st.markdown(
+                "<p style='color: #94a3b8; font-size: 11px; font-weight: 500; margin-bottom: 4px;'>Email Address</p>",
+                unsafe_allow_html=True,
+            )
+            usuario_input = st.text_input(
+                "Usuario",
+                placeholder="Enter your email address",
+                label_visibility="collapsed",
+            )
 
-                st.markdown(
-                    "<p style='color: #8c96a5; font-size: 11px; font-weight: 500; margin-bottom: 4px;'>Email Address</p>",
-                    unsafe_allow_html=True,
-                )
-                usuario_input = st.text_input(
-                    "Usuario",
-                    placeholder="Enter your email address",
-                    label_visibility="collapsed",
-                )
+            st.markdown(
+                "<p style='color: #94a3b8; font-size: 11px; font-weight: 500; margin-bottom: 4px; margin-top: 12px;'>Password</p>",
+                unsafe_allow_html=True,
+            )
+            clave_input = st.text_input(
+                "Contraseña",
+                type="password",
+                placeholder="Enter your password",
+                label_visibility="collapsed",
+            )
 
-                st.markdown(
-                    "<p style='color: #8c96a5; font-size: 11px; font-weight: 500; margin-bottom: 4px; margin-top: 10px;'>Password</p>",
-                    unsafe_allow_html=True,
-                )
-                clave_input = st.text_input(
-                    "Contraseña",
-                    type="password",
-                    placeholder="Enter your password",
-                    label_visibility="collapsed",
-                )
+            st.markdown(
+                "<div style='display: flex; justify-content: space-between; align-items: center; margin-top: 8px; margin-bottom: 18px;'>"
+                "<span style='color: #94a3b8; font-size: 11px;'>⬜ Remember me</span>"
+                "<a style='color: #ff3b3b; font-size: 11px; text-decoration: none;' href='#'>Forgot password?</a>"
+                "</div>",
+                unsafe_allow_html=True,
+            )
 
-                st.markdown(
-                    "<div style='display: flex; justify-content: space-between; align-items: center; margin-top: 6px; margin-bottom: 15px;'>"
-                    "<span style='color: #8c96a5; font-size: 10px;'>⬜ Remember me</span>"
-                    "<a style='color: #ff3b3b; font-size: 10px; text-decoration: none;' href='#'>Forgot password?</a>"
-                    "</div>",
-                    unsafe_allow_html=True,
-                )
+            boton_enviar = st.form_submit_button("Log in", use_container_width=True)
 
-                boton_enviar = st.form_submit_button(
-                    "Log in", use_container_width=True
-                )
+            st.markdown(
+                """
+                <div style="text-align: center; color: #64748b; font-size: 11px; margin: 14px 0;">or</div>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <div style="background: #1a1e29; border: 1px solid rgba(255,255,255,0.08); padding: 9px 16px; border-radius: 8px; font-size: 11px; color: #ffffff; text-align: center; flex: 1;">🌐 Google</div>
+                    <div style="background: #1a1e29; border: 1px solid rgba(255,255,255,0.08); padding: 9px 16px; border-radius: 8px; font-size: 11px; color: #ffffff; text-align: center; flex: 1;">🍎 Apple</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
-                st.markdown(
-                    """
-                    <div style="text-align: center; color: #64748b; font-size: 11px; margin: 12px 0;">or</div>
-                    <div style="display: flex; gap: 10px; justify-content: center;">
-                        <div style="background: #151821; border: 1px solid rgba(255,255,255,0.08); padding: 8px 16px; border-radius: 8px; font-size: 11px; color: #ffffff; text-align: center; flex: 1;">🌐 Google</div>
-                        <div style="background: #151821; border: 1px solid rgba(255,255,255,0.08); padding: 8px 16px; border-radius: 8px; font-size: 11px; color: #ffffff; text-align: center; flex: 1;">🍎 Apple</div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-
-                if boton_enviar:
-                    if (
-                        usuario_input in USUARIOS
-                        and USUARIOS[usuario_input] == clave_input
-                    ):
-                        st.session_state.autenticado = True
-                        st.session_state.usuario_actual = usuario_input
-                        st.rerun()
-                    else:
-                        st.error("⚠️ Usuario o contraseña incorrectos.")
+            if boton_enviar:
+                if (
+                    usuario_input in USUARIOS
+                    and USUARIOS[usuario_input] == clave_input
+                ):
+                    st.session_state.autenticado = True
+                    st.session_state.usuario_actual = usuario_input
+                    st.rerun()
+                else:
+                    st.error("⚠️ Usuario o contraseña incorrectos.")
 
     st.stop()
 
