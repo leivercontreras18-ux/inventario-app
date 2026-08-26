@@ -79,7 +79,8 @@ if not st.session_state.autenticado:
   with col2:
     st.markdown("<br>", unsafe_allow_html=True)
     
-    st.image("WhatsApp Image 2026-08-25 at 9.32.52 PM.jpeg", width=140)
+    # Aquí se carga tu nuevo logo actualizado
+    st.image("1787708461873.png", width=140)
 
     st.markdown(
         """
