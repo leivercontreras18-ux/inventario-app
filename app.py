@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(
-    page_title="Essence // Inventario Boutique", page_icon="👕", layout="wide"
+    page_title="Lewin // Inventario Boutique", page_icon="👕", layout="wide"
 )
 
 # --- DISEÑO UI ---
@@ -71,20 +71,22 @@ if not st.session_state.autenticado:
   with col2:
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # Tarjeta única que contiene tanto la imagen (por ruta de archivo o variable) como los textos en orden perfecto
+    # Renderizamos la imagen nativamente con Streamlit para evitar problemas de ruta HTML y luego el cuadro de texto actualizado
+    st.image("WhatsApp Image 2026-08-25 at 9.32.52 PM.jpeg", width=140)
+
     st.markdown(
         """
             <div style="
                 background: linear-gradient(145deg, #18181b 0%, #09090b 100%); 
-                padding: 30px 20px; 
+                padding: 25px 20px; 
                 border-radius: 20px; 
                 border: 1px solid #27272a; 
                 text-align: center;
                 box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+                margin-top: 10px;
                 margin-bottom: 20px;
             ">
-                <img src="app/static/WhatsApp Image 2026-08-25 at 9.32.52 PM.jpeg" style="width: 120px; border-radius: 12px; margin-bottom: 15px; display: inline-block;">
-                <h2 style="color: #ffffff; font-weight: 700; font-size: 22px; margin-top: 0px; margin-bottom: 4px; letter-spacing: 1px;">ESSENCE BOUTIQUE</h2>
+                <h2 style="color: #ffffff; font-weight: 700; font-size: 22px; margin-top: 0px; margin-bottom: 4px; letter-spacing: 1px;">LEWIN BOUTIQUE</h2>
                 <p style="color: #a1a1aa; font-size: 9px; text-transform: uppercase; letter-spacing: 3px; font-weight: 600; margin-bottom: 0px;">Sistema Privado de Inventario</p>
             </div>
         """,
@@ -162,7 +164,7 @@ else:
     st.markdown(
         """
             <div class="hero-banner">
-                <div class="hero-title">👕 Panel Principal // Essence</div>
+                <div class="hero-title">👕 Panel Principal // Lewin Boutique</div>
                 <div class="hero-subtitle">Control general de stock y monitoreo en tiempo real.</div>
             </div>
         """,
