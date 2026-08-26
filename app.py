@@ -5,73 +5,91 @@ st.set_page_config(
     page_title="Lewin // Inventario Boutique", page_icon="👕", layout="wide"
 )
 
-# --- DISEÑO UI (ESTILO MINIMALISTA LIMPIO) ---
+# --- DISEÑO UI (ESTILO MODERN BOUTIQUE & GLASSMORPHISM) ---
 st.markdown(
     """
     <style>
     .stApp { 
-        background: linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.7)), 
+        background: linear-gradient(rgba(10, 15, 30, 0.5), rgba(10, 15, 30, 0.8)), 
                     url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1920&auto=format&fit=crop');
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
-        color: #fafafa !important; 
+        color: #f8fafc !important; 
     }
     
-    /* BARRA LATERAL */
+    /* BARRA LATERAL ELEGANTE */
     section[data-testid="stSidebar"] { 
-        width: 190px !important;
-        background-color: rgba(15, 23, 30, 0.9) !important; 
-        border-right: 1px solid rgba(255, 255, 255, 0.08); 
-        backdrop-filter: blur(16px); 
+        width: 240px !important;
+        background: rgba(13, 18, 30, 0.85) !important; 
+        border-right: 1px solid rgba(212, 175, 55, 0.15); 
+        backdrop-filter: blur(20px); 
     }
-    section[data-testid="stSidebar"] * { color: #f4f4f5 !important; }
+    section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
     
     .hero-banner {
-        background: rgba(24, 24, 27, 0.75);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.1); 
+        background: rgba(18, 24, 38, 0.7);
+        backdrop-filter: blur(14px);
+        border: 1px solid rgba(255, 255, 255, 0.08); 
         padding: 35px; border-radius: 20px;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6); margin-bottom: 30px;
     }
     .hero-title { font-size: 34px; font-weight: 700; color: #ffffff !important; margin-bottom: 8px; }
-    .hero-subtitle { font-size: 15px; color: #a1a1aa !important; }
+    .hero-subtitle { font-size: 15px; color: #94a3b8 !important; }
+    
     .metric-card {
-        background: rgba(24, 24, 27, 0.75); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(18, 24, 38, 0.7); 
+        backdrop-filter: blur(12px); 
+        border: 1px solid rgba(255, 255, 255, 0.08);
         padding: 24px; border-radius: 16px; text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
     }
     .metric-value { font-size: 36px; font-weight: 800; color: #d4af37 !important; margin-top: 8px; }
-    .metric-label { font-size: 11px; color: #71717a !important; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
+    .metric-label { font-size: 11px; color: #94a3b8 !important; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
     
-    /* USUARIO */
-    .user-badge { 
-        background: rgba(255, 255, 255, 0.04); 
-        padding: 10px 12px; 
-        border-radius: 12px; 
-        border: 1px solid rgba(255, 255, 255, 0.08); 
-        margin-bottom: 12px; 
-        text-align: center;
+    /* TARJETA DE USUARIO MINIMALISTA */
+    .user-profile { 
+        background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(255, 255, 255, 0.02)); 
+        padding: 14px 16px; 
+        border-radius: 14px; 
+        border: 1px solid rgba(212, 175, 55, 0.3); 
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
     }
-    .user-status-title { font-size: 7px; color: #71717a; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 2px; }
-    .user-name { font-size: 14px; font-weight: 600; color: #fafafa; }
+    .user-avatar {
+        width: 36px; height: 36px;
+        background: #d4af37;
+        color: #0d121e;
+        font-weight: 800;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 15px;
+        box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+    }
+    .user-info-title { font-size: 9px; color: #d4af37; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+    .user-info-name { font-size: 14px; font-weight: 600; color: #ffffff; }
 
-    /* BOTONES DE NAVEGACIÓN */
+    /* BOTONES LATERALES ESTILO PASTILLA */
     .stSidebar .stButton>button {
-        background: rgba(255, 255, 255, 0.03) !important; 
-        color: #d4d4d8 !important;
+        background: transparent !important; 
+        color: #cbd5e1 !important;
         font-weight: 500; 
         font-size: 13px;
-        border-radius: 10px; 
-        border: 1px solid rgba(255, 255, 255, 0.06) !important; 
-        padding: 8px 12px;
+        border-radius: 12px; 
+        border: 1px solid transparent !important; 
+        padding: 10px 14px;
         text-align: left;
-        margin-bottom: 4px;
-        transition: all 0.2s ease;
+        margin-bottom: 6px;
+        width: 100%;
+        transition: all 0.25s ease;
     }
     .stSidebar .stButton>button:hover { 
-        background: rgba(56, 189, 248, 0.12) !important; 
-        color: #38bdf8 !important;
-        border-color: rgba(56, 189, 248, 0.3) !important;
+        background: rgba(255, 255, 255, 0.06) !important; 
+        color: #ffffff !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        transform: translateX(4px);
     }
     </style>
 """,
@@ -112,23 +130,23 @@ if not st.session_state.autenticado:
       st.markdown(
           """
             <div style="
-                background: rgba(18, 24, 38, 0.65); 
+                background: rgba(18, 24, 38, 0.7); 
                 backdrop-filter: blur(16px);
                 padding: 45px 30px; 
                 border-radius: 24px; 
-                border: 1px solid rgba(255, 255, 255, 0.12); 
+                border: 1px solid rgba(212, 175, 55, 0.2); 
                 text-align: center;
                 box-shadow: 0 25px 50px rgba(0,0,0,0.6);
             ">
                 <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 15px;">
                     <div style="
                         width: 70px; height: 70px; 
-                        background: rgba(255, 255, 255, 0.1); 
-                        border: 1px solid rgba(255, 255, 255, 0.2);
+                        background: rgba(212, 175, 55, 0.1); 
+                        border: 1px solid rgba(212, 175, 55, 0.4);
                         border-radius: 50%; 
                         display: flex; align-items: center; justify-content: center;
-                        font-size: 36px; font-weight: 900; color: #38bdf8;
-                        box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
+                        font-size: 36px; font-weight: 900; color: #d4af37;
+                        box-shadow: 0 0 25px rgba(212, 175, 55, 0.3);
                     ">
                         L
                     </div>
@@ -136,7 +154,7 @@ if not st.session_state.autenticado:
                 <div style="color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: 5px; margin-bottom: 4px;">
                     LEWIN
                 </div>
-                <div style="color: #38bdf8; font-size: 14px; text-transform: uppercase; letter-spacing: 4px; font-weight: 600; margin-bottom: 10px;">
+                <div style="color: #d4af37; font-size: 14px; text-transform: uppercase; letter-spacing: 4px; font-weight: 600; margin-bottom: 10px;">
                     Boutique
                 </div>
                 <div style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 2px;">
@@ -159,11 +177,11 @@ if not st.session_state.autenticado:
       st.markdown(
           """
             <div style="
-                background: rgba(18, 24, 38, 0.6); 
+                background: rgba(18, 24, 38, 0.7); 
                 backdrop-filter: blur(16px);
                 padding: 30px 25px 10px 25px; 
                 border-radius: 24px 24px 0px 0px; 
-                border: 1px solid rgba(255, 255, 255, 0.12); 
+                border: 1px solid rgba(212, 175, 55, 0.2); 
                 border-bottom: none;
                 text-align: center;
                 box-shadow: 0 25px 50px rgba(0,0,0,0.5);
@@ -233,21 +251,26 @@ if not st.session_state.autenticado:
 # --- 2. FLUJO PRINCIPAL CUANDO YA ESTÁ AUTENTICADO ---
 else:
   usuario_formateado = st.session_state.usuario_actual.capitalize()
+  inicial_usuario = usuario_formateado[0]
 
-  # BARRA LATERAL LIMPIA
+  # BARRA LATERAL RENOVADA
   st.sidebar.markdown(
       f"""
-        <div class="user-badge">
-            <div class="user-status-title">🟢 Activo</div>
-            <div class="user-name">{usuario_formateado}</div>
+        <div class="user-profile">
+            <div class="user-avatar">{inicial_usuario}</div>
+            <div>
+                <div class="user-info-title">● Sesión Activa</div>
+                <div class="user-info-name">{usuario_formateado}</div>
+            </div>
         </div>
     """,
       unsafe_allow_html=True,
   )
 
   st.sidebar.markdown(
-      "<p style='font-size:10px; color:#71717a; text-transform:uppercase;"
-      " letter-spacing:1px; margin: 8px 0 4px 2px;'>Navegación</p>",
+      "<p style='font-size:10px; color:#64748b; text-transform:uppercase;"
+      " letter-spacing:1.5px; font-weight:700; margin: 12px 0 6px 4px;'>Menú"
+      " Principal</p>",
       unsafe_allow_html=True,
   )
 
@@ -255,7 +278,7 @@ else:
     st.session_state.menu_activo = "existencias"
     st.rerun()
 
-  if st.sidebar.button("➕ Registrar", use_container_width=True):
+  if st.sidebar.button("➕ Registrar Prenda", use_container_width=True):
     st.session_state.menu_activo = "registrar"
     st.rerun()
 
@@ -264,7 +287,7 @@ else:
     st.rerun()
 
   st.sidebar.markdown(
-      "<hr style='margin: 15px 0; border-color: rgba(255,255,255,0.06);'>"
+      "<hr style='margin: 25px 0 15px 0; border-color: rgba(255,255,255,0.06);'>"
       "",
       unsafe_allow_html=True,
   )
