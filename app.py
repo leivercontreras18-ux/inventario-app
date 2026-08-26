@@ -252,7 +252,6 @@ if "inventario_local" not in st.session_state:
         ]
     )
 
-# Logotipo estilizado con tipografía refinada (Cinzel + Montserrat)
 LOGO_HTML = """
 <div style="text-align: center; margin-bottom: 12px;">
     <svg width="68" height="68" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0px 6px 10px rgba(0,0,0,0.6)); margin-bottom: 4px;">
