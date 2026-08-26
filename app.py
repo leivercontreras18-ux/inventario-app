@@ -69,15 +69,15 @@ if "inventario" not in st.session_state:
 if not st.session_state.autenticado:
   col1, col2, col3 = st.columns([1, 1.3, 1])
   with col2:
-    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
     
-    # Contenedor principal de bienvenida
+    # Contenedor con el logo centrado y bien proporcionado
     with st.container():
         st.markdown(
             """
                 <div style="
                     background: linear-gradient(145deg, #18181b 0%, #09090b 100%); 
-                    padding: 45px; 
+                    padding: 35px 25px; 
                     border-radius: 24px; 
                     border: 1px solid #27272a; 
                     text-align: center;
@@ -87,13 +87,13 @@ if not st.session_state.autenticado:
             unsafe_allow_html=True,
         )
         
-        # AQUÍ INSERTAMOS TU LOGO CON EL TAMAÑO IDEAL
-        st.image("WhatsApp Image 2026-08-25 at 9.32.52 PM.jpeg", width=110)
+        # Logo ajustado de tamaño para que encaje perfecto
+        st.image("WhatsApp Image 2026-08-25 at 9.32.52 PM.jpeg", width=140)
         
         st.markdown(
             """
-                    <h2 style="color: #ffffff; font-weight: 700; font-size: 26px; margin-top: 15px; margin-bottom: 6px; letter-spacing: 1px;">ESSENCE BOUTIQUE</h2>
-                    <p style="color: #a1a1aa; font-size: 11px; text-transform: uppercase; letter-spacing: 4px; font-weight: 600; margin-bottom: 25px;">Sistema Privado de Inventario</p>
+                    <h2 style="color: #ffffff; font-weight: 700; font-size: 24px; margin-top: 15px; margin-bottom: 4px; letter-spacing: 1px;">ESSENCE BOUTIQUE</h2>
+                    <p style="color: #a1a1aa; font-size: 10px; text-transform: uppercase; letter-spacing: 3px; font-weight: 600; margin-bottom: 0px;">Sistema Privado de Inventario</p>
                 </div>
             """,
             unsafe_allow_html=True,
