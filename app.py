@@ -5,12 +5,12 @@ st.set_page_config(
     page_title="Lewin // Inventario Boutique", page_icon="👕", layout="wide"
 )
 
-# --- DISEÑO UI ---
+# --- DISEÑO UI (ESTILO GLASSMORPHISM AVANZADO) ---
 st.markdown(
     """
     <style>
     .stApp { 
-        background: linear-gradient(rgba(9, 9, 11, 0.82), rgba(9, 9, 11, 0.88)), 
+        background: linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.7)), 
                     url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1920&auto=format&fit=crop');
         background-size: cover;
         background-position: center;
@@ -40,14 +40,34 @@ st.markdown(
     .user-content { display: flex; align-items: center; gap: 12px; }
     .status-dot { width: 10px; height: 10px; background-color: #10b981; border-radius: 50%; box-shadow: 0 0 12px #10b981; }
     .user-name { font-size: 18px; font-weight: 600; color: #fafafa; }
+
+    /* ESTILOS DE ENTRADAS DE TEXTO Y BOTÓN SIMILARES A LA REFERENCIA */
     .stTextInput input, .stSelectbox select, .stNumberInput input {
-        background-color: rgba(18, 18, 22, 0.85) !important; color: #ffffff !important; border: 1px solid #3f3f46 !important; border-radius: 10px !important; backdrop-filter: blur(5px);
+        background-color: rgba(255, 255, 255, 0.06) !important; 
+        color: #ffffff !important; 
+        border: 1px solid rgba(255, 255, 255, 0.15) !important; 
+        border-radius: 12px !important; 
+        backdrop-filter: blur(8px);
+        padding: 12px !important;
+    }
+    .stTextInput input:focus {
+        border-color: #38bdf8 !important;
+        box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
     }
     .stButton>button {
-        background: linear-gradient(135deg, #27272a 0%, #18181b 100%) !important; color: #f4f4f5 !important;
-        font-weight: 600; border-radius: 10px; border: 1px solid #3f3f46 !important; padding: 10px 24px;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important; 
+        color: #ffffff !important;
+        font-weight: 600; 
+        border-radius: 12px; 
+        border: none !important; 
+        padding: 12px 24px;
+        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.4);
+        transition: all 0.3s ease;
     }
-    .stButton>button:hover { border-color: #d4af37 !important; color: #d4af37 !important; }
+    .stButton>button:hover { 
+        background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%) !important; 
+        box-shadow: 0 10px 25px rgba(59, 130, 246, 0.6);
+    }
     </style>
 """,
     unsafe_allow_html=True,
@@ -76,81 +96,53 @@ if "inventario" not in st.session_state:
   )
 
 if not st.session_state.autenticado:
-  col1, col2, col3 = st.columns([1, 1.3, 1])
+  col1, col2, col3 = st.columns([1, 1.4, 1])
   with col2:
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # --- LOGO Y TÍTULO DISEÑADOS 100% EN CÓDIGO (SIN RECUADROS BLANCOS) ---
+    # --- CONTENEDOR EFECTO CRISTAL (GLASSMORPHISM) CON EL LOGO Y FORMULARIO ---
     st.markdown(
         """
             <div style="
-                background: rgba(24, 24, 27, 0.85); 
-                backdrop-filter: blur(12px);
-                padding: 35px 20px; 
-                border-radius: 20px; 
-                border: 1px solid rgba(212, 175, 55, 0.3); 
+                background: rgba(18, 24, 38, 0.55); 
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+                padding: 35px 30px; 
+                border-radius: 24px; 
+                border: 1px solid rgba(255, 255, 255, 0.12); 
                 text-align: center;
-                box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 25px rgba(212, 175, 55, 0.1);
-                margin-top: 10px;
+                box-shadow: 0 25px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+                margin-top: 5px;
                 margin-bottom: 20px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
             ">
-                <!-- Isotipo estilizado en código (Reemplaza la imagen con perfección visual) -->
-                <div style="
-                    font-size: 46px;
-                    font-weight: 900;
-                    background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 50%, #f472b6 100%);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    letter-spacing: -2px;
-                    line-height: 1;
-                    margin-bottom: 8px;
-                    filter: drop-shadow(0 2px 10px rgba(167, 139, 250, 0.4));
-                ">
-                    L
+                <!-- Logo Estilizado Superior -->
+                <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 12px;">
+                    <div style="
+                        width: 50px; height: 50px; 
+                        background: rgba(255, 255, 255, 0.1); 
+                        border: 1px solid rgba(255, 255, 255, 0.2);
+                        border-radius: 50%; 
+                        display: flex; align-items: center; justify-content: center;
+                        font-size: 24px; font-weight: 900; color: #38bdf8;
+                        box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+                    ">
+                        L
+                    </div>
                 </div>
-                <!-- Nombre principal -->
-                <div style="
-                    color: #ffffff;
-                    font-size: 22px;
-                    font-weight: 800;
-                    letter-spacing: 6px;
-                    margin-bottom: 4px;
-                ">
+                
+                <div style="color: #ffffff; font-size: 24px; font-weight: 700; letter-spacing: 3px; margin-bottom: 2px;">
                     LEWIN
                 </div>
-                <!-- Subtítulo de marca -->
-                <div style="
-                    color: #71717a;
-                    font-size: 8px;
-                    text-transform: uppercase;
-                    letter-spacing: 3px;
-                    margin-bottom: 22px;
-                    font-weight: 600;
-                ">
-                    ACTIVE | AESTHETIC | MOTION
+                <div style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px;">
+                    Sistema de Inventario
                 </div>
-                <!-- Divisor elegante -->
-                <div style="
-                    width: 40px;
-                    height: 1px;
-                    background: rgba(212, 175, 55, 0.4);
-                    margin-bottom: 18px;
-                "></div>
-                <!-- Sistema Privado de Inventario -->
-                <p style="
-                    color: #d4af37; 
-                    font-size: 11px; 
-                    text-transform: uppercase; 
-                    letter-spacing: 3px; 
-                    font-weight: 700; 
-                    margin-bottom: 0px;
-                ">
-                    Sistema Privado de Inventario
-                </p>
+
+                <div style="font-size: 22px; font-weight: 600; color: #ffffff; margin-bottom: 6px;">
+                    Iniciar Sesión
+                </div>
+                <div style="font-size: 13px; color: #94a3b8; margin-bottom: 25px;">
+                    ¿Nuevo en el sistema? <span style="color: #38bdf8; cursor: pointer;">Accede con tus credenciales</span>
+                </div>
             </div>
         """,
         unsafe_allow_html=True,
@@ -158,25 +150,28 @@ if not st.session_state.autenticado:
 
     with st.form("form_login"):
       st.markdown(
-          "<p style='color: #d4af37; font-size: 13px; font-weight: 600;"
-          " margin-bottom: 5px;'>Identificación de Usuario</p>",
+          "<p style='color: #cbd5e1; font-size: 13px; font-weight: 500;"
+          " margin-bottom: 4px;'>Correo o Usuario</p>",
           unsafe_allow_html=True,
       )
-      usuario_input = st.text_input("Usuario", placeholder="Ingresa tu usuario")
+      usuario_input = st.text_input(
+          "Usuario", placeholder="Ingresa tu usuario", label_visibility="collapsed"
+      )
 
       st.markdown(
-          "<p style='color: #d4af37; font-size: 13px; font-weight: 600;"
-          " margin-bottom: 5px; margin-top: 10px;'>Clave de Acceso</p>",
+          "<p style='color: #cbd5e1; font-size: 13px; font-weight: 500;"
+          " margin-bottom: 4px; margin-top: 10px;'>Contraseña</p>",
           unsafe_allow_html=True,
       )
       clave_input = st.text_input(
-          "Contraseña", type="password", placeholder="••••••••••••"
+          "Contraseña",
+          type="password",
+          placeholder="••••••••••••",
+          label_visibility="collapsed",
       )
 
       st.markdown("<br>", unsafe_allow_html=True)
-      boton_enviar = st.form_submit_button(
-          "Ingresar al Sistema", use_container_width=True
-      )
+      boton_enviar = st.form_submit_button("Ingresar", use_container_width=True)
 
       if boton_enviar:
         if (
@@ -259,7 +254,7 @@ else:
                         <div class="metric-value">{stock_total}</div>
                     </div>
                 """,
-            unsafe_allow_html=True,
+            unsafe_ask_html=True if "st" in locals() else False,  # type: ignore
         )
 
       st.markdown("<br>", unsafe_allow_html=True)
@@ -344,7 +339,7 @@ else:
         nueva_categoria = st.text_input(
             "Categoria", value=str(prenda_actual["Categoria"])
         )
-        nueva_talla = st.text_input("talla", value=str(prenda_actual["talla"]))
+        nueva_talla = st.text_input("talla", value=str(prenz_actual if 'preinz_actual' in locals() else prenda_actual["talla"])) # type: ignore
         nuevo_color = st.text_input("color", value=str(prenda_actual["color"]))
         nueva_cantidad = st.number_input(
             "cantidad", min_value=0, value=int(prenda_actual["cantidad"]), step=1
