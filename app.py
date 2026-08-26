@@ -5,7 +5,7 @@ st.set_page_config(
     page_title="Lewin // Inventario Boutique", page_icon="👕", layout="wide"
 )
 
-# --- DISEÑO UI (ESTILO MODERN BOUTIQUE & MINIMALISTA) ---
+# --- DISEÑO UI (ESTILO MODERN BOUTIQUE & GLASSMORPHISM LIMPIO) ---
 st.markdown(
     """
     <style>
@@ -18,7 +18,7 @@ st.markdown(
         color: #f8fafc !important; 
     }
     
-    /* BARRA LATERAL ELEGANTE */
+    /* BARRA LATERAL ACTUAL (CONSERVADA) */
     section[data-testid="stSidebar"] { 
         width: 240px !important;
         background: rgba(13, 18, 30, 0.85) !important; 
@@ -27,26 +27,30 @@ st.markdown(
     }
     section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
     
-    /* ENCABEZADO LIMPIO SIN BLOQUE GRANDE */
+    /* ENCABEZADO LIMPIO */
     .page-header {
         margin-bottom: 25px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        padding-bottom: 15px;
+        padding-bottom: 10px;
     }
-    .page-title { font-size: 28px; font-weight: 700; color: #ffffff !important; letter-spacing: 0.5px; }
+    .page-title { font-size: 32px; font-weight: 700; color: #ffffff !important; letter-spacing: 0.5px; }
     .page-subtitle { font-size: 14px; color: #94a3b8 !important; margin-top: 4px; }
     
-    /* TARJETAS DE MÉTRICAS SUTILES */
-    .metric-card {
-        background: rgba(18, 24, 38, 0.4); 
-        backdrop-filter: blur(12px); 
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        padding: 20px; border-radius: 14px; text-align: center;
-    }
-    .metric-value { font-size: 32px; font-weight: 800; color: #d4af37 !important; margin-top: 6px; }
-    .metric-label { font-size: 10px; color: #94a3b8 !important; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
+    /* SECCIONES Y TARJETAS FLUIDAS */
+    .section-title { font-size: 18px; font-weight: 600; color: #ffffff; margin-bottom: 4px; }
+    .section-subtitle { font-size: 12px; color: #94a3b8; margin-bottom: 15px; }
     
-    /* TARJETA DE USUARIO MINIMALISTA */
+    .metric-card {
+        background: rgba(18, 24, 38, 0.5); 
+        backdrop-filter: blur(12px); 
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 20px; border-radius: 16px; text-align: left;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        height: 100%;
+    }
+    .metric-value { font-size: 32px; font-weight: 800; color: #d4af37 !important; margin-top: 8px; }
+    .metric-label { font-size: 11px; color: #94a3b8 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+    
+    /* TARJETA DE USUARIO EN BARRA LATERAL */
     .user-profile { 
         background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(255, 255, 255, 0.02)); 
         padding: 14px 16px; 
@@ -91,13 +95,13 @@ st.markdown(
         transform: translateX(4px);
     }
 
-    /* MENSAJE DE ESTADO LIMPIO */
+    /* ESTILIZACIÓN DE TABLAS Y MENSAJES */
     div.stAlert {
-        background: rgba(18, 24, 38, 0.4) !important;
+        background: rgba(18, 24, 38, 0.5) !important;
         backdrop-filter: blur(10px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
         color: #cbd5e1 !important;
-        border-radius: 12px !important;
+        border-radius: 14px !important;
     }
     div.stAlert * { color: #cbd5e1 !important; }
     </style>
@@ -258,6 +262,7 @@ else:
   usuario_formateado = st.session_state.usuario_actual.capitalize()
   inicial_usuario = usuario_formateado[0]
 
+  # BARRA LATERAL ACTUAL MANTENIDA EXACTAMENTE IGUAL
   st.sidebar.markdown(
       f"""
         <div class="user-profile">
@@ -322,12 +327,20 @@ else:
           df["cantidad"].sum() if "cantidad" in df.columns else 0
       )
 
+      st.markdown(
+          """
+                <div class="section-title">Visión General del Inventario</div>
+                <div class="section-subtitle">Resumen general de métricas y existencias.</div>
+            """,
+          unsafe_allow_html=True,
+      )
+
       col1, col2 = st.columns(2)
       with col1:
         st.markdown(
             f"""
                     <div class="metric-card">
-                        <div class="metric-label">Modelos Registrados</div>
+                        <div class="metric-label">Total de Prendas / Modelos</div>
                         <div class="metric-value">{total_prendas}</div>
                     </div>
                 """,
@@ -337,7 +350,7 @@ else:
         st.markdown(
             f"""
                     <div class="metric-card">
-                        <div class="metric-label">Total en Stock</div>
+                        <div class="metric-label">Stock Total Acumulado</div>
                         <div class="metric-value">{stock_total}</div>
                     </div>
                 """,
@@ -345,17 +358,51 @@ else:
         )
 
       st.markdown("<br>", unsafe_allow_html=True)
-      st.subheader("📋 Registro Actual de Inventario")
+      st.markdown(
+          """
+                <div class="section-title">📋 Registro Actual de Inventario</div>
+            """,
+          unsafe_allow_html=True,
+      )
       st.dataframe(df, use_container_width=True)
     else:
-      st.info("No hay prendas registradas todavía.")
+      st.markdown(
+          """
+                <div class="section-title">Visión General del Inventario</div>
+                <div class="section-subtitle">Resumen general de métricas y existencias.</div>
+            """,
+          unsafe_allow_html=True,
+      )
+      col1, col2 = st.columns(2)
+      with col1:
+        st.markdown(
+            """
+                    <div class="metric-card">
+                        <div class="metric-label">Total de Prendas / Modelos</div>
+                        <div class="metric-value">0</div>
+                    </div>
+                """,
+            unsafe_allow_html=True,
+        )
+      with col2:
+        st.markdown(
+            """
+                    <div class="metric-card">
+                        <div class="metric-label">Stock Total Acumulado</div>
+                        <div class="metric-value">0</div>
+                    </div>
+                """,
+            unsafe_allow_html=True,
+        )
+      st.markdown("<br>", unsafe_allow_html=True)
+      st.info("No hay prendas registradas todavía en el sistema.")
 
   elif menu == "registrar":
     st.markdown(
         """
             <div class="page-header">
                 <div class="page-title">Registro de Nuevas Prendas</div>
-                <div class="page-subtitle">Añade artículos al catálogo local.</div>
+                <div class="page-subtitle">Añade artículos al catálogo local de la boutique.</div>
             </div>
         """,
         unsafe_allow_html=True,
