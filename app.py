@@ -223,7 +223,15 @@ if "inventario_local" not in st.session_state:
         ]
     )
 
-# --- 1. FLUJO DE LOGIN ROBUSTO Y FUNCIONAL ---
+# Comprobamos si hay una sesión guardada en los parámetros de la URL (Remember me)
+query_params = st.query_params
+if not st.session_state.autenticado and "recuerdame_user" in query_params:
+    saved_user = query_params["recuerdame_user"]
+    if saved_user in USUARIOS:
+        st.session_state.autenticado = True
+        st.session_state.usuario_actual = saved_user
+
+# --- 1. FLUJO DE LOGIN ---
 if not st.session_state.autenticado:
     _, col_centro, _ = st.columns([1, 1.4, 1])
     
@@ -239,15 +247,20 @@ if not st.session_state.autenticado:
             remember_checked = st.checkbox("Remember me")
             
             if st.button("Log in", use_container_width=True):
-                # Limpiamos espacios por si acaso
                 user_clean = usuario_input.strip().lower()
                 pass_clean = clave_input.strip()
                 
                 if user_clean in USUARIOS and USUARIOS[user_clean] == pass_clean:
                     st.session_state.autenticado = True
                     st.session_state.usuario_actual = user_clean
+                    
+                    # Si activa "Remember me", guardamos el usuario en los query parameters para recordarlo
                     if remember_checked:
-                        st.toast("Sesión recordada correctamente.", icon="🔒")
+                        st.query_params["recuerdame_user"] = user_clean
+                    else:
+                        if "recuerdame_user" in st.query_params:
+                            del st.query_params["recuerdame_user"]
+                            
                     st.rerun()
                 else:
                     st.error("⚠️ Usuario o contraseña incorrectos.")
@@ -297,6 +310,9 @@ else:
     if st.sidebar.button("🚪 Cerrar Sesión", use_container_width=True):
         st.session_state.autenticado = False
         st.session_state.usuario_actual = ""
+        # Al cerrar sesión, limpiamos el parámetro de recuerdo de la URL
+        if "recuerdame_user" in st.query_params:
+            del st.query_params["recuerdame_user"]
         st.rerun()
 
     df = cargar_inventario()
