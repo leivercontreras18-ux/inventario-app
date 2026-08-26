@@ -1,4 +1,3 @@
-import textwrap
 import pandas as pd
 import streamlit as st
 from supabase import create_client
@@ -115,106 +114,115 @@ def eliminar_prenda(id_prenda):
 
 # --- DISEÑO UI ADAPTADO ---
 st.markdown(
-    textwrap.dedent("""
-    <style>
-    .stApp { 
-        background: linear-gradient(rgba(10, 12, 16, 0.78), rgba(10, 12, 16, 0.88)), 
-                    url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1920&auto=format&fit=crop');
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        color: #f8fafc !important; 
-    }
-    
-    header[data-testid="stHeader"] { background: transparent !important; }
-    
-    section[data-testid="stSidebar"] { 
-        width: 240px !important;
-        background: rgba(16, 18, 23, 0.94) !important; 
-        border-right: 1px solid rgba(255, 255, 255, 0.08); 
-        backdrop-filter: blur(25px); 
-    }
-    section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
-    
-    div[data-baseweb="input"] {
-        background-color: #1a1d24 !important;
-        border-radius: 12px !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        color: #ffffff !important;
-    }
-    div[data-baseweb="input"]:focus-within {
-        border-color: #c99846 !important;
-    }
-    div[data-baseweb="input"] input {
-        color: #ffffff !important;
-        font-size: 13px !important;
-    }
-    
-    div.stButton > button, div[data-testid="stFormSubmitButton"] > button {
-        background: linear-gradient(135deg, #2b2e36 0%, #4a3e2c 50%, #8c6d3b 100%) !important;
-        color: #ffffff !important;
-        border-radius: 12px !important;
-        border: 1px solid rgba(201, 152, 70, 0.3) !important;
-        font-weight: 600 !important;
-        padding: 12px 20px !important;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
-        transition: all 0.3s ease !important;
-    }
-    div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
-        background: linear-gradient(135deg, #353945 0%, #5c4d37 50%, #a68247 100%) !important;
-        transform: translateY(-1px) !important;
-    }
+    """
+<style>
+.stApp { 
+    background: linear-gradient(rgba(10, 12, 16, 0.78), rgba(10, 12, 16, 0.88)), 
+                url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1920&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: #f8fafc !important; 
+}
 
-    .page-header { margin-bottom: 25px; padding-bottom: 10px; }
-    .page-title { font-size: 32px; font-weight: 700; color: #ffffff !important; letter-spacing: 0.5px; }
-    .page-subtitle { font-size: 14px; color: #94a3b8 !important; margin-top: 4px; }
-    
-    .section-title { font-size: 18px; font-weight: 600; color: #ffffff; margin-bottom: 4px; }
-    .section-subtitle { font-size: 12px; color: #94a3b8; margin-bottom: 15px; }
-    
-    .metric-card {
-        background: rgba(20, 23, 30, 0.75); 
-        backdrop-filter: blur(20px); 
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        padding: 20px; border-radius: 16px; text-align: left;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-        height: 100%;
-    }
-    .metric-value { font-size: 32px; font-weight: 800; color: #d4af37 !important; margin-top: 8px; }
-    .metric-label { font-size: 11px; color: #94a3b8 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
-    
-    .user-profile { 
-        background: rgba(255, 255, 255, 0.03); 
-        padding: 14px 16px; border-radius: 14px; 
-        border: 1px solid rgba(212, 175, 55, 0.25); margin-bottom: 20px;
-        display: flex; align-items: center; gap: 12px;
-    }
-    .user-avatar {
-        width: 36px; height: 36px; background: #d4af37; color: #0d121e;
-        font-weight: 800; border-radius: 50%; display: flex; align-items: center;
-        justify-content: center; font-size: 15px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
-    }
-    .user-info-title { font-size: 9px; color: #d4af37; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
-    .user-info-name { font-size: 14px; font-weight: 600; color: #ffffff; }
+header[data-testid="stHeader"] { background: transparent !important; }
 
-    .social-btn-container {
-        display: flex;
-        justify-content: center;
-        gap: 16px;
-        margin-top: 18px;
-    }
-    .social-btn {
-        width: 48px;
-        height: 48px;
-        background: #181a20;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    </style>
-"""),
+section[data-testid="stSidebar"] { 
+    width: 240px !important;
+    background: rgba(16, 18, 23, 0.94) !important; 
+    border-right: 1px solid rgba(255, 255, 255, 0.08); 
+    backdrop-filter: blur(25px); 
+}
+section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
+
+div[data-baseweb="input"] {
+    background-color: #1a1d24 !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+}
+div[data-baseweb="input"]:focus-within {
+    border-color: #c99846 !important;
+}
+div[data-baseweb="input"] input {
+    color: #ffffff !important;
+    font-size: 13px !important;
+}
+
+div.stButton > button, div[data-testid="stFormSubmitButton"] > button {
+    background: linear-gradient(135deg, #2b2e36 0%, #4a3e2c 50%, #8c6d3b 100%) !important;
+    color: #ffffff !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(201, 152, 70, 0.3) !important;
+    font-weight: 600 !important;
+    padding: 12px 20px !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
+    transition: all 0.3s ease !important;
+}
+div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
+    background: linear-gradient(135deg, #353945 0%, #5c4d37 50%, #a68247 100%) !important;
+    transform: translateY(-1px) !important;
+}
+
+.page-header { margin-bottom: 25px; padding-bottom: 10px; }
+.page-title { font-size: 32px; font-weight: 700; color: #ffffff !important; letter-spacing: 0.5px; }
+.page-subtitle { font-size: 14px; color: #94a3b8 !important; margin-top: 4px; }
+
+.section-title { font-size: 18px; font-weight: 600; color: #ffffff; margin-bottom: 4px; }
+.section-subtitle { font-size: 12px; color: #94a3b8; margin-bottom: 15px; }
+
+.metric-card {
+    background: rgba(20, 23, 30, 0.75); 
+    backdrop-filter: blur(20px); 
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 20px; border-radius: 16px; text-align: left;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    height: 100%;
+}
+.metric-value { font-size: 32px; font-weight: 800; color: #d4af37 !important; margin-top: 8px; }
+.metric-label { font-size: 11px; color: #94a3b8 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+
+.user-profile { 
+    background: rgba(255, 255, 255, 0.03); 
+    padding: 14px 16px; border-radius: 14px; 
+    border: 1px solid rgba(212, 175, 55, 0.25); margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+}
+.user-avatar {
+    width: 36px; height: 36px; background: #d4af37; color: #0d121e;
+    font-weight: 800; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 15px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+}
+.user-info-title { font-size: 9px; color: #d4af37; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+.user-info-name { font-size: 14px; font-weight: 600; color: #ffffff; }
+
+.card-container {
+    background: rgba(20, 22, 28, 0.88);
+    backdrop-filter: blur(25px);
+    padding: 35px 30px 25px 30px;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    text-align: center;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+}
+.social-btn-container {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 18px;
+}
+.social-btn {
+    width: 48px;
+    height: 48px;
+    background: #181a20;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+""",
     unsafe_allow_html=True,
 )
 
@@ -250,70 +258,66 @@ if not st.session_state.autenticado:
             st.markdown("<br>", unsafe_allow_html=True)
             st.markdown(
                 """
-                <div style="text-align: center; margin-bottom: 15px;">
-                    <div style="
-                        font-size: 58px; font-weight: 900; letter-spacing: -2px;
-                        background: linear-gradient(180deg, #ffffff 0%, #a1a8b8 40%, #4a505e 100%);
-                        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-                        filter: drop-shadow(0px 8px 12px rgba(0,0,0,0.9));
-                        font-family: 'Segoe UI', Roboto, sans-serif; display: inline-block;
-                    ">ED</div>
-                </div>
-                """,
+<div style="text-align: center; margin-bottom: 15px;">
+    <div style="
+        font-size: 58px; font-weight: 900; letter-spacing: -2px;
+        background: linear-gradient(180deg, #ffffff 0%, #a1a8b8 40%, #4a505e 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        filter: drop-shadow(0px 8px 12px rgba(0,0,0,0.9));
+        font-family: 'Segoe UI', Roboto, sans-serif; display: inline-block;
+    ">ED</div>
+</div>
+""",
                 unsafe_allow_html=True,
             )
 
             st.markdown(
-                textwrap.dedent("""
-                <div style="
-                    background: rgba(20, 22, 28, 0.88); backdrop-filter: blur(25px);
-                    padding: 35px 30px 25px 30px; border-radius: 22px; 
-                    border: 1px solid rgba(255, 255, 255, 0.08); text-align: center;
-                    box-shadow: 0 30px 60px rgba(0,0,0,0.8);
-                ">
-                    <div style="color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2px;">
-                        STAND OUT <span style="color: #c99846;">WITHOUT TRYING.</span>
-                    </div>
-
-                    <div style="font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">
-                        Welcome <span style="color: #e0a346;">Lewin</span>
-                    </div>
-                    <div style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 20px;">
-                        Sistema privado de LEWIN BOUTIQUE
-                    </div>
-                """),
+                """
+<div class="card-container">
+    <div style="color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2px;">
+        STAND OUT <span style="color: #c99846;">WITHOUT TRYING.</span>
+    </div>
+    <div style="font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">
+        Welcome <span style="color: #e0a346;">Lewin</span>
+    </div>
+    <div style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 20px;">
+        Sistema privado de LEWIN BOUTIQUE
+    </div>
+</div>
+""",
                 unsafe_allow_html=True,
             )
-            
+
+            st.markdown("<br>", unsafe_allow_html=True)
+
             if st.button("Sign In  →", use_container_width=True):
                 st.session_state.pantalla = "login"
                 st.rerun()
 
             st.markdown(
                 """
-                    <div style="margin-top: 25px; color: #5a6270; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                        <div style="flex:1; height:1px; background: rgba(255,255,255,0.08);"></div>
-                        or continue with
-                        <div style="flex:1; height:1px; background: rgba(255,255,255,0.08);"></div>
-                    </div>
-                    
-                    <div class="social-btn-container">
-                        <div class="social-btn">
-                            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 10.8 0 12.5s.7 2.8 1.9 5.2l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16C3.7 19.7 7.5 22.3 12 22.3z"/></svg>
-                        </div>
-                        <div class="social-btn">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-                        </div>
-                        <div class="social-btn">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="#0077b5"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-                        </div>
-                    </div>
+<div style="margin-top: 25px; color: #5a6270; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+    <div style="flex:1; height:1px; background: rgba(255,255,255,0.08);"></div>
+    or continue with
+    <div style="flex:1; height:1px; background: rgba(255,255,255,0.08);"></div>
+</div>
 
-                    <div style="color: #7a8290; font-size: 12px; margin-top: 15px;">
-                        Don't have an account? <span style="color: #c99846; font-weight: 600; cursor: pointer;">Sign Up</span>
-                    </div>
-                </div>
-                """,
+<div class="social-btn-container">
+    <div class="social-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 10.8 0 12.5s.7 2.8 1.9 5.2l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16C3.7 19.7 7.5 22.3 12 22.3z"/></svg>
+    </div>
+    <div class="social-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+    </div>
+    <div class="social-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#0077b5"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+    </div>
+</div>
+
+<div style="color: #7a8290; font-size: 12px; margin-top: 15px; text-align: center;">
+    Don't have an account? <span style="color: #c99846; font-weight: 600; cursor: pointer;">Sign Up</span>
+</div>
+""",
                 unsafe_allow_html=True,
             )
 
@@ -323,109 +327,93 @@ if not st.session_state.autenticado:
             st.markdown("<br>", unsafe_allow_html=True)
             st.markdown(
                 """
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <div style="
-                        font-size: 58px; font-weight: 900; letter-spacing: -2px;
-                        background: linear-gradient(180deg, #ffffff 0%, #a1a8b8 40%, #4a505e 100%);
-                        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-                        filter: drop-shadow(0px 8px 12px rgba(0,0,0,0.9));
-                        font-family: 'Segoe UI', Roboto, sans-serif; display: inline-block;
-                    ">ED</div>
-                </div>
-                """,
+<div style="text-align: center; margin-bottom: 20px;">
+    <div style="
+        font-size: 58px; font-weight: 900; letter-spacing: -2px;
+        background: linear-gradient(180deg, #ffffff 0%, #a1a8b8 40%, #4a505e 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        filter: drop-shadow(0px 8px 12px rgba(0,0,0,0.9));
+        font-family: 'Segoe UI', Roboto, sans-serif; display: inline-block;
+    ">ED</div>
+</div>
+""",
                 unsafe_allow_html=True,
-            )
-
-        st.markdown(
-            textwrap.dedent("""
-                <div style="
-                    background: rgba(20, 22, 28, 0.88); backdrop-filter: blur(25px);
-                    border-radius: 22px; 
-                    border: 1px solid rgba(255, 255, 255, 0.08); 
-                    box-shadow: 0 30px 60px rgba(0,0,0,0.8);
-                    display: grid; grid-template-columns: 1fr 1.1fr; overflow: hidden;
-                ">
-                    <div style="
-                        background-image: url('https://images.unsplash.com/photo-1549416878-b9ca95e26903?q=80&w=600&auto=format&fit=crop');
-                        background-size: cover; background-position: center;
-                        position: relative;
-                    ">
-                        <div style="
-                            position: absolute; inset: 0;
-                            background: linear-gradient(135deg, rgba(20, 22, 28, 0.6) 0%, rgba(20, 22, 28, 0.92) 100%);
-                        "></div>
-                    </div>
-                    
-                    <div style="padding: 30px 28px 10px 28px; text-align: center;">
-                        <div style="color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2px;">
-                            STAND OUT <span style="color: #c99846;">WITHOUT TRYING.</span>
-                        </div>
-
-                        <div style="font-size: 24px; font-weight: 700; color: #ffffff; margin-bottom: 2px;">
-                            Welcome <span style="color: #e0a346;">Lewin</span>
-                        </div>
-                        <div style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 15px;">
-                            Sistema privado de LEWIN BOUTIQUE
-                        </div>
-            """),
-            unsafe_allow_html=True,
-        )
-
-        with st.form("form_login_tailwind"):
-            st.markdown(
-                "<p style='color: #94a3b8; font-size: 11px; font-weight: 500;"
-                " margin-bottom: 4px; text-align: left;'>✉️ Email Address</p>",
-                unsafe_allow_html=True,
-            )
-            usuario_input = st.text_input(
-                "Usuario",
-                placeholder="Enter your email",
-                label_visibility="collapsed",
             )
 
             st.markdown(
-                "<p style='color: #94a3b8; font-size: 11px; font-weight: 500;"
-                " margin-bottom: 4px; margin-top: 10px; text-align: left;'>🔒 Password</p>",
+                """
+<div class="card-container">
+    <div style="color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2px;">
+        STAND OUT <span style="color: #c99846;">WITHOUT TRYING.</span>
+    </div>
+
+    <div style="font-size: 24px; font-weight: 700; color: #ffffff; margin-bottom: 2px;">
+        Welcome <span style="color: #e0a346;">Lewin</span>
+    </div>
+    <div style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 15px;">
+        Sistema privado de LEWIN BOUTIQUE
+    </div>
+</div>
+""",
                 unsafe_allow_html=True,
             )
-            clave_input = st.text_input(
-                "Contraseña",
-                type="password",
-                placeholder="Enter your password",
-                label_visibility="collapsed",
-            )
 
-            st.markdown(
-                "<div style='text-align: right; margin-top: -5px; margin-bottom:"
-                " 15px;'><a style='color: #e0a346; font-size: 11px;"
-                " text-decoration: none;' href='#'>Forgot Password?</a></div>",
-                unsafe_allow_html=True,
-            )
+            st.markdown("<br>", unsafe_allow_html=True)
 
-            col_f1, col_f2 = st.columns(2)
-            boton_enviar = col_f1.form_submit_button(
-                "Sign In →", use_container_width=True
-            )
-            boton_volver = col_f2.form_submit_button(
-                "Volver", use_container_width=True
-            )
+            with st.form("form_login_tailwind"):
+                st.markdown(
+                    "<p style='color: #94a3b8; font-size: 11px; font-weight: 500;"
+                    " margin-bottom: 4px; text-align: left;'>✉️ Email Address</p>",
+                    unsafe_allow_html=True,
+                )
+                usuario_input = st.text_input(
+                    "Usuario",
+                    placeholder="Enter your email",
+                    label_visibility="collapsed",
+                )
 
-            if boton_volver:
-                st.session_state.pantalla = "portada"
-                st.rerun()
+                st.markdown(
+                    "<p style='color: #94a3b8; font-size: 11px; font-weight: 500;"
+                    " margin-bottom: 4px; margin-top: 10px; text-align: left;'>🔒 Password</p>",
+                    unsafe_allow_html=True,
+                )
+                clave_input = st.text_input(
+                    "Contraseña",
+                    type="password",
+                    placeholder="Enter your password",
+                    label_visibility="collapsed",
+                )
 
-            if boton_enviar:
-                if (
-                    usuario_input in USUARIOS
-                    and USUARIOS[usuario_input] == clave_input
-                ):
-                    st.session_state.autenticado = True
-                    st.session_state.usuario_actual = usuario_input
+                st.markdown(
+                    "<div style='text-align: right; margin-top: -5px; margin-bottom:"
+                    " 15px;'><a style='color: #e0a346; font-size: 11px;"
+                    " text-decoration: none;' href='#'>Forgot Password?</a></div>",
+                    unsafe_allow_html=True,
+                )
+
+                col_f1, col_f2 = st.columns(2)
+                boton_enviar = col_f1.form_submit_button(
+                    "Sign In →", use_container_width=True
+                )
+                boton_volver = col_f2.form_submit_button(
+                    "Volver", use_container_width=True
+                )
+
+                if boton_volver:
+                    st.session_state.pantalla = "portada"
                     st.rerun()
-                else:
-                    st.error("⚠️ Usuario o contraseña incorrectos.")
-        
-        st.markdown("</div></div>", unsafe_allow_html=True)
+
+                if boton_enviar:
+                    if (
+                        usuario_input in USUARIOS
+                        and USUARIOS[usuario_input] == clave_input
+                    ):
+                        st.session_state.autenticado = True
+                        st.session_state.usuario_actual = usuario_input
+                        st.rerun()
+                    else:
+                        st.error("⚠️ Usuario o contraseña incorrectos.")
+
     st.stop()
 
 # --- 2. PANEL PRINCIPAL ---
@@ -435,14 +423,14 @@ else:
 
     st.sidebar.markdown(
         f"""
-        <div class="user-profile">
-            <div class="user-avatar">{inicial_usuario}</div>
-            <div>
-                <div class="user-info-title">● Sesión Activa</div>
-                <div class="user-info-name">{usuario_formateado}</div>
-            </div>
-        </div>
-    """,
+<div class="user-profile">
+    <div class="user-avatar">{inicial_usuario}</div>
+    <div>
+        <div class="user-info-title">● Sesión Activa</div>
+        <div class="user-info-name">{usuario_formateado}</div>
+    </div>
+</div>
+""",
         unsafe_allow_html=True,
     )
 
@@ -483,11 +471,11 @@ else:
     if menu == "existencias":
         st.markdown(
             """
-                <div class="page-header">
-                    <div class="page-title">Panel Principal // Lewin Boutique</div>
-                    <div class="page-subtitle">Control general de stock y monitoreo en tiempo real.</div>
-                </div>
-            """,
+<div class="page-header">
+    <div class="page-title">Panel Principal // Lewin Boutique</div>
+    <div class="page-subtitle">Control general de stock y monitoreo en tiempo real.</div>
+</div>
+""",
             unsafe_allow_html=True,
         )
 
@@ -500,9 +488,9 @@ else:
 
         st.markdown(
             """
-                <div class="section-title">Visión General del Inventario</div>
-                <div class="section-subtitle">Resumen general de métricas y existencias.</div>
-            """,
+<div class="section-title">Visión General del Inventario</div>
+<div class="section-subtitle">Resumen general de métricas y existencias.</div>
+""",
             unsafe_allow_html=True,
         )
 
@@ -510,21 +498,21 @@ else:
         with col1:
             st.markdown(
                 f"""
-                    <div class="metric-card">
-                        <div class="metric-label">Total de Prendas / Modelos</div>
-                        <div class="metric-value">{total_prendas}</div>
-                    </div>
-                """,
+<div class="metric-card">
+    <div class="metric-label">Total de Prendas / Modelos</div>
+    <div class="metric-value">{total_prendas}</div>
+</div>
+""",
                 unsafe_allow_html=True,
             )
         with col2:
             st.markdown(
                 f"""
-                    <div class="metric-card">
-                        <div class="metric-label">Stock Total Acumulado</div>
-                        <div class="metric-value">{stock_total}</div>
-                    </div>
-                """,
+<div class="metric-card">
+    <div class="metric-label">Stock Total Acumulado</div>
+    <div class="metric-value">{stock_total}</div>
+</div>
+""",
                 unsafe_allow_html=True,
             )
 
@@ -533,8 +521,8 @@ else:
         if not df.empty:
             st.markdown(
                 """
-                    <div class="section-title">📋 Registro Actual de Inventario</div>
-                """,
+<div class="section-title">📋 Registro Actual de Inventario</div>
+""",
                 unsafe_allow_html=True,
             )
             st.dataframe(df, use_container_width=True)
@@ -544,11 +532,11 @@ else:
     elif menu == "registrar":
         st.markdown(
             """
-                <div class="page-header">
-                    <div class="page-title">Registro de Nuevas Prendas</div>
-                    <div class="page-subtitle">Añade artículos al catálogo de la boutique.</div>
-                </div>
-            """,
+<div class="page-header">
+    <div class="page-title">Registro de Nuevas Prendas</div>
+    <div class="page-subtitle">Añade artículos al catálogo de la boutique.</div>
+</div>
+""",
             unsafe_allow_html=True,
         )
 
@@ -592,11 +580,11 @@ else:
     elif menu == "modificar":
         st.markdown(
             """
-                <div class="page-header">
-                    <div class="page-title">Modificar o Eliminar Prenda</div>
-                    <div class="page-subtitle">Selecciona una prenda existente para actualizar sus datos o borrarla.</div>
-                </div>
-            """,
+<div class="page-header">
+    <div class="page-title">Modificar o Eliminar Prenda</div>
+    <div class="page-subtitle">Selecciona una prenda existente para actualizar sus datos o borrarla.</div>
+</div>
+""",
             unsafe_allow_html=True,
         )
 
