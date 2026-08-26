@@ -250,35 +250,49 @@ if "inventario_local" not in st.session_state:
         ]
     )
 
+# Bloque reutilizable del logotipo en código puro (SVG) con la tipografía Lewin boutique
+LOGO_HTML = """
+<div style="text-align: center; margin-bottom: 12px;">
+    <svg width="75" height="75" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0px 6px 10px rgba(0,0,0,0.6));">
+      <defs>
+        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#00c6ff" />
+          <stop offset="50%" stop-color="#7b2cbf" />
+          <stop offset="100%" stop-color="#0077b6" />
+        </linearGradient>
+        <linearGradient id="grad2" x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#7209b7" />
+          <stop offset="100%" stop-color="#4cc9f0" />
+        </linearGradient>
+      </defs>
+      <!-- Cabeza / Esfera superior -->
+      <circle cx="50" cy="22" r="10" fill="url(#grad1)" />
+      <!-- Silueta / Cuerpo fluido -->
+      <path d="M35 32 C 42 35, 48 42, 50 55 C 52 42, 58 35, 65 32 C 72 29, 78 36, 72 44 C 65 52, 58 60, 50 72 C 42 60, 35 52, 28 44 C 22 36, 28 29, 35 32 Z" fill="url(#grad1)" />
+      <!-- Onda envolvente derecha -->
+      <path d="M48 68 C 55 75, 68 82, 75 75 C 82 68, 75 55, 65 50 C 60 48, 55 52, 53 58 Z" fill="url(#grad2)" />
+    </svg>
+    <div style="font-family: 'Segoe UI', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: 3px; color: #ffffff; margin-top: 2px;">LEWIN</div>
+    <div style="font-family: 'Segoe UI', sans-serif; font-weight: 300; font-size: 11px; letter-spacing: 5px; color: #a1a8b8; text-transform: lowercase;">boutique</div>
+</div>
+"""
+
 # --- 1. FLUJO DE LOGIN / PORTADA ---
 if not st.session_state.autenticado:
     if st.session_state.pantalla == "portada":
         col1, col2, col3 = st.columns([1, 1.25, 1])
         with col2:
             st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown(
-                """
-<div style="text-align: center; margin-bottom: 15px;">
-    <div style="
-        font-size: 58px; font-weight: 900; letter-spacing: -2px;
-        background: linear-gradient(180deg, #ffffff 0%, #a1a8b8 40%, #4a505e 100%);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        filter: drop-shadow(0px 8px 12px rgba(0,0,0,0.9));
-        font-family: 'Segoe UI', Roboto, sans-serif; display: inline-block;
-    ">ED</div>
-</div>
-""",
-                unsafe_allow_html=True,
-            )
+            st.markdown(LOGO_HTML, unsafe_allow_html=True)
 
             st.markdown(
                 """
-<div class="card-container">
-    <div style="font-size: 22px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">
-        Welcome <span style="color: #e0a346;">Lewin</span>
+<div class="card-container" style="padding-top: 15px !important;">
+    <div style="font-size: 18px; font-weight: 600; color: #ffffff; margin-bottom: 2px;">
+        Control de Inventario
     </div>
-    <div style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 20px;">
-        Sistema privado de LEWIN BOUTIQUE
+    <div style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 10px;">
+        Sistema privado
     </div>
 </div>
 """,
@@ -310,10 +324,6 @@ if not st.session_state.autenticado:
         <svg width="18" height="18" viewBox="0 0 24 24" fill="#0077b5"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
     </div>
 </div>
-
-<div style="color: #7a8290; font-size: 12px; margin-top: 15px; text-align: center;">
-    Don't have an account? <span style="color: #c99846; font-weight: 600; cursor: pointer;">Sign Up</span>
-</div>
 """,
                 unsafe_allow_html=True,
             )
@@ -322,34 +332,7 @@ if not st.session_state.autenticado:
         col1, col2, col3 = st.columns([1, 1.25, 1])
         with col2:
             st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown(
-                """
-<div style="text-align: center; margin-bottom: 20px;">
-    <div style="
-        font-size: 58px; font-weight: 900; letter-spacing: -2px;
-        background: linear-gradient(180deg, #ffffff 0%, #a1a8b8 40%, #4a505e 100%);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        filter: drop-shadow(0px 8px 12px rgba(0,0,0,0.9));
-        font-family: 'Segoe UI', Roboto, sans-serif; display: inline-block;
-    ">ED</div>
-</div>
-""",
-                unsafe_allow_html=True,
-            )
-
-            st.markdown(
-                """
-<div class="card-container">
-    <div style="font-size: 24px; font-weight: 700; color: #ffffff; margin-bottom: 2px;">
-        Welcome <span style="color: #e0a346;">Lewin</span>
-    </div>
-    <div style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 15px;">
-        Sistema privado de LEWIN BOUTIQUE
-    </div>
-</div>
-""",
-                unsafe_allow_html=True,
-            )
+            st.markdown(LOGO_HTML, unsafe_allow_html=True)
 
             st.markdown("<br>", unsafe_allow_html=True)
 
