@@ -80,24 +80,24 @@ if not st.session_state.autenticado:
   with col2:
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # Usamos la función estándar de Streamlit que se conecta directo a tu archivo subido
-    st.image("1787708461873.png", width=130)
+    # Imagen del logo principal centrada
+    st.image("1787708461873.png", width=160)
 
+    # Subtítulo integrado y unificado sin recuadro de título repetido
     st.markdown(
         """
             <div style="
                 background: rgba(24, 24, 27, 0.85); 
                 backdrop-filter: blur(12px);
-                padding: 25px 20px; 
-                border-radius: 20px; 
+                padding: 15px 20px; 
+                border-radius: 16px; 
                 border: 1px solid rgba(255, 255, 255, 0.1); 
                 text-align: center;
                 box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-                margin-top: 10px;
-                margin-bottom: 20px;
+                margin-top: 12px;
+                margin-bottom: 25px;
             ">
-                <h2 style="color: #ffffff; font-weight: 700; font-size: 22px; margin-top: 0px; margin-bottom: 4px; letter-spacing: 1px;">LEWIN BOUTIQUE</h2>
-                <p style="color: #a1a1aa; font-size: 9px; text-transform: uppercase; letter-spacing: 3px; font-weight: 600; margin-bottom: 0px;">Sistema Privado de Inventario</p>
+                <p style="color: #a1a1aa; font-size: 10px; text-transform: uppercase; letter-spacing: 3px; font-weight: 700; margin-bottom: 0px;">Sistema Privado de Inventario</p>
             </div>
         """,
         unsafe_allow_html=True,
