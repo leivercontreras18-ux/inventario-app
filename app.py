@@ -271,7 +271,6 @@ else:
           )
 
           if actualizar:
-            # Corrección aplicada aquí (valores primero, luego el rango)
             sheet.update(
                 [[
                     nuevo_id,
@@ -296,4 +295,3 @@ else:
 
   except Exception as e:
     st.error(f"Error al sincronizar con Google Sheets: {e}")
-      
