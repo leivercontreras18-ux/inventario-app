@@ -1,6 +1,6 @@
-import json
 from google.oauth2.service_account import Credentials
 import gspread
+import json
 import pandas as pd
 import streamlit as st
 
@@ -271,17 +271,18 @@ else:
           )
 
           if actualizar:
+            # Corrección aplicada aquí (valores primero, luego el rango)
             sheet.update(
-                f"A{row_number}:G{row_number}",
                 [[
                     nuevo_id,
                     nuevo_nombre,
                     nueva_categoria,
                     nueva_talla,
                     nuevo_color,
-                    nueva_cantidad,
-                    nueva_alerta,
+                    int(nueva_cantidad),
+                    int(nueva_alerta),
                 ]],
+                f"A{row_number}:G{row_number}",
             )
             st.success("¡Prenda actualizada correctamente!")
             st.rerun()
@@ -295,3 +296,4 @@ else:
 
   except Exception as e:
     st.error(f"Error al sincronizar con Google Sheets: {e}")
+      
