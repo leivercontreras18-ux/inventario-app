@@ -5,33 +5,42 @@ st.set_page_config(
     page_title="Lewin // Inventario Boutique", page_icon="👕", layout="wide"
 )
 
-# --- DISEÑO UI ---
+# --- DISEÑO UI CON FONDO DE PAISAJE ---
 st.markdown(
     """
     <style>
-    .stApp { background-color: #09090b; color: #fafafa !important; }
-    section[data-testid="stSidebar"] { background-color: #121216 !important; border-right: 1px solid #27272a; }
+    .stApp { 
+        background: linear-gradient(rgba(9, 9, 11, 0.82), rgba(9, 9, 11, 0.88)), 
+                    url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1920&auto=format&fit=crop');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        color: #fafafa !important; 
+    }
+    section[data-testid="stSidebar"] { background-color: rgba(18, 18, 22, 0.9) !important; border-right: 1px solid #27272a; backdrop-filter: blur(10px); }
     section[data-testid="stSidebar"] * { color: #f4f4f5 !important; }
     .hero-banner {
-        background: linear-gradient(145deg, #18181b 0%, #09090b 100%);
-        border: 1px solid #27272a; padding: 35px; border-radius: 20px;
+        background: rgba(24, 24, 27, 0.75);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1); 
+        padding: 35px; border-radius: 20px;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6); margin-bottom: 30px;
     }
     .hero-title { font-size: 34px; font-weight: 700; color: #ffffff !important; margin-bottom: 8px; }
     .hero-subtitle { font-size: 15px; color: #a1a1aa !important; }
     .metric-card {
-        background: rgba(24, 24, 27, 0.7); border: 1px solid #27272a;
+        background: rgba(24, 24, 27, 0.75); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1);
         padding: 24px; border-radius: 16px; text-align: center;
     }
     .metric-value { font-size: 36px; font-weight: 800; color: #d4af37 !important; margin-top: 8px; }
     .metric-label { font-size: 11px; color: #71717a !important; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
-    .user-badge { background: #18181b; padding: 16px; border-radius: 16px; border: 1px solid #27272a; margin-bottom: 20px; }
+    .user-badge { background: rgba(24, 24, 27, 0.8); padding: 16px; border-radius: 16px; border: 1px solid #27272a; margin-bottom: 20px; }
     .user-status-title { font-size: 9px; color: #71717a; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 8px; }
     .user-content { display: flex; align-items: center; gap: 12px; }
     .status-dot { width: 10px; height: 10px; background-color: #10b981; border-radius: 50%; box-shadow: 0 0 12px #10b981; }
     .user-name { font-size: 18px; font-weight: 600; color: #fafafa; }
     .stTextInput input, .stSelectbox select, .stNumberInput input {
-        background-color: #121216 !important; color: #ffffff !important; border: 1px solid #27272a !important; border-radius: 10px !important;
+        background-color: rgba(18, 18, 22, 0.85) !important; color: #ffffff !important; border: 1px solid #3f3f46 !important; border-radius: 10px !important; backdrop-filter: blur(5px);
     }
     .stButton>button {
         background: linear-gradient(135deg, #27272a 0%, #18181b 100%) !important; color: #f4f4f5 !important;
@@ -52,7 +61,6 @@ if "autenticado" not in st.session_state:
 if "usuario_actual" not in st.session_state:
   st.session_state.usuario_actual = ""
 
-# Inicializar inventario local si no existe
 if "inventario" not in st.session_state:
   st.session_state.inventario = pd.DataFrame(
       columns=[
@@ -71,16 +79,16 @@ if not st.session_state.autenticado:
   with col2:
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # Renderizamos la imagen nativamente con Streamlit para evitar problemas de ruta HTML y luego el cuadro de texto actualizado
     st.image("WhatsApp Image 2026-08-25 at 9.32.52 PM.jpeg", width=140)
 
     st.markdown(
         """
             <div style="
-                background: linear-gradient(145deg, #18181b 0%, #09090b 100%); 
+                background: rgba(24, 24, 27, 0.85); 
+                backdrop-filter: blur(12px);
                 padding: 25px 20px; 
                 border-radius: 20px; 
-                border: 1px solid #27272a; 
+                border: 1px solid rgba(255, 255, 255, 0.1); 
                 text-align: center;
                 box-shadow: 0 20px 40px rgba(0,0,0,0.6);
                 margin-top: 10px;
