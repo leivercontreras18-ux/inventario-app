@@ -67,32 +67,69 @@ if "inventario" not in st.session_state:
   )
 
 if not st.session_state.autenticado:
-  col1, col2, col3 = st.columns([1, 1.2, 1])
+  col1, col2, col3 = st.columns([1, 1.3, 1])
   with col2:
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown(
         """
-            <div style="background: #18181b; padding: 40px; border-radius: 20px; border: 1px solid #27272a; text-align: center;">
-                <div style="font-size: 32px; margin-bottom: 10px;">👕</div>
-                <h2 style="color: #ffffff; margin-bottom: 5px;">ESSENCE</h2>
-                <p style="color: #a1a1aa; font-size: 12px; text-transform: uppercase; letter-spacing: 3px;">// PANEL DE ACCESO</p>
+            <div style="
+                background: linear-gradient(145deg, #18181b 0%, #09090b 100%); 
+                padding: 45px; 
+                border-radius: 24px; 
+                border: 1px solid #27272a; 
+                text-align: center;
+                box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            ">
+                <div style="
+                    font-size: 38px; 
+                    margin-bottom: 12px; 
+                    background: rgba(212, 175, 55, 0.1); 
+                    display: inline-block; 
+                    padding: 15px; 
+                    border-radius: 50%;
+                    border: 1px solid rgba(212, 175, 55, 0.2);
+                ">✨</div>
+                <h2 style="color: #ffffff; font-weight: 700; font-size: 26px; margin-bottom: 6px; letter-spacing: 1px;">ESSENCE BOUTIQUE</h2>
+                <p style="color: #a1a1aa; font-size: 11px; text-transform: uppercase; letter-spacing: 4px; font-weight: 600; margin-bottom: 25px;">Sistema Privado de Inventario</p>
             </div>
         """,
         unsafe_allow_html=True,
     )
-    usuario_input = st.text_input("Usuario")
-    clave_input = st.text_input("Contraseña", type="password")
 
-    if st.button("Iniciar Sesión", use_container_width=True):
-      if (
-          usuario_input in USUARIOS
-          and USUARIOS[usuario_input] == clave_input
-      ):
-        st.session_state.autenticado = True
-        st.session_state.usuario_actual = usuario_input
-        st.rerun()
-      else:
-        st.error("Credenciales inválidas")
+    with st.form("form_login"):
+      st.markdown(
+          "<p style='color: #d4af37; font-size: 13px; font-weight: 600;"
+          " margin-bottom: 5px;'>Identificación de Usuario</p>",
+          unsafe_allow_html=True,
+      )
+      usuario_input = st.text_input("Usuario", placeholder="Ingresa tu usuario")
+
+      st.markdown(
+          "<p style='color: #d4af37; font-size: 13px; font-weight: 600;"
+          " margin-bottom: 5px; margin-top: 10px;'>Clave de Acceso</p>",
+          unsafe_allow_html=True,
+      )
+      clave_input = st.text_input(
+          "Contraseña", type="password", placeholder="••••••••••••"
+      )
+
+      st.markdown("<br>", unsafe_allow_html=True)
+      boton_enviar = st.form_submit_button(
+          "Ingresar al Sistema", use_container_width=True
+      )
+
+      if boton_enviar:
+        if (
+            usuario_input in USUARIOS
+            and USUARIOS[usuario_input] == clave_input
+        ):
+          st.session_state.autenticado = True
+          st.session_state.usuario_actual = usuario_input
+          st.rerun()
+        else:
+          st.error(
+              "⚠️ Usuario o contraseña incorrectos. Por favor verifícalos."
+          )
   st.stop()
 
 else:
