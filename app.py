@@ -118,13 +118,13 @@ def eliminar_prenda(id_prenda):
     return True
 
 
-# --- DISEÑO UI (TEXTURA DE TELA OSCURA & GLASSMORPHISM) ---
+# --- DISEÑO UI (FONDO BOUTIQUE ELEGANTE & GLASSMORPHISM) ---
 st.markdown(
     """
     <style>
     .stApp { 
-        background: linear-gradient(rgba(10, 15, 25, 0.7), rgba(10, 15, 25, 0.85)), 
-                    url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920&auto=format&fit=crop');
+        background: linear-gradient(rgba(10, 15, 25, 0.50), rgba(10, 15, 25, 0.65)), 
+                    url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1920&auto=format&fit=crop');
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -133,7 +133,7 @@ st.markdown(
     
     section[data-testid="stSidebar"] { 
         width: 240px !important;
-        background: rgba(13, 18, 30, 0.85) !important; 
+        background: rgba(13, 18, 30, 0.88) !important; 
         border-right: 1px solid rgba(212, 175, 55, 0.15); 
         backdrop-filter: blur(20px); 
     }
@@ -141,24 +141,24 @@ st.markdown(
     
     .page-header { margin-bottom: 25px; padding-bottom: 10px; }
     .page-title { font-size: 32px; font-weight: 700; color: #ffffff !important; letter-spacing: 0.5px; }
-    .page-subtitle { font-size: 14px; color: #94a3b8 !important; margin-top: 4px; }
+    .page-subtitle { font-size: 14px; color: #e2e8f0 !important; margin-top: 4px; }
     
     .section-title { font-size: 18px; font-weight: 600; color: #ffffff; margin-bottom: 4px; }
-    .section-subtitle { font-size: 12px; color: #94a3b8; margin-bottom: 15px; }
+    .section-subtitle { font-size: 12px; color: #cbd5e1; margin-bottom: 15px; }
     
     .metric-card {
-        background: rgba(18, 24, 38, 0.55); 
-        backdrop-filter: blur(14px); 
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(18, 24, 38, 0.60); 
+        backdrop-filter: blur(16px); 
+        border: 1px solid rgba(255, 255, 255, 0.1);
         padding: 20px; border-radius: 16px; text-align: left;
         box-shadow: 0 10px 30px rgba(0,0,0,0.4);
         height: 100%;
     }
     .metric-value { font-size: 32px; font-weight: 800; color: #d4af37 !important; margin-top: 8px; }
-    .metric-label { font-size: 11px; color: #94a3b8 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+    .metric-label { font-size: 11px; color: #cbd5e1 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
     
     .user-profile { 
-        background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(255, 255, 255, 0.02)); 
+        background: linear-gradient(135deg, rgba(212, 175, 55, 0.12), rgba(255, 255, 255, 0.02)); 
         padding: 14px 16px; border-radius: 14px; 
         border: 1px solid rgba(212, 175, 55, 0.3); margin-bottom: 20px;
         display: flex; align-items: center; gap: 12px;
@@ -178,14 +178,14 @@ st.markdown(
         text-align: left; margin-bottom: 6px; width: 100%; transition: all 0.25s ease;
     }
     .stSidebar .stButton>button:hover { 
-        background: rgba(255, 255, 255, 0.06) !important; color: #ffffff !important;
-        border-color: rgba(255, 255, 255, 0.1) !important; transform: translateX(4px);
+        background: rgba(255, 255, 255, 0.08) !important; color: #ffffff !important;
+        border-color: rgba(255, 255, 255, 0.15) !important; transform: translateX(4px);
     }
 
     div.stAlert {
-        background: rgba(18, 24, 38, 0.55) !important;
-        backdrop-filter: blur(12px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        background: rgba(18, 24, 38, 0.60) !important;
+        backdrop-filter: blur(14px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
         color: #cbd5e1 !important; border-radius: 14px !important;
     }
     div.stAlert * { color: #cbd5e1 !important; }
@@ -227,9 +227,9 @@ if not st.session_state.autenticado:
       st.markdown(
           """
             <div style="
-                background: rgba(18, 24, 38, 0.6); backdrop-filter: blur(16px);
+                background: rgba(18, 24, 38, 0.65); backdrop-filter: blur(16px);
                 padding: 45px 30px; border-radius: 20px; 
-                border: 1px solid rgba(212, 175, 55, 0.2); text-align: center;
+                border: 1px solid rgba(212, 175, 55, 0.25); text-align: center;
                 box-shadow: 0 20px 40px rgba(0,0,0,0.5);
             ">
                 <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 15px;">
@@ -259,9 +259,9 @@ if not st.session_state.autenticado:
       st.markdown(
           """
             <div style="
-                background: rgba(18, 24, 38, 0.6); backdrop-filter: blur(16px);
+                background: rgba(18, 24, 38, 0.65); backdrop-filter: blur(16px);
                 padding: 30px 25px 10px 25px; border-radius: 20px 20px 0px 0px; 
-                border: 1px solid rgba(212, 175, 55, 0.2); border-bottom: none; text-align: center;
+                border: 1px solid rgba(212, 175, 55, 0.25); border-bottom: none; text-align: center;
             ">
                 <div style="font-size: 22px; font-weight: 600; color: #ffffff; margin-bottom: 4px;">Acceso al Sistema</div>
                 <div style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">Introduce tus credenciales para continuar</div>
