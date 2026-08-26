@@ -112,10 +112,12 @@ def eliminar_prenda(id_prenda):
         ].reset_index(drop=True)
         return True
 
-# --- DISEÑO UI ADAPTADO ---
+# --- DISEÑO UI ADAPTADO Y TIPOGRAFÍAS DE LUJO ---
 st.markdown(
     """
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500&display=swap');
+
 .stApp { 
     background: linear-gradient(rgba(10, 12, 16, 0.78), rgba(10, 12, 16, 0.88)), 
                 url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1920&auto=format&fit=crop');
@@ -196,15 +198,6 @@ div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hove
 .user-info-title { font-size: 9px; color: #d4af37; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
 .user-info-name { font-size: 14px; font-weight: 600; color: #ffffff; }
 
-.card-container {
-    background: rgba(20, 22, 28, 0.88);
-    backdrop-filter: blur(25px);
-    padding: 35px 30px 25px 30px;
-    border-radius: 22px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    text-align: center;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.8);
-}
 .social-btn-container {
     display: flex;
     justify-content: center;
@@ -250,56 +243,56 @@ if "inventario_local" not in st.session_state:
         ]
     )
 
-# Bloque reutilizable del logotipo en código puro (SVG) con la tipografía Lewin boutique
-LOGO_HTML = """
-<div style="text-align: center; margin-bottom: 12px;">
-    <svg width="75" height="75" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0px 6px 10px rgba(0,0,0,0.6));">
-      <defs>
-        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#00c6ff" />
-          <stop offset="50%" stop-color="#7b2cbf" />
-          <stop offset="100%" stop-color="#0077b6" />
-        </linearGradient>
-        <linearGradient id="grad2" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#7209b7" />
-          <stop offset="100%" stop-color="#4cc9f0" />
-        </linearGradient>
-      </defs>
-      <!-- Cabeza / Esfera superior -->
-      <circle cx="50" cy="22" r="10" fill="url(#grad1)" />
-      <!-- Silueta / Cuerpo fluido -->
-      <path d="M35 32 C 42 35, 48 42, 50 55 C 52 42, 58 35, 65 32 C 72 29, 78 36, 72 44 C 65 52, 58 60, 50 72 C 42 60, 35 52, 28 44 C 22 36, 28 29, 35 32 Z" fill="url(#grad1)" />
-      <!-- Onda envolvente derecha -->
-      <path d="M48 68 C 55 75, 68 82, 75 75 C 82 68, 75 55, 65 50 C 60 48, 55 52, 53 58 Z" fill="url(#grad2)" />
-    </svg>
-    <div style="font-family: 'Segoe UI', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: 3px; color: #ffffff; margin-top: 2px;">LEWIN</div>
-    <div style="font-family: 'Segoe UI', sans-serif; font-weight: 300; font-size: 11px; letter-spacing: 5px; color: #a1a8b8; text-transform: lowercase;">boutique</div>
-</div>
-"""
-
 # --- 1. FLUJO DE LOGIN / PORTADA ---
 if not st.session_state.autenticado:
     if st.session_state.pantalla == "portada":
-        col1, col2, col3 = st.columns([1, 1.25, 1])
+        col1, col2, col3 = st.columns([0.2, 3.6, 0.2])
         with col2:
             st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown(LOGO_HTML, unsafe_allow_html=True)
-
+            
+            # Tarjeta principal de dos columnas estilo Pinterest
             st.markdown(
                 """
-<div class="card-container" style="padding-top: 15px !important;">
-    <div style="font-size: 18px; font-weight: 600; color: #ffffff; margin-bottom: 2px;">
-        Control de Inventario
-    </div>
-    <div style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 10px;">
-        Sistema privado
-    </div>
-</div>
-""",
+                <div style="
+                    display: flex;
+                    background: rgba(20, 22, 28, 0.92);
+                    backdrop-filter: blur(25px);
+                    border-radius: 24px;
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+                    overflow: hidden;
+                    margin-top: 20px;
+                ">
+                    <!-- Lado Izquierdo: Panel Visual -->
+                    <div style="
+                        flex: 1.2;
+                        background: linear-gradient(rgba(10, 12, 16, 0.5), rgba(10, 12, 16, 0.8)), 
+                                    url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
+                        background-size: cover;
+                        background-position: center;
+                        padding: 60px 40px;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        border-right: 1px solid rgba(255, 255, 255, 0.06);
+                    ">
+                        <h1 style="font-family: 'Cinzel', serif; color: #ffffff; font-size: 38px; font-weight: 700; margin-bottom: 12px; line-height: 1.2;">Hello<br>Welcome!</h1>
+                        <p style="color: #94a3b8; font-family: 'Montserrat', sans-serif; font-size: 13px; letter-spacing: 1px;">Control de Inventario y Sistema Boutique Lewin.</p>
+                    </div>
+
+                    <!-- Lado Derecho: Acceso (Parte 1 contenedor) -->
+                    <div style="
+                        flex: 1;
+                        padding: 50px 40px;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                    ">
+                        <div style="font-family: 'Cinzel', serif; font-size: 24px; color: #ffffff; font-weight: 700; margin-bottom: 2px;">LEWIN</div>
+                        <div style="font-family: 'Montserrat', sans-serif; font-size: 10px; color: #d4af37; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 25px;">Boutique Manager</div>
+                """,
                 unsafe_allow_html=True,
             )
-
-            st.markdown("<br>", unsafe_allow_html=True)
 
             if st.button("Sign In  →", use_container_width=True):
                 st.session_state.pantalla = "login"
@@ -307,24 +300,26 @@ if not st.session_state.autenticado:
 
             st.markdown(
                 """
-<div style="margin-top: 25px; color: #5a6270; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-    <div style="flex:1; height:1px; background: rgba(255,255,255,0.08);"></div>
-    or continue with
-    <div style="flex:1; height:1px; background: rgba(255,255,255,0.08);"></div>
-</div>
+                        <div style="margin-top: 25px; color: #5a6270; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                            <div style="flex:1; height:1px; background: rgba(255,255,255,0.08);"></div>
+                            or continue with
+                            <div style="flex:1; height:1px; background: rgba(255,255,255,0.08);"></div>
+                        </div>
 
-<div class="social-btn-container">
-    <div class="social-btn">
-        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 10.8 0 12.5s.7 2.8 1.9 5.2l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16C3.7 19.7 7.5 22.3 12 22.3z"/></svg>
-    </div>
-    <div class="social-btn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-    </div>
-    <div class="social-btn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="#0077b5"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-    </div>
-</div>
-""",
+                        <div class="social-btn-container">
+                            <div class="social-btn">
+                                <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 10.8 0 12.5s.7 2.8 1.9 5.2l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16C3.7 19.7 7.5 22.3 12 22.3z"/></svg>
+                            </div>
+                            <div class="social-btn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                            </div>
+                            <div class="social-btn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="#0077b5"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                """,
                 unsafe_allow_html=True,
             )
 
@@ -332,11 +327,14 @@ if not st.session_state.autenticado:
         col1, col2, col3 = st.columns([1, 1.25, 1])
         with col2:
             st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown(LOGO_HTML, unsafe_allow_html=True)
-
-            st.markdown("<br>", unsafe_allow_html=True)
 
             with st.form("form_login_tailwind"):
+                st.markdown(
+                    "<div style='font-family: \'Cinzel\', serif; font-size: 24px; color: #ffffff; font-weight: 700; margin-bottom: 2px;'>LEWIN</div>"
+                    "<div style='font-family: \'Montserrat\', sans-serif; font-size: 10px; color: #d4af37; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 25px;'>Sign In to Account</div>",
+                    unsafe_allow_html=True,
+                )
+
                 st.markdown(
                     "<p style='color: #94a3b8; font-size: 11px; font-weight: 500;"
                     " margin-bottom: 4px; text-align: left;'>✉️ Email Address</p>",
