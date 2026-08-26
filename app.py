@@ -5,7 +5,7 @@ st.set_page_config(
     page_title="Lewin // Inventario Boutique", page_icon="👕", layout="wide"
 )
 
-# --- DISEÑO UI (ESTILO GLASSMORPHISM) ---
+# --- DISEÑO UI (ESTILO GLASSMORPHISM & SIDEBAR COMPACTA) ---
 st.markdown(
     """
     <style>
@@ -17,7 +17,14 @@ st.markdown(
         background-repeat: no-repeat;
         color: #fafafa !important; 
     }
-    section[data-testid="stSidebar"] { background-color: rgba(18, 18, 22, 0.9) !important; border-right: 1px solid #27272a; backdrop-filter: blur(10px); }
+    
+    /* ANCHO Y ESTILO DE LA BARRA LATERAL REDUCIDO */
+    section[data-testid="stSidebar"] { 
+        width: 240px !important;
+        background-color: rgba(18, 18, 22, 0.92) !important; 
+        border-right: 1px solid #27272a; 
+        backdrop-filter: blur(10px); 
+    }
     section[data-testid="stSidebar"] * { color: #f4f4f5 !important; }
     
     .hero-banner {
@@ -35,11 +42,19 @@ st.markdown(
     }
     .metric-value { font-size: 36px; font-weight: 800; color: #d4af37 !important; margin-top: 8px; }
     .metric-label { font-size: 11px; color: #71717a !important; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
-    .user-badge { background: rgba(24, 24, 27, 0.8); padding: 16px; border-radius: 16px; border: 1px solid #27272a; margin-bottom: 20px; }
-    .user-status-title { font-size: 9px; color: #71717a; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 8px; }
-    .user-content { display: flex; align-items: center; gap: 12px; }
-    .status-dot { width: 10px; height: 10px; background-color: #10b981; border-radius: 50%; box-shadow: 0 0 12px #10b981; }
-    .user-name { font-size: 18px; font-weight: 600; color: #fafafa; }
+    
+    /* USUARIO COMPACTO */
+    .user-badge { 
+        background: rgba(24, 24, 27, 0.8); 
+        padding: 12px 14px; 
+        border-radius: 12px; 
+        border: 1px solid #27272a; 
+        margin-bottom: 15px; 
+    }
+    .user-status-title { font-size: 8px; color: #71717a; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 4px; }
+    .user-content { display: flex; align-items: center; gap: 10px; }
+    .status-dot { width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; box-shadow: 0 0 8px #10b981; }
+    .user-name { font-size: 15px; font-weight: 600; color: #fafafa; }
 
     /* ESTILOS DE ENTRADAS Y BOTONES */
     .stTextInput input {
@@ -58,15 +73,15 @@ st.markdown(
         background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important; 
         color: #ffffff !important;
         font-weight: 600; 
-        border-radius: 12px; 
+        border-radius: 10px; 
         border: none !important; 
-        padding: 12px 24px;
-        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.4);
+        padding: 8px 16px;
+        box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
         transition: all 0.3s ease;
     }
     .stButton>button:hover { 
         background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%) !important; 
-        box-shadow: 0 10px 25px rgba(59, 130, 246, 0.6);
+        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.5);
     }
     </style>
 """,
@@ -237,7 +252,7 @@ else:
   st.sidebar.markdown(
       f"""
         <div class="user-badge">
-            <div class="user-status-title">Estado en línea</div>
+            <div class="user-status-title">En línea</div>
             <div class="user-content">
                 <span class="status-dot"></span>
                 <div class="user-name">{usuario_formateado}</div>
@@ -253,6 +268,13 @@ else:
     st.session_state.pantalla = "portada"
     st.rerun()
 
+  st.sidebar.markdown(
+      "<hr style='margin: 15px 0; border-color: rgba(255,255,255,0.1);'>"
+      "<p style='font-size:11px; color:#a1a1aa; text-transform:uppercase;"
+      " letter-spacing:1px; margin-bottom:5px;'>Navegación</p>",
+      unsafe_allow_html=True,
+  )
+
   df = st.session_state.inventario
 
   menu = st.sidebar.selectbox(
@@ -262,6 +284,7 @@ else:
           "➕ Registrar Prenda",
           "✏️ Modificar / Eliminar Prenda",
       ],
+      label_visibility="collapsed",
   )
 
   if menu == "📊 Estado de Existencias":
