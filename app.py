@@ -41,8 +41,8 @@ st.markdown(
     .status-dot { width: 10px; height: 10px; background-color: #10b981; border-radius: 50%; box-shadow: 0 0 12px #10b981; }
     .user-name { font-size: 18px; font-weight: 600; color: #fafafa; }
 
-    /* ESTILOS DE ENTRADAS DE TEXTO Y BOTÓN SIMILARES A LA REFERENCIA */
-    .stTextInput input, .stSelectbox select, .stNumberInput input {
+    /* ESTILOS DE ENTRADAS DE TEXTO Y BOTÓN */
+    .stTextInput input {
         background-color: rgba(255, 255, 255, 0.06) !important; 
         color: #ffffff !important; 
         border: 1px solid rgba(255, 255, 255, 0.15) !important; 
@@ -96,15 +96,16 @@ if "inventario" not in st.session_state:
   )
 
 if not st.session_state.autenticado:
-  col1, col2, col3 = st.columns([1, 1.4, 1])
+  col1, col2, col3 = st.columns([1, 1.2, 1])
   with col2:
     st.markdown("<br>", unsafe_allow_html=True)
-    
-    # --- CONTENEDOR EFECTO CRISTAL (GLASSMORPHISM) CON EL LOGO Y FORMULARIO ---
-    st.markdown(
-        """
+
+    # Contenedor principal de la tarjeta de cristal con el formulario integrado
+    with st.container():
+      st.markdown(
+          """
             <div style="
-                background: rgba(18, 24, 38, 0.55); 
+                background: rgba(18, 24, 38, 0.6); 
                 backdrop-filter: blur(16px);
                 -webkit-backdrop-filter: blur(16px);
                 padding: 35px 30px; 
@@ -112,10 +113,8 @@ if not st.session_state.autenticado:
                 border: 1px solid rgba(255, 255, 255, 0.12); 
                 text-align: center;
                 box-shadow: 0 25px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
-                margin-top: 5px;
-                margin-bottom: 20px;
+                margin-bottom: -15px;
             ">
-                <!-- Logo Estilizado Superior -->
                 <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 12px;">
                     <div style="
                         width: 50px; height: 50px; 
@@ -140,51 +139,55 @@ if not st.session_state.autenticado:
                 <div style="font-size: 22px; font-weight: 600; color: #ffffff; margin-bottom: 6px;">
                     Iniciar Sesión
                 </div>
-                <div style="font-size: 13px; color: #94a3b8; margin-bottom: 25px;">
-                    ¿Nuevo en el sistema? <span style="color: #38bdf8; cursor: pointer;">Accede con tus credenciales</span>
+                <div style="font-size: 13px; color: #94a3b8; margin-bottom: 15px;">
+                    Introduce tus credenciales para acceder
                 </div>
             </div>
         """,
-        unsafe_allow_html=True,
-    )
-
-    with st.form("form_login"):
-      st.markdown(
-          "<p style='color: #cbd5e1; font-size: 13px; font-weight: 500;"
-          " margin-bottom: 4px;'>Correo o Usuario</p>",
           unsafe_allow_html=True,
       )
-      usuario_input = st.text_input(
-          "Usuario", placeholder="Ingresa tu usuario", label_visibility="collapsed"
-      )
 
-      st.markdown(
-          "<p style='color: #cbd5e1; font-size: 13px; font-weight: 500;"
-          " margin-bottom: 4px; margin-top: 10px;'>Contraseña</p>",
-          unsafe_allow_html=True,
-      )
-      clave_input = st.text_input(
-          "Contraseña",
-          type="password",
-          placeholder="••••••••••••",
-          label_visibility="collapsed",
-      )
+      with st.form("form_login"):
+        st.markdown(
+            "<p style='color: #cbd5e1; font-size: 13px; font-weight: 500;"
+            " margin-bottom: 4px;'>Correo o Usuario</p>",
+            unsafe_allow_html=True,
+        )
+        usuario_input = st.text_input(
+            "Usuario",
+            placeholder="Ingresa tu usuario",
+            label_visibility="collapsed",
+        )
 
-      st.markdown("<br>", unsafe_allow_html=True)
-      boton_enviar = st.form_submit_button("Ingresar", use_container_width=True)
+        st.markdown(
+            "<p style='color: #cbd5e1; font-size: 13px; font-weight: 500;"
+            " margin-bottom: 4px; margin-top: 10px;'>Contraseña</p>",
+            unsafe_allow_html=True,
+        )
+        clave_input = st.text_input(
+            "Contraseña",
+            type="password",
+            placeholder="••••••••••••",
+            label_visibility="collapsed",
+        )
 
-      if boton_enviar:
-        if (
-            usuario_input in USUARIOS
-            and USUARIOS[usuario_input] == clave_input
-        ):
-          st.session_state.autenticado = True
-          st.session_state.usuario_actual = usuario_input
-          st.rerun()
-        else:
-          st.error(
-              "⚠️ Usuario o contraseña incorrectos. Por favor verifícalos."
-          )
+        st.markdown("<br>", unsafe_allow_html=True)
+        boton_enviar = st.form_submit_button(
+            "Ingresar", use_container_width=True
+        )
+
+        if boton_enviar:
+          if (
+              usuario_input in USUARIOS
+              and USUARIOS[usuario_input] == clave_input
+          ):
+            st.session_state.autenticado = True
+            st.session_state.usuario_actual = usuario_input
+            st.rerun()
+          else:
+            st.error(
+                "⚠️ Usuario o contraseña incorrectos. Por favor verifícalos."
+            )
   st.stop()
 
 else:
@@ -254,7 +257,7 @@ else:
                         <div class="metric-value">{stock_total}</div>
                     </div>
                 """,
-            unsafe_ask_html=True if "st" in locals() else False,  # type: ignore
+            unsafe_allow_html=True,
         )
 
       st.markdown("<br>", unsafe_allow_html=True)
@@ -339,7 +342,7 @@ else:
         nueva_categoria = st.text_input(
             "Categoria", value=str(prenda_actual["Categoria"])
         )
-        nueva_talla = st.text_input("talla", value=str(prenz_actual if 'preinz_actual' in locals() else prenda_actual["talla"])) # type: ignore
+        nueva_talla = st.text_input("talla", value=str(prenda_actual["talla"]))
         nuevo_color = st.text_input("color", value=str(prenda_actual["color"]))
         nueva_cantidad = st.number_input(
             "cantidad", min_value=0, value=int(prenda_actual["cantidad"]), step=1
