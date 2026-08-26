@@ -223,107 +223,103 @@ if "inventario_local" not in st.session_state:
         ]
     )
 
-# --- 1. FLUJO DE LOGIN IDÉNTICO A PINTEREST (CONTENEDOR UNIFICADO) ---
+# --- 1. FLUJO DE LOGIN IDÉNTICO A PINTEREST (ESTRUCTURA INTEGRADA) ---
 if not st.session_state.autenticado:
     _, col_centro, _ = st.columns([1, 10, 1])
     
     with col_centro:
-        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<br><br>", unsafe_allow_html=True)
         
-        # Contenedor maestro de dos mitades exactas
-        st.markdown(
-            """
-            <div style="
-                display: flex;
-                width: 100%;
-                max-width: 950px;
-                margin: 0 auto;
-                background: #11141b;
-                border-radius: 20px;
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                box-shadow: 0 25px 50px rgba(0,0,0,0.6);
-                overflow: hidden;
-                min-height: 500px;
-            ">
-                <!-- Mitad Izquierda (Imagen y Bienvenida) -->
-                <div style="
-                    flex: 1.1;
-                    background: linear-gradient(135deg, rgba(12, 15, 22, 0.8) 0%, rgba(20, 15, 30, 0.9) 100%), 
-                                url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
-                    background-size: cover;
-                    background-position: center;
-                    padding: 60px 40px;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                ">
-                    <h1 style="font-family: 'Cinzel', serif; color: #ffffff; font-size: 42px; font-weight: 700; margin-bottom: 12px; line-height: 1.1;">Hello<br>Welcome<span style="color: #ff3b3b;">!</span></h1>
-                    <p style="color: #94a3b8; font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: 0.8px; line-height: 1.5;">Sistema exclusivo de control de inventario boutique.</p>
-                </div>
-                
-                <!-- Mitad Derecha (Texto de guía estético) -->
-                <div style="
-                    flex: 1;
-                    padding: 50px 40px;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    background: #11141b;
-                ">
-                    <div style="font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 16px; color: #ffffff; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
-                        <span style="color: #ff3b3b; font-size: 15px;">✦</span> NexCoin <span style="font-size: 11px; color: #64748b; font-weight: 400;">// Lewin</span>
+        # Contenedor principal de la tarjeta de inicio de sesión
+        with st.container():
+            col_izq, col_der = st.columns([1.1, 1], gap="small")
+
+            with col_izq:
+                st.markdown(
+                    """
+                    <div style="
+                        background: linear-gradient(135deg, rgba(12, 15, 22, 0.85) 0%, rgba(20, 15, 30, 0.95) 100%), 
+                                    url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
+                        background-size: cover;
+                        background-position: center;
+                        padding: 75px 35px;
+                        border-radius: 18px 0 0 18px;
+                        height: 100%;
+                        min-height: 460px;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        border: 1px solid rgba(255, 255, 255, 0.08);
+                        border-right: none;
+                    ">
+                        <h1 style="font-family: 'Cinzel', serif; color: #ffffff; font-size: 38px; font-weight: 700; margin-bottom: 10px; line-height: 1.1;">Hello<br>Welcome<span style="color: #ff3b3b;">!</span></h1>
+                        <p style="color: #94a3b8; font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: 0.8px; line-height: 1.5;">Sistema exclusivo de control de inventario boutique.</p>
                     </div>
-                    <div style="display: flex; gap: 20px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">
-                        <span style="color: #ff3b3b; font-size: 12px; font-weight: 600; border-bottom: 2px solid #ff3b3b; padding-bottom: 8px; margin-bottom: -9px;">Log in</span>
-                        <span style="color: #64748b; font-size: 12px; font-weight: 500;">Sign Up</span>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+            with col_der:
+                st.markdown(
+                    """
+                    <div style="
+                        background: #11141b;
+                        padding: 35px 35px;
+                        border-radius: 0 18px 18px 0;
+                        height: 100%;
+                        min-height: 460px;
+                        border: 1px solid rgba(255, 255, 255, 0.08);
+                        border-left: none;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                    ">
+                        <div style="font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 16px; color: #ffffff; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #ff3b3b; font-size: 15px;">✦</span> NexCoin <span style="font-size: 11px; color: #64748b; font-weight: 400;">// Lewin</span>
+                        </div>
+                        <div style="display: flex; gap: 20px; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 6px;">
+                            <span style="color: #ff3b3b; font-size: 12px; font-weight: 600; border-bottom: 2px solid #ff3b3b; padding-bottom: 6px; margin-bottom: -7px;">Log in</span>
+                            <span style="color: #64748b; font-size: 12px; font-weight: 500;">Sign Up</span>
+                        </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+                st.markdown("<p style='color: #94a3b8; font-size: 11px; font-weight: 500; margin-bottom: 2px;'>Email Address</p>", unsafe_allow_html=True)
+                usuario_input = st.text_input("Usuario", placeholder="Enter your email address", label_visibility="collapsed")
+
+                st.markdown("<p style='color: #94a3b8; font-size: 11px; font-weight: 500; margin-bottom: 2px; margin-top: 8px;'>Password</p>", unsafe_allow_html=True)
+                clave_input = st.text_input("Contraseña", type="password", placeholder="Enter your password", label_visibility="collapsed")
+
+                st.markdown(
+                    """
+                    <div style='display: flex; justify-content: space-between; align-items: center; margin-top: 6px; margin-bottom: 12px;'>
+                        <span style='color: #94a3b8; font-size: 10px;'>⬜ Remember me</span>
+                        <a style='color: #ff3b3b; font-size: 10px; text-decoration: none;' href='#'>Forgot password?</a>
                     </div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+                    """,
+                    unsafe_allow_html=True,
+                )
 
-        # Superposición de los inputs reales de Streamlit exactamente alineados al lado derecho de la tarjeta
-        col_dummy_izq, col_inputs = st.columns([1.1, 1])
-        with col_inputs:
-            # Subimos visualmente los campos para que calcen dentro de la tarjeta derecha
-            st.markdown("<div style='margin-top: -380px; padding: 0 40px;'>", unsafe_allow_html=True)
-            
-            st.markdown("<p style='color: #94a3b8; font-size: 11px; font-weight: 500; margin-bottom: 2px;'>Email Address</p>", unsafe_allow_html=True)
-            usuario_input = st.text_input("Usuario", placeholder="Enter your email address", label_visibility="collapsed")
+                if st.button("Log in", use_container_width=True):
+                    if usuario_input in USUARIOS and USUARIOS[usuario_input] == clave_input:
+                        st.session_state.autenticado = True
+                        st.session_state.usuario_actual = usuario_input
+                        st.rerun()
+                    else:
+                        st.error("⚠️ Usuario o contraseña incorrectos.")
 
-            st.markdown("<p style='color: #94a3b8; font-size: 11px; font-weight: 500; margin-bottom: 2px; margin-top: 8px;'>Password</p>", unsafe_allow_html=True)
-            clave_input = st.text_input("Contraseña", type="password", placeholder="Enter your password", label_visibility="collapsed")
-
-            st.markdown(
-                """
-                <div style='display: flex; justify-content: space-between; align-items: center; margin-top: 6px; margin-bottom: 14px;'>
-                    <span style='color: #94a3b8; font-size: 10px;'>⬜ Remember me</span>
-                    <a style='color: #ff3b3b; font-size: 10px; text-decoration: none;' href='#'>Forgot password?</a>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-            if st.button("Log in", use_container_width=True):
-                if usuario_input in USUARIOS and USUARIOS[usuario_input] == clave_input:
-                    st.session_state.autenticado = True
-                    st.session_state.usuario_actual = usuario_input
-                    st.rerun()
-                else:
-                    st.error("⚠️ Usuario o contraseña incorrectos.")
-
-            st.markdown(
-                """
-                <div style='text-align: center; color: #64748b; font-size: 10px; margin: 10px 0;'>or</div>
-                <div style='display: flex; gap: 8px;'>
-                    <div style='background: #171b26; border: 1px solid rgba(255,255,255,0.08); padding: 7px; border-radius: 8px; font-size: 10px; color: #ffffff; text-align: center; flex: 1;'>🌐 Google</div>
-                    <div style='background: #171b26; border: 1px solid rgba(255,255,255,0.08); padding: 7px; border-radius: 8px; font-size: 10px; color: #ffffff; text-align: center; flex: 1;'>🍎 Apple</div>
-                </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+                st.markdown(
+                    """
+                        <div style='text-align: center; color: #64748b; font-size: 10px; margin: 8px 0;'>or</div>
+                        <div style='display: flex; gap: 8px;'>
+                            <div style='background: #171b26; border: 1px solid rgba(255,255,255,0.08); padding: 7px; border-radius: 8px; font-size: 10px; color: #ffffff; text-align: center; flex: 1;'>🌐 Google</div>
+                            <div style='background: #171b26; border: 1px solid rgba(255,255,255,0.08); padding: 7px; border-radius: 8px; font-size: 10px; color: #ffffff; text-align: center; flex: 1;'>🍎 Apple</div>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
 
     st.stop()
 
