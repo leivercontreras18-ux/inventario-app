@@ -246,50 +246,54 @@ if "inventario_local" not in st.session_state:
 # --- 1. FLUJO DE LOGIN / PORTADA ---
 if not st.session_state.autenticado:
     if st.session_state.pantalla == "portada":
-        col1, col2, col3 = st.columns([0.2, 3.6, 0.2])
+        col1, col2, col3 = st.columns([0.1, 4.8, 0.1])
         with col2:
             st.markdown("<br>", unsafe_allow_html=True)
             
-            # Tarjeta principal de dos columnas estilo Pinterest
+            # Tarjeta principal adaptada para mantener proporciones limpias
             st.markdown(
                 """
                 <div style="
                     display: flex;
-                    background: rgba(20, 22, 28, 0.92);
+                    flex-direction: row;
+                    background: rgba(20, 22, 28, 0.95);
                     backdrop-filter: blur(25px);
                     border-radius: 24px;
                     border: 1px solid rgba(255, 255, 255, 0.08);
                     box-shadow: 0 30px 60px rgba(0,0,0,0.8);
                     overflow: hidden;
-                    margin-top: 20px;
+                    margin-top: 10px;
+                    width: 100%;
                 ">
                     <!-- Lado Izquierdo: Panel Visual -->
                     <div style="
-                        flex: 1.2;
-                        background: linear-gradient(rgba(10, 12, 16, 0.5), rgba(10, 12, 16, 0.8)), 
+                        flex: 1.1;
+                        background: linear-gradient(rgba(10, 12, 16, 0.4), rgba(10, 12, 16, 0.7)), 
                                     url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
                         background-size: cover;
                         background-position: center;
-                        padding: 60px 40px;
+                        padding: 70px 50px;
                         display: flex;
                         flex-direction: column;
                         justify-content: center;
                         border-right: 1px solid rgba(255, 255, 255, 0.06);
+                        min-height: 420px;
                     ">
-                        <h1 style="font-family: 'Cinzel', serif; color: #ffffff; font-size: 38px; font-weight: 700; margin-bottom: 12px; line-height: 1.2;">Hello<br>Welcome!</h1>
-                        <p style="color: #94a3b8; font-family: 'Montserrat', sans-serif; font-size: 13px; letter-spacing: 1px;">Control de Inventario y Sistema Boutique Lewin.</p>
+                        <h1 style="font-family: 'Cinzel', serif; color: #ffffff; font-size: 38px; font-weight: 700; margin-bottom: 12px; line-height: 1.1;">Hello<br>Welcome!</h1>
+                        <p style="color: #94a3b8; font-family: 'Montserrat', sans-serif; font-size: 13px; letter-spacing: 1px; line-height: 1.5;">Sistema exclusivo de control de inventario boutique Lewin.</p>
                     </div>
 
-                    <!-- Lado Derecho: Acceso (Parte 1 contenedor) -->
+                    <!-- Lado Derecho: Acceso -->
                     <div style="
                         flex: 1;
-                        padding: 50px 40px;
+                        padding: 60px 50px;
                         display: flex;
                         flex-direction: column;
                         justify-content: center;
+                        min-height: 420px;
                     ">
                         <div style="font-family: 'Cinzel', serif; font-size: 24px; color: #ffffff; font-weight: 700; margin-bottom: 2px;">LEWIN</div>
-                        <div style="font-family: 'Montserrat', sans-serif; font-size: 10px; color: #d4af37; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 25px;">Boutique Manager</div>
+                        <div style="font-family: 'Montserrat', sans-serif; font-size: 10px; color: #d4af37; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 30px;">Boutique Manager</div>
                 """,
                 unsafe_allow_html=True,
             )
