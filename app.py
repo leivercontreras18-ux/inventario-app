@@ -80,8 +80,7 @@ if not st.session_state.autenticado:
   with col2:
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # Aplicamos mix-blend-mode: multiply o lighten/screen para fundir el blanco, 
-    # o un diseño elegante con borde estilizado que hace que el logo resalte sin el bloque pesado.
+    # Enmascaramos los bordes y filtramos el color blanco usando brightness y contrast combinados
     st.markdown(
         """
             <div style="
@@ -99,7 +98,7 @@ if not st.session_state.autenticado:
                 align-items: center;
                 justify-content: center;
             ">
-                <img src="https://raw.githubusercontent.com/leivercontreras18-ux/inventario-app/main/1787708461873.png" style="width: 170px; height: auto; margin-bottom: 18px; border-radius: 12px; mix-blend-mode: screen; filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.5));">
+                <img src="https://raw.githubusercontent.com/leivercontreras18-ux/inventario-app/main/1787708461873.png" style="width: 160px; height: auto; margin-bottom: 15px; border-radius: 12px; filter: contrast(120%) drop-shadow(0px 4px 10px rgba(0,0,0,0.8)); mix-blend-mode: luminosity;">
                 <p style="color: #d4af37; font-size: 11px; text-transform: uppercase; letter-spacing: 4px; font-weight: 700; margin-bottom: 0px;">Sistema Privado de Inventario</p>
             </div>
         """,
@@ -289,7 +288,7 @@ else:
       with st.form("form_editar"):
         nuevo_id = st.text_input("ID", value=str(prenda_actual["ID"]))
         nuevo_nombre = st.text_input(
-            "Producto", value=str(preync_actual := prenda_actual["Producto"])
+            "Producto", value=str(prenda_actual["Producto"])
         )
         nueva_categoria = st.text_input(
             "Categoria", value=str(prenda_actual["Categoria"])
