@@ -274,10 +274,7 @@ if not st.session_state.autenticado:
             st.markdown(
                 """
 <div class="card-container">
-    <div style="color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2px;">
-        STAND OUT <span style="color: #c99846;">WITHOUT TRYING.</span>
-    </div>
-    <div style="font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">
+    <div style="font-size: 22px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">
         Welcome <span style="color: #e0a346;">Lewin</span>
     </div>
     <div style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 20px;">
@@ -343,10 +340,6 @@ if not st.session_state.autenticado:
             st.markdown(
                 """
 <div class="card-container">
-    <div style="color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2px;">
-        STAND OUT <span style="color: #c99846;">WITHOUT TRYING.</span>
-    </div>
-
     <div style="font-size: 24px; font-weight: 700; color: #ffffff; margin-bottom: 2px;">
         Welcome <span style="color: #e0a346;">Lewin</span>
     </div>
