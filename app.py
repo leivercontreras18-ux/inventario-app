@@ -5,7 +5,7 @@ st.set_page_config(
     page_title="Lewin // Inventario Boutique", page_icon="👕", layout="wide"
 )
 
-# --- DISEÑO UI (ESTILO GLASSMORPHISM AVANZADO) ---
+# --- DISEÑO UI (ESTILO GLASSMORPHISM) ---
 st.markdown(
     """
     <style>
@@ -41,7 +41,7 @@ st.markdown(
     .status-dot { width: 10px; height: 10px; background-color: #10b981; border-radius: 50%; box-shadow: 0 0 12px #10b981; }
     .user-name { font-size: 18px; font-weight: 600; color: #fafafa; }
 
-    /* ESTILOS DE ENTRADAS DE TEXTO Y BOTÓN */
+    /* ESTILOS DE ENTRADAS Y BOTÓN */
     .stTextInput input {
         background-color: rgba(255, 255, 255, 0.06) !important; 
         color: #ffffff !important; 
@@ -100,94 +100,89 @@ if not st.session_state.autenticado:
   with col2:
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Contenedor principal de la tarjeta de cristal con el formulario integrado
-    with st.container():
-      st.markdown(
-          """
-            <div style="
-                background: rgba(18, 24, 38, 0.6); 
-                backdrop-filter: blur(16px);
-                -webkit-backdrop-filter: blur(16px);
-                padding: 35px 30px; 
-                border-radius: 24px; 
-                border: 1px solid rgba(255, 255, 255, 0.12); 
-                text-align: center;
-                box-shadow: 0 25px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
-                margin-bottom: -15px;
-            ">
-                <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 12px;">
-                    <div style="
-                        width: 50px; height: 50px; 
-                        background: rgba(255, 255, 255, 0.1); 
-                        border: 1px solid rgba(255, 255, 255, 0.2);
-                        border-radius: 50%; 
-                        display: flex; align-items: center; justify-content: center;
-                        font-size: 24px; font-weight: 900; color: #38bdf8;
-                        box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
-                    ">
-                        L
-                    </div>
-                </div>
-                
-                <div style="color: #ffffff; font-size: 24px; font-weight: 700; letter-spacing: 3px; margin-bottom: 2px;">
-                    LEWIN
-                </div>
-                <div style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px;">
-                    Sistema de Inventario
-                </div>
-
-                <div style="font-size: 22px; font-weight: 600; color: #ffffff; margin-bottom: 6px;">
-                    Iniciar Sesión
-                </div>
-                <div style="font-size: 13px; color: #94a3b8; margin-bottom: 15px;">
-                    Introduce tus credenciales para acceder
+    # Contenedor visual de cristal limpio
+    st.markdown(
+        """
+        <div style="
+            background: rgba(18, 24, 38, 0.6); 
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 30px 25px 10px 25px; 
+            border-radius: 24px 24px 0px 0px; 
+            border: 1px solid rgba(255, 255, 255, 0.12); 
+            border-bottom: none;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        ">
+            <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 10px;">
+                <div style="
+                    width: 45px; height: 45px; 
+                    background: rgba(255, 255, 255, 0.1); 
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    border-radius: 50%; 
+                    display: flex; align-items: center; justify-content: center;
+                    font-size: 22px; font-weight: 900; color: #38bdf8;
+                    box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+                ">
+                    L
                 </div>
             </div>
+            <div style="color: #ffffff; font-size: 22px; font-weight: 700; letter-spacing: 3px; margin-bottom: 2px;">
+                LEWIN
+            </div>
+            <div style="color: #94a3b8; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px;">
+                Sistema de Inventario
+            </div>
+            <div style="font-size: 20px; font-weight: 600; color: #ffffff; margin-bottom: 4px;">
+                Iniciar Sesión
+            </div>
+            <div style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">
+                Introduce tus credenciales para acceder
+            </div>
+        </div>
         """,
+        unsafe_allow_html=True,
+    )
+
+    with st.form("form_login"):
+      st.markdown(
+          "<p style='color: #cbd5e1; font-size: 12px; font-weight: 500;"
+          " margin-bottom: 2px;'>Correo o Usuario</p>",
           unsafe_allow_html=True,
       )
+      usuario_input = st.text_input(
+          "Usuario",
+          placeholder="Ingresa tu usuario",
+          label_visibility="collapsed",
+      )
 
-      with st.form("form_login"):
-        st.markdown(
-            "<p style='color: #cbd5e1; font-size: 13px; font-weight: 500;"
-            " margin-bottom: 4px;'>Correo o Usuario</p>",
-            unsafe_allow_html=True,
-        )
-        usuario_input = st.text_input(
-            "Usuario",
-            placeholder="Ingresa tu usuario",
-            label_visibility="collapsed",
-        )
+      st.markdown(
+          "<p style='color: #cbd5e1; font-size: 12px; font-weight: 500;"
+          " margin-bottom: 2px; margin-top: 8px;'>Contraseña</p>",
+          unsafe_allow_html=True,
+      )
+      clave_input = st.text_input(
+          "Contraseña",
+          type="password",
+          placeholder="••••••••••••",
+          label_visibility="collapsed",
+      )
 
-        st.markdown(
-            "<p style='color: #cbd5e1; font-size: 13px; font-weight: 500;"
-            " margin-bottom: 4px; margin-top: 10px;'>Contraseña</p>",
-            unsafe_allow_html=True,
-        )
-        clave_input = st.text_input(
-            "Contraseña",
-            type="password",
-            placeholder="••••••••••••",
-            label_visibility="collapsed",
-        )
+      st.markdown("<br>", unsafe_allow_html=True)
+      boton_enviar = st.form_submit_button("Ingresar", use_container_width=True)
 
-        st.markdown("<br>", unsafe_allow_html=True)
-        boton_enviar = st.form_submit_button(
-            "Ingresar", use_container_width=True
-        )
-
-        if boton_enviar:
-          if (
-              usuario_input in USUARIOS
-              and USUARIOS[usuario_input] == clave_input
-          ):
-            st.session_state.autenticado = True
-            st.session_state.usuario_actual = usuario_input
-            st.rerun()
-          else:
-            st.error(
-                "⚠️ Usuario o contraseña incorrectos. Por favor verifícalos."
-            )
+      if boton_enviar:
+        if (
+            usuario_input in USUARIOS
+            and USUARIOS[usuario_input] == clave_input
+        ):
+          st.session_state.autenticado = True
+          st.session_state.usuario_actual = usuario_input
+          st.rerun()
+        else:
+          st.error(
+              "⚠️ Usuario o contraseña incorrectos. Por favor verifícalos."
+          )
   st.stop()
 
 else:
