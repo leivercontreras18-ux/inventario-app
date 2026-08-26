@@ -223,7 +223,7 @@ if "inventario_local" not in st.session_state:
         ]
     )
 
-# --- 1. FLUJO DE LOGIN CON CHECKBOX "REMEMBER ME" FUNCIONAL ---
+# --- 1. FLUJO DE LOGIN CON BOTÓN DE VER CONTRASEÑA ---
 if not st.session_state.autenticado:
     _, col_centro, _ = st.columns([1, 10, 1])
     
@@ -340,6 +340,24 @@ if not st.session_state.autenticado:
             .input-group input:focus {
                 border-color: #ff3b3b;
             }
+            .password-wrapper {
+                position: relative;
+                display: flex;
+                align-items: center;
+            }
+            .password-wrapper input {
+                padding-right: 35px !important;
+            }
+            .toggle-password {
+                position: absolute;
+                right: 10px;
+                background: none;
+                border: none;
+                color: #94a3b8;
+                cursor: pointer;
+                font-size: 14px;
+                padding: 0;
+            }
             .options-row {
                 display: flex;
                 justify-content: space-between;
@@ -396,6 +414,19 @@ if not st.session_state.autenticado:
                 flex: 1;
             }
         </style>
+        <script>
+            function togglePasswordVisibility() {
+                const passwordInput = document.getElementById('password-field');
+                const toggleBtn = document.getElementById('toggle-btn');
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    toggleBtn.textContent = '👁️‍🗨️';
+                } else {
+                    passwordInput.type = 'password';
+                    toggleBtn.textContent = '👁️';
+                }
+            }
+        </script>
         </head>
         <body>
             <div class="pinterest-card">
@@ -418,7 +449,10 @@ if not st.session_state.autenticado:
                         </div>
                         <div class="input-group">
                             <label>Password</label>
-                            <input type="password" name="clave" placeholder="Enter your password" required>
+                            <div class="password-wrapper">
+                                <input type="password" id="password-field" name="clave" placeholder="Enter your password" required>
+                                <button type="button" id="toggle-btn" class="toggle-password" onclick="togglePasswordVisibility()">👁️</button>
+                            </div>
                         </div>
                         <div class="options-row">
                             <label>
@@ -441,21 +475,15 @@ if not st.session_state.autenticado:
         
         st.components.v1.html(login_html, height=520)
 
-        # Capturamos los datos y el estado de "Remember me"
+        # Capturamos los datos enviados por el formulario HTML
         params = st.query_params
         if "usuario" in params and "clave" in params:
             usuario_input = params["usuario"]
             clave_input = params["clave"]
-            remember_checked = params.get("remember", "false") == "true"
             
             if usuario_input in USUARIOS and USUARIOS[usuario_input] == clave_input:
                 st.session_state.autenticado = True
                 st.session_state.usuario_actual = usuario_input
-                
-                # Si el usuario marcó "Remember me", podemos extender la persistencia o registrarlo
-                if remember_checked:
-                    st.toast("✅ Sesión recordada exitosamente.", icon="🔒")
-                
                 st.query_params.clear()
                 st.rerun()
             else:
