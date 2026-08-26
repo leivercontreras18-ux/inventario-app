@@ -1,3 +1,118 @@
+import pandas as pd
+import streamlit as st
+from supabase import create_client
+
+st.set_page_config(
+    page_title="Lewin // Inventario Boutique", page_icon="👕", layout="wide"
+)
+
+# --- CONEXIÓN A BASE DE DATOS SUPABASE ---
+@st.cache_resource
+def obtener_conexion_supabase():
+    try:
+        url = st.secrets["SUPABASE_URL"]
+        key = st.secrets["SUPABASE_KEY"]
+        return create_client(url, key)
+    except Exception:
+        return None
+
+supabase = obtener_conexion_supabase()
+
+def cargar_inventario():
+    if supabase:
+        try:
+            res = supabase.table("inventario").select("*").execute()
+            df = pd.DataFrame(res.data)
+            if not df.empty:
+                df = df.rename(
+                    columns={
+                        "id": "ID",
+                        "producto": "Producto",
+                        "categoria": "Categoria",
+                    }
+                )
+            return df
+        except Exception:
+            pass
+    return st.session_state.get(
+        "inventario_local",
+        pd.DataFrame(
+            columns=[
+                "ID",
+                "Producto",
+                "Categoria",
+                "talla",
+                "color",
+                "cantidad",
+                "alerta",
+            ]
+        ),
+    )
+
+def guardar_prenda(nueva_prenda):
+    if supabase:
+        try:
+            datos_db = {
+                "id": str(nueva_prenda["ID"]),
+                "producto": str(nueva_prenda["Producto"]),
+                "categoria": str(nueva_prenda["Categoria"]),
+                "talla": str(nueva_prenda["talla"]),
+                "color": str(nueva_prenda["color"]),
+                "cantidad": int(nueva_prenda["cantidad"]),
+                "alerta": int(nueva_prenda["alerta"]),
+            }
+            supabase.table("inventario").insert(datos_db).execute()
+            return True
+        except Exception as e:
+            st.error(f"Error al guardar en la nube: {e}")
+            return False
+    else:
+        nuevo_df = pd.DataFrame([nueva_prenda])
+        st.session_state.inventario_local = pd.concat(
+            [st.session_state.inventario_local, nuevo_df], ignore_index=True
+        )
+        return True
+
+def actualizar_prenda(id_prenda, datos_actualizados):
+    if supabase:
+        try:
+            datos_db = {
+                "id": str(datos_actualizados["ID"]),
+                "producto": str(datos_actualizados["Producto"]),
+                "categoria": str(datos_actualizados["Categoria"]),
+                "talla": str(datos_actualizados["talla"]),
+                "color": str(datos_actualizados["color"]),
+                "cantidad": int(datos_actualizados["cantidad"]),
+                "alerta": int(datos_actualizados["alerta"]),
+            }
+            supabase.table("inventario").eq("id", id_prenda).update(datos_db).execute()
+            return True
+        except Exception as e:
+            st.error(f"Error al actualizar: {e}")
+            return False
+    else:
+        df = st.session_state.inventario_local
+        idx = df[df["ID"].astype(str) == str(id_prenda)].index[0]
+        for col, val in datos_actualizados.items():
+            df.loc[idx, col] = val
+        return True
+
+def eliminar_prenda(id_prenda):
+    if supabase:
+        try:
+            supabase.table("inventario").delete().eq("id", id_prenda).execute()
+            return True
+        except Exception as e:
+            st.error(f"Error al eliminar: {e}")
+            return False
+    else:
+        df = st.session_state.inventario_local
+        st.session_state.inventario_local = df[
+            df["ID"].astype(str) != str(id_prenda)
+        ].reset_index(drop=True)
+        return True
+
+# --- FUNCIONES DE CONFIGURACIÓN DB ---
 def cargar_configuracion_db():
     if supabase:
         try:
@@ -8,7 +123,7 @@ def cargar_configuracion_db():
                 tallas = df[df["tipo"] == "talla"]["valor"].tolist()
                 colores = df[df["tipo"] == "color"]["valor"].tolist()
                 return cats, tallas, colores
-        except Exception as e:
+        except Exception:
             pass
     return [], [], []
 
@@ -29,3 +144,605 @@ def eliminar_configuracion_db(tipo, valor):
         except Exception:
             return False
     return False
+
+# --- ESTILOS NÍTIDOS UI ---
+st.markdown(
+    """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500;600&display=swap');
+
+.stApp { 
+    background: #090b0e;
+    color: #f8fafc !important; 
+}
+
+header[data-testid="stHeader"] { background: transparent !important; }
+
+.block-container {
+    max-width: 100% !important;
+    padding: 2rem !important;
+}
+
+section[data-testid="stSidebar"] { 
+    width: 240px !important;
+    background: rgba(16, 18, 23, 0.94) !important; 
+    border-right: 1px solid rgba(255, 255, 255, 0.08); 
+    backdrop-filter: blur(25px); 
+}
+section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
+
+div[data-baseweb="input"] {
+    background-color: #151821 !important;
+    border-radius: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+}
+div[data-baseweb="input"]:focus-within {
+    border-color: #ff3b3b !important;
+}
+div[data-baseweb="input"] input {
+    color: #ffffff !important;
+    font-size: 13px !important;
+}
+
+div.stButton > button {
+    background: #ff3b3b !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+    border: none !important;
+    font-weight: 600 !important;
+    padding: 10px 20px !important;
+    box-shadow: 0 4px 15px rgba(255, 59, 59, 0.3) !important;
+    transition: all 0.3s ease !important;
+}
+div.stButton > button:hover {
+    background: #e03131 !important;
+    transform: translateY(-1px) !important;
+}
+
+.page-header { margin-bottom: 25px; padding-bottom: 10px; }
+.page-title { font-size: 32px; font-weight: 700; color: #ffffff !important; letter-spacing: 0.5px; }
+.page-subtitle { font-size: 14px; color: #94a3b8 !important; margin-top: 4px; }
+
+.section-title { font-size: 18px; font-weight: 600; color: #ffffff; margin-bottom: 4px; }
+.section-subtitle { font-size: 12px; color: #94a3b8; margin-bottom: 15px; }
+
+.metric-card {
+    background: rgba(20, 23, 30, 0.75); 
+    backdrop-filter: blur(20px); 
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 20px; border-radius: 16px; text-align: left;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    height: 100%;
+}
+.metric-value { font-size: 32px; font-weight: 800; color: #d4af37 !important; margin-top: 8px; }
+.metric-label { font-size: 11px; color: #94a3b8 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+
+.user-profile { 
+    background: rgba(255, 255, 255, 0.03); 
+    padding: 14px 16px; border-radius: 14px; 
+    border: 1px solid rgba(212, 175, 55, 0.25); margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+}
+.user-avatar {
+    width: 36px; height: 36px; background: #d4af37; color: #0d121e;
+    font-weight: 800; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 15px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+}
+.user-info-title { font-size: 9px; color: #d4af37; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+.user-info-name { font-size: 14px; font-weight: 600; color: #ffffff; }
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
+# --- ESTADOS DE SESIÓN ---
+USUARIOS = {"leiver": "natsudraghonil", "winderly": "coromoto"}
+
+if "autenticado" not in st.session_state:
+    st.session_state.autenticado = False
+if "usuario_actual" not in st.session_state:
+    st.session_state.usuario_actual = ""
+if "etapa" not in st.session_state:
+    st.session_state.etapa = "bienvenida"
+if "inventario_local" not in st.session_state:
+    st.session_state.inventario_local = pd.DataFrame(
+        columns=[
+            "ID",
+            "Producto",
+            "Categoria",
+            "talla",
+            "color",
+            "cantidad",
+            "alerta",
+        ]
+    )
+
+if "form_version" not in st.session_state:
+    st.session_state.form_version = 0
+
+# Cargar configuraciones maestras desde Supabase o usar respaldo por defecto
+cats_db, tallas_db, colores_db = cargar_configuracion_db()
+
+if "categorias_maestras" not in st.session_state:
+    st.session_state.categorias_maestras = cats_db if cats_db else [
+        "Vestidos", "Blusas", "Pantalones", "Jeans", "Chaquetas", "Calzado", "Accesorios"
+    ]
+if "tallas_maestras" not in st.session_state:
+    st.session_state.tallas_maestras = tallas_db if tallas_db else ["XS", "S", "M", "L", "XL", "Única"]
+if "colores_maestros" not in st.session_state:
+    st.session_state.colores_maestros = colores_db if colores_db else ["Negro", "Blanco", "Beige", "Rojo", "Azul", "Rosa", "Verde"]
+
+query_params = st.query_params
+if not st.session_state.autenticado and "recuerdame_user" in query_params:
+    saved_user = query_params["recuerdame_user"]
+    if saved_user in USUARIOS:
+        st.session_state.autenticado = True
+        st.session_state.usuario_actual = saved_user
+
+# --- 1. PANTALLA DE BIENVENIDA ---
+if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
+    col_vacia, col_btn = st.columns([5, 1])
+    with col_btn:
+        st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+        if st.button("Login ➔", use_container_width=True):
+            st.session_state.etapa = "login"
+            st.rerun()
+
+    st.markdown("<br><br><br>", unsafe_allow_html=True)
+    _, col_centro, _ = st.columns([1, 1.5, 1])
+    with col_centro:
+        st.markdown(
+            """
+            <div style="text-align: center; padding: 40px 20px;">
+                <div style="font-size: 64px; margin-bottom: 20px; filter: drop-shadow(0 0 20px rgba(212,175,55,0.4));">👕</div>
+                <h1 style="font-family: 'Cinzel', serif; font-size: 42px; font-weight: 700; color: #ffffff; letter-spacing: 2px; margin-bottom: 10px;">LEWIN</h1>
+                <p style="font-size: 14px; color: #d4af37; text-transform: uppercase; letter-spacing: 4px; font-weight: 600; margin-bottom: 30px;">Boutique & Inventory Control</p>
+                <p style="color: #94a3b8; font-size: 14px; line-height: 1.6; max-width: 450px; margin: 0 auto 35px auto;">
+                    Sistema exclusivo de gestión de stock, monitoreo de existencias y control de colecciones en tiempo real.
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        _, col_boton_centro, _ = st.columns([1, 1.2, 1])
+        with col_boton_centro:
+            if st.button("Acceder al Sistema", use_container_width=True):
+                st.session_state.etapa = "login"
+                st.rerun()
+
+    st.stop()
+
+# --- 2. FLUJO DE LOGIN ---
+elif not st.session_state.autenticado and st.session_state.etapa == "login":
+    if st.button("← Volver a la portada"):
+        st.session_state.etapa = "bienvenida"
+        st.rerun()
+
+    _, col_centro, _ = st.columns([1, 1.4, 1])
+    
+    with col_centro:
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        with st.container(border=True):
+            st.markdown("<h3>✦ Lewin Boutique</h3>", unsafe_allow_html=True)
+            st.markdown("<p style='color: #94a3b8; font-size: 12px;'>Ingrese sus credenciales de acceso.</p>", unsafe_allow_html=True)
+            
+            usuario_input = st.text_input("Email Address / Usuario", placeholder="Ingrese su usuario")
+            clave_input = st.text_input("Password / Contraseña", type="password", placeholder="Ingrese su contraseña")
+            remember_checked = st.checkbox("Remember me")
+            
+            if st.button("Log in", use_container_width=True):
+                user_clean = usuario_input.strip().lower()
+                pass_clean = clave_input.strip()
+                
+                if user_clean in USUARIOS and USUARIOS[user_clean] == pass_clean:
+                    st.session_state.autenticado = True
+                    st.session_state.usuario_actual = user_clean
+                    
+                    if remember_checked:
+                        st.query_params["recuerdame_user"] = user_clean
+                    else:
+                        if "recuerdame_user" in st.query_params:
+                            del st.query_params["recuerdame_user"]
+                            
+                    st.rerun()
+                else:
+                    st.error("⚠️ Usuario o contraseña incorrectos.")
+                    
+    st.stop()
+
+# --- 3. PANEL PRINCIPAL ---
+else:
+    usuario_formateado = st.session_state.usuario_actual.capitalize()
+    inicial_usuario = usuario_formateado[0]
+
+    st.sidebar.markdown(
+        f"""
+<div class="user-profile">
+    <div class="user-avatar">{inicial_usuario}</div>
+    <div>
+        <div class="user-info-title">● Sesión Activa</div>
+        <div class="user-info-name">{usuario_formateado}</div>
+    </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    st.sidebar.markdown(
+        "<p style='font-size:10px; color:#64748b; text-transform:uppercase; letter-spacing:1.5px; font-weight:700; margin: 12px 0 6px 4px;'>Menú Principal</p>",
+        unsafe_allow_html=True,
+    )
+
+    if st.sidebar.button("📊 Existencias", use_container_width=True):
+        st.session_state.menu_activo = "existencias"
+        st.rerun()
+
+    if st.sidebar.button("➕ Registrar Prenda", use_container_width=True):
+        st.session_state.menu_activo = "registrar"
+        st.rerun()
+
+    if st.sidebar.button("✏️ Editar / Borrar", use_container_width=True):
+        st.session_state.menu_activo = "modificar"
+        st.rerun()
+
+    if st.sidebar.button("⚙️ Configuración", use_container_width=True):
+        st.session_state.menu_activo = "configuracion"
+        st.rerun()
+
+    st.sidebar.markdown(
+        "<hr style='margin: 25px 0 15px 0; border-color: rgba(255,255,255,0.06);'>",
+        unsafe_allow_html=True,
+    )
+
+    if st.sidebar.button("🚪 Cerrar Sesión", use_container_width=True):
+        st.session_state.autenticado = False
+        st.session_state.usuario_actual = ""
+        st.session_state.etapa = "bienvenida"
+        if "recuerdame_user" in st.query_params:
+            del st.query_params["recuerdame_user"]
+        st.rerun()
+
+    df = cargar_inventario()
+    menu = st.session_state.get("menu_activo", "existencias")
+
+    if menu == "existencias":
+        st.markdown(
+            """
+<div class="page-header">
+    <div class="page-title">Panel Principal // Lewin Boutique</div>
+    <div class="page-subtitle">Control general de stock y monitoreo en tiempo real.</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        total_prendas = len(df) if not df.empty else 0
+        stock_total = (
+            int(df["cantidad"].sum())
+            if not df.empty and "cantidad" in df.columns
+            else 0
+        )
+        
+        total_alertas = 0
+        if not df.empty and "cantidad" in df.columns and "alerta" in df.columns:
+            total_alertas = int(df[df["cantidad"] <= df["alerta"]].shape[0])
+
+        st.markdown(
+            """
+<div class="section-title">Visión General del Inventario</div>
+<div class="section-subtitle">Resumen general de métricas y existencias.</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown(
+                f"""
+<div class="metric-card">
+    <div class="metric-label">Total de Prendas / Modelos</div>
+    <div class="metric-value">{total_prendas}</div>
+</div>
+""",
+                unsafe_allow_html=True,
+            )
+        with col2:
+            st.markdown(
+                f"""
+<div class="metric-card">
+    <div class="metric-label">Stock Total Acumulado</div>
+    <div class="metric-value">{stock_total}</div>
+</div>
+""",
+                unsafe_allow_html=True,
+            )
+        with col3:
+            st.markdown(
+                f"""
+<div class="metric-card">
+    <div class="metric-label">Alertas de Stock Bajo</div>
+    <div class="metric-value" style="color: {'#ff3b3b' if total_alertas > 0 else '#d4af37'} !important;">{total_alertas}</div>
+</div>
+""",
+                unsafe_allow_html=True,
+            )
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        if not df.empty:
+            st.markdown(
+                """
+<div class="section-title">📋 Filtros y Búsqueda de Inventario</div>
+<div class="section-subtitle">Filtra por categoría o busca un producto en específico de forma inmediata.</div>
+""",
+                unsafe_allow_html=True,
+            )
+
+            col_f1, col_f2 = st.columns([1.5, 1])
+            with col_f1:
+                busqueda = st.text_input("🔍 Buscar por nombre o ID", placeholder="Escribe el nombre de la prenda o su ID...")
+            with col_f2:
+                categorias_disponibles = ["Todas"] + list(df["Categoria"].dropna().unique())
+                filtro_categoria = st.selectbox("📂 Filtrar por Categoría", categorias_disponibles)
+
+            df_filtrado = df.copy()
+            if busqueda.strip():
+                query = busqueda.strip().lower()
+                df_filtrado = df_filtrado[
+                    df_filtrado["ID"].astype(str).str.lower().str.contains(query) | 
+                    df_filtrado["Producto"].astype(str).str.lower().str.contains(query)
+                ]
+            
+            if filtro_categoria != "Todas":
+                df_filtrado = df_filtrado[df_filtrado["Categoria"] == filtro_categoria]
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown(f"<div class='section-title'>Resultados de la Búsqueda ({len(df_filtrado)} registros)</div>", unsafe_allow_html=True)
+            st.dataframe(df_filtrado, use_container_width=True)
+        else:
+            st.info("No hay prendas registradas todavía en el sistema.")
+
+    elif menu == "registrar":
+        st.markdown(
+            """
+<div class="page-header">
+    <div class="page-title">Registro de Nuevas Prendas</div>
+    <div class="page-subtitle">Añade artículos al catálogo de la boutique.</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        with st.form(f"form_ropa_{st.session_state.form_version}"):
+            sku = st.text_input("ID (Ej: A1)")
+            nombre = st.text_input("Producto (Ej: Short)")
+            categoria = st.selectbox("Categoria", st.session_state.categorias_maestras)
+            talla = st.selectbox("talla", st.session_state.tallas_maestras)
+            color = st.selectbox("color", st.session_state.colores_maestros)
+            cantidad = st.number_input("cantidad", min_value=0, step=1)
+            alerta = st.number_input("alerta de stock", min_value=0, step=1)
+
+            if st.form_submit_button("Guardar Prenda en el Sistema"):
+                if sku.strip() == "":
+                    st.error("El campo ID es obligatorio.")
+                else:
+                    nueva_prenda = {
+                        "ID": sku.strip(),
+                        "Producto": nombre.strip(),
+                        "Categoria": categoria,
+                        "talla": talla,
+                        "color": color,
+                        "cantidad": cantidad,
+                        "alerta": alerta,
+                    }
+                    if guardar_prenda(nueva_prenda):
+                        st.success("¡Prenda guardada con éxito!")
+                        st.session_state.form_version += 1
+                        st.rerun()
+
+    elif menu == "modificar":
+        st.markdown(
+            """
+<div class="page-header">
+    <div class="page-title">Modificar o Eliminar Prenda</div>
+    <div class="page-subtitle">Busca o selecciona una prenda existente para actualizar sus datos o borrarla.</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        if not df.empty:
+            modo_seleccion = st.radio(
+                "¿Cómo deseas encontrar la prenda?", 
+                ["Seleccionar de la lista", "Buscar por ID / Nombre"], 
+                horizontal=True
+            )
+
+            id_seleccionado = None
+
+            if modo_seleccion == "Seleccionar de la lista":
+                lista_ids = df["ID"].astype(str).tolist()
+                id_seleccionado = st.selectbox("Seleccione el ID de la prenda", lista_ids)
+            else:
+                texto_busqueda = st.text_input("Escribe el ID o nombre del producto a buscar:", placeholder="Ej: A1 o Short...")
+                if texto_busqueda.strip():
+                    q = texto_busqueda.strip().lower()
+                    df_coincidencias = df[
+                        df["ID"].astype(str).str.lower().str.contains(q) | 
+                        df["Producto"].astype(str).str.lower().str.contains(q)
+                    ]
+                    if not df_coincidencias.empty:
+                        opciones_encontradas = df_coincidencias["ID"].astype(str).tolist()
+                        id_seleccionado = st.selectbox(
+                            f"Coincidencias encontradas ({len(opciones_encontradas)}):", 
+                            opciones_encontradas,
+                            format_func=lambda x: f"ID: {x} - {df_coincidencias[df_coincidencias['ID'].astype(str) == x]['Producto'].values[0]}"
+                        )
+                    else:
+                        st.warning("No se encontraron prendas con ese criterio.")
+
+            if id_seleccionado:
+                fila_data = df[df["ID"].astype(str) == str(id_seleccionado)].iloc[0]
+
+                with st.form("form_editar"):
+                    nuevo_id = st.text_input("ID", value=str(fila_data["ID"]))
+                    nuevo_nombre = st.text_input("Producto", value=str(fila_data["Producto"]))
+                    
+                    cat_actual = str(fila_data["Categoria"])
+                    idx_cat = st.session_state.categorias_maestras.index(cat_actual) if cat_actual in st.session_state.categorias_maestras else 0
+                    nueva_categoria = st.selectbox("Categoria", st.session_state.categorias_maestras, index=idx_cat)
+                    
+                    talla_actual = str(fila_data["talla"])
+                    idx_talla = st.session_state.tallas_maestras.index(talla_actual) if talla_actual in st.session_state.tallas_maestras else 0
+                    nueva_talla = st.selectbox("talla", st.session_state.tallas_maestras, index=idx_talla)
+                    
+                    color_actual = str(fila_data["color"])
+                    idx_color = st.session_state.colores_maestros.index(color_actual) if color_actual in st.session_state.colores_maestros else 0
+                    nuevo_color = st.selectbox("color", st.session_state.colores_maestros, index=idx_color)
+                    
+                    nueva_cantidad = st.number_input(
+                        "cantidad", min_value=0, value=int(fila_data["cantidad"]), step=1
+                    )
+                    nueva_alerta = st.number_input(
+                        "alerta de stock",
+                        min_value=0,
+                        value=int(fila_data["alerta"]),
+                        step=1,
+                    )
+
+                    col_btn1, col_btn2 = st.columns(2)
+                    actualizar = col_btn1.form_submit_button(
+                        "💾 Guardar Cambios", use_container_width=True
+                    )
+                    eliminar = col_btn2.form_submit_button(
+                        "🗑️ Eliminar Prenda", use_container_width=True
+                    )
+
+                    if actualizar:
+                        datos_mod = {
+                            "ID": nuevo_id,
+                            "Producto": nuevo_nombre,
+                            "Categoria": nueva_categoria,
+                            "talla": nueva_talla,
+                            "color": nuevo_color,
+                            "cantidad": nueva_cantidad,
+                            "alerta": nueva_alerta,
+                        }
+                        if actualizar_prenda(id_seleccionado, datos_mod):
+                            st.success("¡Prenda actualizada correctamente!")
+                            st.rerun()
+
+                    if eliminar:
+                        if eliminar_prenda(id_seleccionado):
+                            st.success("¡Prenda eliminada del sistema!")
+                            st.rerun()
+        else:
+            st.info("No hay registros disponibles para modificar.")
+
+    elif menu == "configuracion":
+        st.markdown(
+            """
+<div class="page-header">
+    <div class="page-title">⚙️ Configuración del Sistema</div>
+    <div class="page-subtitle">Gestiona y personaliza las opciones maestras de categorías, tallas y colores.</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        col_cfg1, col_cfg2, col_cfg3 = st.columns(3)
+
+        # GESTIÓN DE CATEGORÍAS
+        with col_cfg1:
+            with st.container(border=True):
+                st.markdown("<div class='section-title'>📂 Categorías</div>", unsafe_allow_html=True)
+                st.markdown("<p style='font-size:12px; color:#94a3b8;'>Añade o elimina categorías.</p>", unsafe_allow_html=True)
+                
+                for cat in st.session_state.categorias_maestras:
+                    c_col1, c_col2 = st.columns([3, 1])
+                    c_col1.markdown(f"- {cat}")
+                    if c_col2.button("❌", key=f"del_cat_{cat}"):
+                        if len(st.session_state.categorias_maestras) > 1:
+                            if eliminar_configuracion_db("categoria", cat):
+                                st.session_state.categorias_maestras.remove(cat)
+                                st.success(f"Categoría '{cat}' eliminada.")
+                                st.rerun()
+                        else:
+                            st.error("Debe existir al menos una.")
+
+                st.markdown("<br>", unsafe_allow_html=True)
+                with st.form("form_nueva_cat"):
+                    nueva_cat_input = st.text_input("Nueva Categoría", placeholder="Ej: Faldas")
+                    if st.form_submit_button("Agregar Categoría"):
+                        clean_cat = nueva_cat_input.strip().capitalize()
+                        if clean_cat and clean_cat not in st.session_state.categorias_maestras:
+                            if agregar_configuracion_db("categoria", clean_cat):
+                                st.session_state.categorias_maestras.append(clean_cat)
+                                st.success(f"¡Categoría '{clean_cat}' agregada!")
+                                st.rerun()
+                        else:
+                            st.warning("Escribe un nombre válido o no repetido.")
+
+        # GESTIÓN DE TALLAS
+        with col_cfg2:
+            with st.container(border=True):
+                st.markdown("<div class='section-title'>📏 Tallas</div>", unsafe_allow_html=True)
+                st.markdown("<p style='font-size:12px; color:#94a3b8;'>Añade o elimina tallas.</p>", unsafe_allow_html=True)
+                
+                for t in st.session_state.tallas_maestras:
+                    t_col1, t_col2 = st.columns([3, 1])
+                    t_col1.markdown(f"- {t}")
+                    if t_col2.button("❌", key=f"del_talla_{t}"):
+                        if len(st.session_state.tallas_maestras) > 1:
+                            if eliminar_configuracion_db("talla", t):
+                                st.session_state.tallas_maestras.remove(t)
+                                st.success(f"Talla '{t}' eliminada.")
+                                st.rerun()
+                        else:
+                            st.error("Debe existir al menos una.")
+
+                st.markdown("<br>", unsafe_allow_html=True)
+                with st.form("form_nueva_talla"):
+                    nueva_talla_input = st.text_input("Nueva Talla", placeholder="Ej: 30, XXL")
+                    if st.form_submit_button("Agregar Talla"):
+                        clean_talla = nueva_talla_input.strip().upper()
+                        if clean_talla and clean_talla not in st.session_state.tallas_maestras:
+                            if agregar_configuracion_db("talla", clean_talla):
+                                st.session_state.tallas_maestras.append(clean_talla)
+                                st.success(f"¡Talla '{clean_talla}' agregada!")
+                                st.rerun()
+                        else:
+                            st.warning("Escribe una talla válida o no repetida.")
+
+        # GESTIÓN DE COLORES
+        with col_cfg3:
+            with st.container(border=True):
+                st.markdown("<div class='section-title'>🎨 Colores</div>", unsafe_allow_html=True)
+                st.markdown("<p style='font-size:12px; color:#94a3b8;'>Añade o elimina colores.</p>", unsafe_allow_html=True)
+                
+                for col_item in st.session_state.colores_maestros:
+                    col_c1, col_c2 = st.columns([3, 1])
+                    col_c1.markdown(f"- {col_item}")
+                    if col_c2.button("❌", key=f"del_color_{col_item}"):
+                        if len(st.session_state.colores_maestros) > 1:
+                            if eliminar_configuracion_db("color", col_item):
+                                st.session_state.colores_maestros.remove(col_item)
+                                st.success(f"Color '{col_item}' eliminado.")
+                                st.rerun()
+                        else:
+                            st.error("Debe existir al menos uno.")
+
+                st.markdown("<br>", unsafe_allow_html=True)
+                with st.form("form_nuevo_color"):
+                    nuevo_color_input = st.text_input("Nuevo Color", placeholder="Ej: Dorado, Vinotinto")
+                    if st.form_submit_button("Agregar Color"):
+                        clean_color = nuevo_color_input.strip().capitalize()
+                        if clean_color and clean_color not in st.session_state.colores_maestros:
+                            if agregar_configuracion_db("color", clean_color):
+                                st.session_state.colores_maestros.append(clean_color)
+                                st.success(f"¡Color '{clean_color}' agregado!")
+                                st.rerun()
+                        else:
+                            st.warning("Escribe un color válido o no repetido.")
