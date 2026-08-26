@@ -1,349 +1,670 @@
+import textwrap
+import pandas as pd
 import streamlit as st
+from supabase import create_client
 
 st.set_page_config(
-    page_title="Login - Lewin Boutique",
-    page_icon="🛍️",
-    layout="centered",
-    initial_sidebar_state="collapsed"
+    page_title="Lewin // Inventario Boutique", page_icon="👕", layout="wide"
 )
 
-# Estilos globales para integrar la vista limpia en Streamlit
-st.markdown("""
+# --- CONEXIÓN A BASE DE DATOS SUPABASE ---
+@st.cache_resource
+def obtener_conexion_supabase():
+  try:
+    url = st.secrets["SUPABASE_URL"]
+    key = st.secrets["SUPABASE_KEY"]
+    return create_client(url, key)
+  except Exception:
+    return None
+
+supabase = obtener_conexion_supabase()
+
+def cargar_inventario():
+  if supabase:
+    try:
+      res = supabase.table("inventario").select("*").execute()
+      df = pd.DataFrame(res.data)
+      if not df.empty:
+        df = df.rename(
+            columns={
+                "id": "ID",
+                "producto": "Producto",
+                "categoria": "Categoria",
+            }
+        )
+      return df
+    except Exception:
+      pass
+  return st.session_state.get(
+      "inventario_local",
+      pd.DataFrame(
+          columns=[
+              "ID",
+              "Producto",
+              "Categoria",
+              "talla",
+              "color",
+              "cantidad",
+              "alerta",
+          ]
+      ),
+  )
+
+def guardar_prenda(nueva_prenda):
+    if supabase:
+        try:
+            datos_db = {
+                "id": str(nueva_prenda["ID"]),
+                "producto": str(nueva_prenda["Producto"]),
+                "categoria": str(nueva_prenda["Categoria"]),
+                "talla": str(nueva_prenda["talla"]),
+                "color": str(nueva_prenda["color"]),
+                "cantidad": int(nueva_prenda["cantidad"]),
+                "alerta": int(nueva_prenda["alerta"]),
+            }
+            supabase.table("inventario").insert(datos_db).execute()
+            return True
+        except Exception as e:
+            st.error(f"Error al guardar en la nube: {e}")
+            return False
+    else:
+        nuevo_df = pd.DataFrame([nueva_prenda])
+        st.session_state.inventario_local = pd.concat(
+            [st.session_state.inventario_local, nuevo_df], ignore_index=True
+        )
+        return True
+
+def actualizar_prenda(id_prenda, datos_actualizados):
+    if supabase:
+        try:
+            datos_db = {
+                "id": str(datos_actualizados["ID"]),
+                "producto": str(datos_actualizados["Producto"]),
+                "categoria": str(datos_actualizados["Categoria"]),
+                "talla": str(datos_actualizados["talla"]),
+                "color": str(datos_actualizados["color"]),
+                "cantidad": int(datos_actualizados["cantidad"]),
+                "alerta": int(datos_actualizados["alerta"]),
+            }
+            supabase.table("inventario").eq("id", id_prenda).update(datos_db).execute()
+            return True
+        except Exception as e:
+            st.error(f"Error al actualizar: {e}")
+            return False
+    else:
+        df = st.session_state.inventario_local
+        idx = df[df["ID"].astype(str) == str(id_prenda)].index[0]
+        for col, val in datos_actualizados.items():
+            df.loc[idx, col] = val
+        return True
+
+def eliminar_prenda(id_prenda):
+    if supabase:
+        try:
+            supabase.table("inventario").delete().eq("id", id_prenda).execute()
+            return True
+        except Exception as e:
+            st.error(f"Error al eliminar: {e}")
+            return False
+    else:
+        df = st.session_state.inventario_local
+        st.session_state.inventario_local = df[
+            df["ID"].astype(str) != str(id_prenda)
+        ].reset_index(drop=True)
+        return True
+
+# --- DISEÑO UI ADAPTADO (INSPIRACIÓN PINTEREST CON MARCA LEWIN PRESERVADA) ---
+st.markdown(
+    textwrap.dedent("""
     <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    .block-container {
-        padding: 0rem;
-        max-width: 100%;
+    .stApp { 
+        background: linear-gradient(rgba(10, 12, 16, 0.78), rgba(10, 12, 16, 0.88)), 
+                    url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1920&auto=format&fit=crop');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        color: #f8fafc !important; 
     }
-    .stApp {
-        background-color: #080b11;
+    
+    header[data-testid="stHeader"] { background: transparent !important; }
+    
+    section[data-testid="stSidebar"] { 
+        width: 240px !important;
+        background: rgba(16, 18, 23, 0.94) !important; 
+        border-right: 1px solid rgba(255, 255, 255, 0.08); 
+        backdrop-filter: blur(25px); 
     }
-    iframe {
-        border: none !important;
+    section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
+    
+    /* Inputs estilizados */
+    div[data-baseweb="input"] {
+        background-color: #1a1d24 !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: #ffffff !important;
+    }
+    div[data-baseweb="input"]:focus-within {
+        border-color: #c99846 !important;
+    }
+    div[data-baseweb="input"] input {
+        color: #ffffff !important;
+        font-size: 13px !important;
+    }
+    
+    /* Botones dorados metalizados */
+    div.stButton > button, div[data-testid="stFormSubmitButton"] > button {
+        background: linear-gradient(135deg, #2b2e36 0%, #4a3e2c 50%, #8c6d3b 100%) !important;
+        color: #ffffff !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(201, 152, 70, 0.3) !important;
+        font-weight: 600 !important;
+        padding: 12px 20px !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
+        transition: all 0.3s ease !important;
+    }
+    div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
+        background: linear-gradient(135deg, #353945 0%, #5c4d37 50%, #a68247 100%) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    .page-header { margin-bottom: 25px; padding-bottom: 10px; }
+    .page-title { font-size: 32px; font-weight: 700; color: #ffffff !important; letter-spacing: 0.5px; }
+    .page-subtitle { font-size: 14px; color: #94a3b8 !important; margin-top: 4px; }
+    
+    .section-title { font-size: 18px; font-weight: 600; color: #ffffff; margin-bottom: 4px; }
+    .section-subtitle { font-size: 12px; color: #94a3b8; margin-bottom: 15px; }
+    
+    .metric-card {
+        background: rgba(20, 23, 30, 0.75); 
+        backdrop-filter: blur(20px); 
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 20px; border-radius: 16px; text-align: left;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        height: 100%;
+    }
+    .metric-value { font-size: 32px; font-weight: 800; color: #d4af37 !important; margin-top: 8px; }
+    .metric-label { font-size: 11px; color: #94a3b8 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+    
+    .user-profile { 
+        background: rgba(255, 255, 255, 0.03); 
+        padding: 14px 16px; border-radius: 14px; 
+        border: 1px solid rgba(212, 175, 55, 0.25); margin-bottom: 20px;
+        display: flex; align-items: center; gap: 12px;
+    }
+    .user-avatar {
+        width: 36px; height: 36px; background: #d4af37; color: #0d121e;
+        font-weight: 800; border-radius: 50%; display: flex; align-items: center;
+        justify-content: center; font-size: 15px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+    }
+    .user-info-title { font-size: 9px; color: #d4af37; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+    .user-info-name { font-size: 14px; font-weight: 600; color: #ffffff; }
+
+    .social-btn-container {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin-top: 18px;
+    }
+    .social-btn {
+        width: 48px;
+        height: 48px;
+        background: #181a20;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     </style>
-""", unsafe_allow_html=True)
+"""),
+    unsafe_allow_html=True,
+)
 
-login_html = """
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Lewin Boutique</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+# --- ESTADOS DE SESIÓN ---
+USUARIOS = {"leiver": "natsudraghonil", "winderly": "coromoto"}
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #080b11;
-      background-image: 
-        radial-gradient(circle at 50% 0%, rgba(255, 159, 0, 0.08) 0%, transparent 50%),
-        linear-gradient(180deg, rgba(8, 11, 17, 0.82) 0%, rgba(13, 17, 26, 0.92) 100%),
-        url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200&auto=format&fit=crop');
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
+if "autenticado" not in st.session_state:
+    st.session_state.autenticado = False
+if "usuario_actual" not in st.session_state:
+    st.session_state.usuario_actual = ""
+if "pantalla" not in st.session_state:
+    st.session_state.pantalla = "portada"
+if "menu_activo" not in st.session_state:
+    st.session_state.menu_activo = "existencias"
+if "inventario_local" not in st.session_state:
+    st.session_state.inventario_local = pd.DataFrame(
+        columns=[
+            "ID",
+            "Producto",
+            "Categoria",
+            "talla",
+            "color",
+            "cantidad",
+            "alerta",
+        ]
+    )
 
-    /* LOGO SUPERIOR CORREGIDO */
-    .brand-logo-wrapper {
-      margin-bottom: 20px;
-      display: flex;
-      justify-content: center;
-      filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.7));
-      transition: transform 0.3s ease;
-    }
-    .brand-logo-wrapper:hover {
-      transform: scale(1.03);
-    }
+# --- 1. FLUJO DE LOGIN / PORTADA ---
+if not st.session_state.autenticado:
+    if st.session_state.pantalla == "portada":
+        # LOGO "ED" CORPORATIVO, MANTENIDO
+        col1, col2, col3 = st.columns([1, 1.25, 1])
+        with col2:
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown(
+                """
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <div style="
+                        font-size: 58px; font-weight: 900; letter-spacing: -2px;
+                        background: linear-gradient(180deg, #ffffff 0%, #a1a8b8 40%, #4a505e 100%);
+                        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                        filter: drop-shadow(0px 8px 12px rgba(0,0,0,0.9));
+                        font-family: 'Segoe UI', Roboto, sans-serif; display: inline-block;
+                    ">ED</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
-    /* TARJETA GLASSMORPHIC ESTILO UI PINTEREST */
-    .auth-card {
-      width: 100%;
-      max-width: 410px;
-      background: rgba(22, 28, 40, 0.75);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 28px;
-      padding: 42px 32px;
-      box-shadow: 
-        0 30px 60px rgba(0, 0, 0, 0.6),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-      text-align: center;
-    }
+            # TARJETA GLASSMORPHISM CON DISEÑO INSPIRADO EN PINTEREST
+            st.markdown(
+                textwrap.dedent("""
+                <div style="
+                    background: rgba(20, 22, 28, 0.88); backdrop-filter: blur(25px);
+                    padding: 35px 30px 25px 30px; border-radius: 22px; 
+                    border: 1px solid rgba(255, 255, 255, 0.08); text-align: center;
+                    box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+                ">
+                    <!-- TITULAR AUDAZ INSPIRADO EN PINTEREST -->
+                    <div style="color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2px;">
+                        STAND OUT <span style="color: #c99846;">WITHOUT TRYING.</span>
+                    </div>
 
-    /* CABECERA */
-    h1 {
-      color: #ffffff;
-      font-size: 30px;
-      font-weight: 700;
-      margin-bottom: 8px;
-      letter-spacing: -0.5px;
-    }
-    h1 span {
-      background: linear-gradient(135deg, #ffb300 0%, #ff8c00 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .system-subtitle {
-      color: #ff9f00;
-      font-size: 10px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 1.8px;
-      margin-bottom: 34px;
-      opacity: 0.9;
-    }
+                    <!-- TU SALUDO DE BIENVENIDA MANTENIDO -->
+                    <div style="font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">
+                        Welcome <span style="color: #e0a346;">Lewin</span>
+                    </div>
+                    <div style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 20px;">
+                        Sistema privado de LEWIN BOUTIQUE
+                    </div>
+                """),
+                unsafe_allow_html=True,
+            )
+            
+            if st.button("Sign In  →", use_container_width=True):
+                st.session_state.pantalla = "login"
+                st.rerun()
 
-    /* INPUTS */
-    .input-group {
-      text-align: left;
-      margin-bottom: 20px;
-    }
-    label {
-      display: block;
-      color: #8a99ad;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      margin-bottom: 8px;
-      padding-left: 2px;
-    }
-    .input-container {
-      position: relative;
-    }
-    .input-field-icon {
-      position: absolute;
-      left: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 14px;
-      opacity: 0.7;
-    }
-    input {
-      width: 100%;
-      background: rgba(12, 16, 24, 0.65);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 14px;
-      padding: 14px 16px 14px 44px;
-      color: #ffffff;
-      font-size: 14px;
-      outline: none;
-      transition: all 0.25s ease;
-    }
-    input::placeholder {
-      color: #434f63;
-    }
-    input:focus {
-      border-color: rgba(255, 159, 0, 0.4);
-      background: rgba(12, 16, 24, 0.9);
-      box-shadow: 0 0 0 4px rgba(255, 159, 0, 0.08);
-    }
-    
-    .password-toggle-btn {
-      position: absolute;
-      right: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      color: #ff9f00;
-      cursor: pointer;
-      font-size: 14px;
-      padding: 4px;
-      display: flex;
-      align-items: center;
-      transition: opacity 0.2s;
-    }
-    .password-toggle-btn:hover {
-      opacity: 0.8;
-    }
+            st.markdown(
+                """
+                    <div style="margin-top: 25px; color: #5a6270; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                        <div style="flex:1; height:1px; background: rgba(255,255,255,0.08);"></div>
+                        or continue with
+                        <div style="flex:1; height:1px; background: rgba(255,255,255,0.08);"></div>
+                    </div>
+                    
+                    <div class="social-btn-container">
+                        <div class="social-btn">
+                            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 10.8 0 12.5s.7 2.8 1.9 5.2l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16C3.7 19.7 7.5 22.3 12 22.3z"/></svg>
+                        </div>
+                        <div class="social-btn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                        </div>
+                        <div class="social-btn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="#0077b5"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                        </div>
+                    </div>
 
-    .recovery-link {
-      display: block;
-      text-align: right;
-      color: #ff9f00;
-      font-size: 11px;
-      text-decoration: none;
-      margin-top: 8px;
-      font-weight: 600;
-      transition: color 0.2s;
-    }
-    .recovery-link:hover {
-      color: #ffb300;
-      text-decoration: underline;
-    }
+                    <div style="color: #7a8290; font-size: 12px; margin-top: 15px;">
+                        Don't have an account? <span style="color: #c99846; font-weight: 600; cursor: pointer;">Sign Up</span>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
-    /* BOTÓN PRINCIPAL */
-    .submit-button {
-      width: 100%;
-      background: linear-gradient(135deg, #3d3129 0%, #28201b 100%);
-      border: 1px solid rgba(255, 180, 100, 0.15);
-      border-radius: 14px;
-      padding: 15px;
-      color: #ffffff;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 28px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-      transition: all 0.25s ease;
-    }
-    .submit-button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
-      border-color: rgba(255, 159, 0, 0.3);
-      filter: brightness(1.15);
-    }
+    elif st.session_state.pantalla == "login":
+        # LOGO FLOTANTE MANTENIDO
+        col1, col2, col3 = st.columns([1, 1.25, 1])
+        with col2:
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown(
+                """
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="
+                        font-size: 58px; font-weight: 900; letter-spacing: -2px;
+                        background: linear-gradient(180deg, #ffffff 0%, #a1a8b8 40%, #4a505e 100%);
+                        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                        filter: drop-shadow(0px 8px 12px rgba(0,0,0,0.9));
+                        font-family: 'Segoe UI', Roboto, sans-serif; display: inline-block;
+                    ">ED</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
-    /* SEPARADOR */
-    .row-separator {
-      position: relative;
-      margin: 28px 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .separator-line {
-      width: 100%;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-    }
-    .separator-text {
-      position: absolute;
-      background: #151a26;
-      padding: 2px 12px;
-      border-radius: 10px;
-      font-size: 9px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 1.4px;
-      color: #58667e;
-    }
+        # MANTENER DISEÑO DE DOS COLUMNAS DENTRO DE LA TARJETA
+        # COLUMNA 1: IMAGEN DE PRODUCTO LUJO (INSPIRACIÓN PINTEREST)
+        # COLUMNA 2: TU FORMULARIO DE INICIO DE SESIÓN
 
-    /* REDES SOCIALES */
-    .social-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-    }
-    .social-button {
-      background: rgba(12, 16, 24, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      padding: 12px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
-    }
-    .social-button:hover {
-      background: rgba(20, 26, 38, 0.85);
-      border-color: rgba(255, 255, 255, 0.12);
-      transform: translateY(-2px);
-    }
+        # TARJETA GLASSMORPHIC CON DISEÑO INSPIRADO EN PINTEREST
+        st.markdown(
+            textwrap.dedent("""
+                <div style="
+                    background: rgba(20, 22, 28, 0.88); backdrop-filter: blur(25px);
+                    border-radius: 22px; 
+                    border: 1px solid rgba(255, 255, 255, 0.08); 
+                    box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+                    display: grid; grid-template-columns: 1fr 1.1fr; overflow: hidden;
+                ">
+                    <!-- COLUMNA 1: IMAGEN DE PRODUCTO LUJO MANTENIDA -->
+                    <div style="
+                        background-image: url('https://images.unsplash.com/photo-1549416878-b9ca95e26903?q=80&w=600&auto=format&fit=crop');
+                        background-size: cover; background-position: center;
+                        position: relative;
+                    ">
+                        <!-- DEGRADADO SOBRE LA IMAGEN PARA DARLE TOQUE METALIZADO OSCURO -->
+                        <div style="
+                            position: absolute; inset: 0;
+                            background: linear-gradient(135deg, rgba(20, 22, 28, 0.6) 0%, rgba(20, 22, 28, 0.92) 100%);
+                        "></div>
+                    </div>
+                    
+                    <!-- COLUMNA 2: TU FORMULARIO DE INICIO DE SESIÓN DENTRO DE LA TARJETA -->
+                    <div style="padding: 30px 28px 10px 28px; text-align: center;">
+                        <div style="color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2px;">
+                            STAND OUT <span style="color: #c99846;">WITHOUT TRYING.</span>
+                        </div>
 
-    /* FOOTER */
-    .signup-footer {
-      margin-top: 30px;
-      font-size: 12px;
-      color: #58667e;
-    }
-    .signup-footer a {
-      color: #ff9f00;
-      text-decoration: none;
-      font-weight: 700;
-    }
-    .signup-footer a:hover {
-      text-decoration: underline;
-    }
-  </style>
-</head>
-<body>
+                        <div style="font-size: 24px; font-weight: 700; color: #ffffff; margin-bottom: 2px;">
+                            Welcome <span style="color: #e0a346;">Lewin</span>
+                        </div>
+                        <div style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 15px;">
+                            Sistema privado de LEWIN BOUTIQUE
+                        </div>
+            """),
+            unsafe_allow_html=True,
+        )
 
-  <!-- LOGO METALIZADO L&W FIX NAMESPACE SVG -->
-  <div class="brand-logo-wrapper">
-    <svg width="105" height="105" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M15 15 L40 15 L40 68 L58 68 L58 85 L15 85 Z" fill="url(#metal-premium)" stroke="#333" stroke-width="0.5"/>
-      <path d="M60 15 L74 15 L79 65 L84 15 L98 15 L90 85 L76 85 L70 45 L64 85 L50 85 Z" fill="url(#metal-premium)" stroke="#333" stroke-width="0.5"/>
-      <defs>
-        <linearGradient id="metal-premium" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#e2e8f0" />
-          <stop offset="30%" stop-color="#ffffff" />
-          <stop offset="50%" stop-color="#475569" />
-          <stop offset="75%" stop-color="#94a3b8" />
-          <stop offset="100%" stop-color="#0f172a" />
-        </linearGradient>
-      </defs>
-    </svg>
-  </div>
+        with st.form("form_login_tailwind"):
+            st.markdown(
+                "<p style='color: #94a3b8; font-size: 11px; font-weight: 500;"
+                " margin-bottom: 4px; text-align: left;'>✉️ Email Address</p>",
+                unsafe_allow_html=True,
+            )
+            usuario_input = st.text_input(
+                "Usuario",
+                placeholder="Enter your email",
+                label_visibility="collapsed",
+            )
 
-  <!-- TARJETA PRINCIPAL -->
-  <div class="auth-card">
-    
-    <h1>Welcome <span>Lewin</span></h1>
-    <p class="system-subtitle">Sistema privado de LEWIN BOUTIQUE</p>
+            st.markdown(
+                "<p style='color: #94a3b8; font-size: 11px; font-weight: 500;"
+                " margin-bottom: 4px; margin-top: 10px; text-align: left;'>🔒 Password</p>",
+                unsafe_allow_html=True,
+            )
+            clave_input = st.text_input(
+                "Contraseña",
+                type="password",
+                placeholder="Enter your password",
+                label_visibility="collapsed",
+            )
 
-    <form onsubmit="event.preventDefault();">
-      <div class="input-group">
-        <label>Usuario</label>
-        <div class="input-container">
-          <span class="input-field-icon">👤</span>
-          <input type="text" placeholder="Entrar usuario">
+            st.markdown(
+                "<div style='text-align: right; margin-top: -5px; margin-bottom:"
+                " 15px;'><a style='color: #e0a346; font-size: 11px;"
+                " text-decoration: none;' href='#'>Forgot Password?</a></div>",
+                unsafe_allow_html=True,
+            )
+
+            col_f1, col_f2 = st.columns(2)
+            boton_enviar = col_f1.form_submit_button(
+                "Sign In →", use_container_width=True
+            )
+            boton_volver = col_f2.form_submit_button(
+                "Volver", use_container_width=True
+            )
+
+            if boton_volver:
+                st.session_state.pantalla = "portada"
+                st.rerun()
+
+            if boton_enviar:
+                if (
+                    usuario_input in USUARIOS
+                    and USUARIOS[usuario_input] == clave_input
+                ):
+                    st.session_state.autenticado = True
+                    st.session_state.usuario_actual = usuario_input
+                    st.rerun()
+                else:
+                    st.error("⚠️ Usuario o contraseña incorrectos.")
+        
+        # CERRAR LA TARJETA EN HTML
+        st.markdown("</div></div>", unsafe_allow_html=True)
+    st.stop()
+
+# --- 2. PANEL PRINCIPAL ---
+else:
+    usuario_formateado = st.session_state.usuario_actual.capitalize()
+    inicial_usuario = usuario_formateado[0]
+
+    st.sidebar.markdown(
+        f"""
+        <div class="user-profile">
+            <div class="user-avatar">{inicial_usuario}</div>
+            <div>
+                <div class="user-info-title">● Sesión Activa</div>
+                <div class="user-info-name">{usuario_formateado}</div>
+            </div>
         </div>
-      </div>
+    """,
+        unsafe_allow_html=True,
+    )
 
-      <div class="input-group">
-        <label>Contraseña</label>
-        <div class="input-container">
-          <span class="input-field-icon">🔒</span>
-          <input type="password" placeholder="Entrar contraseña">
-          <button type="button" class="password-toggle-btn">👁️</button>
-        </div>
-        <a href="#" class="recovery-link">Forgot Password?</a>
-      </div>
+    st.sidebar.markdown(
+        "<p style='font-size:10px; color:#64748b; text-transform:uppercase;"
+        " letter-spacing:1.5px; font-weight:700; margin: 12px 0 6px 4px;'>Menú"
+        " Principal</p>",
+        unsafe_allow_html=True,
+    )
 
-      <button type="submit" class="submit-button">
-        Sign In ➔
-      </button>
-    </form>
+    if st.sidebar.button("📊 Existencias", use_container_width=True):
+        st.session_state.menu_activo = "existencias"
+        st.rerun()
 
-    <div class="row-separator">
-      <div class="separator-line"></div>
-      <span class="separator-text">In continue with</span>
-    </div>
+    if st.sidebar.button("➕ Registrar Prenda", use_container_width=True):
+        st.session_state.menu_activo = "registrar"
+        st.rerun()
 
-    <div class="social-grid">
-      <button class="social-button"><span style="color: #00a2ff; font-size: 16px;">🌐</span></button>
-      <button class="social-button"><span style="color: #ffffff; font-size: 16px;">💻</span></button>
-      <button class="social-button"><span style="color: #c48b59; font-size: 16px;">💼</span></button>
-    </div>
+    if st.sidebar.button("✏️ Editar / Borrar", use_container_width=True):
+        st.session_state.menu_activo = "modificar"
+        st.rerun()
 
-    <p class="signup-footer">Don't have an account? <a href="#">Sign Up</a></p>
+    st.sidebar.markdown(
+        "<hr style='margin: 25px 0 15px 0; border-color:"
+        " rgba(255,255,255,0.06);'>",
+        unsafe_allow_html=True,
+    )
 
-  </div>
+    if st.sidebar.button("🚪 Cerrar Sesión", use_container_width=True):
+        st.session_state.autenticado = False
+        st.session_state.usuario_actual = ""
+        st.session_state.pantalla = "portada"
+        st.rerun()
 
-</body>
-</html>
-"""
+    df = cargar_inventario()
+    menu = st.session_state.menu_activo
 
-st.components.v1.html(login_html, height=820, scrolling=False)
+  if menu == "existencias":
+    st.markdown(
+        """
+            <div class="page-header">
+                <div class="page-title">Panel Principal // Lewin Boutique</div>
+                <div class="page-subtitle">Control general de stock y monitoreo en tiempo real.</div>
+            </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    total_prendas = len(df) if not df.empty else 0
+    stock_total = (
+        int(df["cantidad"].sum())
+        if not df.empty and "cantidad" in df.columns
+        else 0
+    )
+
+    st.markdown(
+        """
+            <div class="section-title">Visión General del Inventario</div>
+            <div class="section-subtitle">Resumen general de métricas y existencias.</div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    col1, col2 = st.columns(2)
+    with col1:
+      st.markdown(
+          f"""
+                <div class="metric-card">
+                    <div class="metric-label">Total de Prendas / Modelos</div>
+                    <div class="metric-value">{total_prendas}</div>
+                </div>
+            """,
+          unsafe_allow_html=True,
+      )
+    with col2:
+      st.markdown(
+          f"""
+                <div class="metric-card">
+                    <div class="metric-label">Stock Total Acumulado</div>
+                    <div class="metric-value">{stock_total}</div>
+                </div>
+            """,
+          unsafe_allow_html=True,
+      )
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    if not df.empty:
+      st.markdown(
+          """
+                <div class="section-title">📋 Registro Actual de Inventario</div>
+            """,
+          unsafe_allow_html=True,
+      )
+      st.dataframe(df, use_container_width=True)
+    else:
+      st.info("No hay prendas registradas todavía en el sistema.")
+
+  elif menu == "registrar":
+    st.markdown(
+        """
+            <div class="page-header">
+                <div class="page-title">Registro de Nuevas Prendas</div>
+                <div class="page-subtitle">Añade artículos al catálogo de la boutique.</div>
+            </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    with st.form("form_ropa"):
+      sku = st.text_input("ID (Ej: A1)")
+      nombre = st.text_input("Producto (Ej: Short)")
+      categoria = st.selectbox(
+          "Categoria",
+          [
+              "Vestidos",
+              "Blusas",
+              "Pantalones",
+              "Jeans",
+              "Chaquetas",
+              "Calzado",
+              "Accesorios",
+          ],
+      )
+      talla = st.selectbox("talla", ["XS", "S", "M", "L", "XL", "Única"])
+      color = st.text_input("color")
+      cantidad = st.number_input("cantidad", min_value=0, step=1)
+      alerta = st.number_input("alerta de stock", min_value=0, step=1)
+
+      if st.form_submit_button("Guardar Prenda en el Sistema"):
+        if sku.strip() == "":
+          st.error("El campo ID es obligatorio.")
+        else:
+          nueva_prenda = {
+              "ID": sku.strip(),
+              "Producto": nombre.strip(),
+              "Categoria": categoria,
+              "talla": talla,
+              "color": color.strip(),
+              "cantidad": cantidad,
+              "alerta": alerta,
+          }
+          if guardar_prenda(nueva_prenda):
+            st.success("¡Prenda guardada con éxito!")
+            st.rerun()
+
+  elif menu == "modificar":
+    st.markdown(
+        """
+            <div class="page-header">
+                <div class="page-title">Modificar o Eliminar Prenda</div>
+                <div class="page-subtitle">Selecciona una prenda existente para actualizar sus datos o borrarla.</div>
+            </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    if not df.empty:
+      lista_ids = df["ID"].astype(str).tolist()
+      id_seleccionado = st.selectbox("Seleccione el ID de la prenda", lista_ids)
+
+      fila_data = df[df["ID"].astype(str) == id_seleccionado].iloc[0]
+
+      with st.form("form_editar"):
+        nuevo_id = st.text_input("ID", value=str(fila_data["ID"]))
+        nuevo_nombre = st.text_input("Producto", value=str(fila_data["Producto"]))
+        nueva_categoria = st.text_input(
+            "Categoria", value=str(fila_data["Categoria"])
+        )
+        nueva_talla = st.text_input("talla", value=str(fila_data["talla"]))
+        nuevo_color = st.text_input("color", value=str(fila_data["color"]))
+        nueva_cantidad = st.number_input(
+            "cantidad", min_value=0, value=int(fila_data["cantidad"]), step=1
+        )
+        nueva_alerta = st.number_input(
+            "alerta de stock",
+            min_value=0,
+            value=int(fila_data["alerta"]),
+            step=1,
+        )
+
+        col_btn1, col_btn2 = st.columns(2)
+        actualizar = col_btn1.form_submit_button(
+            "💾 Guardar Cambios", use_container_width=True
+        )
+        eliminar = col_btn2.form_submit_button(
+            "🗑️ Eliminar Prenda", use_container_width=True
+        )
+
+        if actualizar:
+          datos_mod = {
+              "ID": nuevo_id,
+              "Producto": nuevo_nombre,
+              "Categoria": nueva_categoria,
+              "talla": nueva_talla,
+              "color": nuevo_color,
+              "cantidad": nueva_cantidad,
+              "alerta": nueva_alerta,
+          }
+          if actualizar_prenda(id_seleccionado, datos_mod):
+            st.success("¡Prenda actualizada correctamente!")
+            st.rerun()
+
+        if eliminar:
+          if eliminar_prenda(id_seleccionado):
+            st.success("¡Prenda eliminada del sistema!")
+            st.rerun()
+    else:
+      st.info("No hay registros disponibles para modificar.")
