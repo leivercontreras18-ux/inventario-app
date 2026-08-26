@@ -70,31 +70,34 @@ if not st.session_state.autenticado:
   col1, col2, col3 = st.columns([1, 1.3, 1])
   with col2:
     st.markdown("<br><br>", unsafe_allow_html=True)
-    st.markdown(
-        """
-            <div style="
-                background: linear-gradient(145deg, #18181b 0%, #09090b 100%); 
-                padding: 45px; 
-                border-radius: 24px; 
-                border: 1px solid #27272a; 
-                text-align: center;
-                box-shadow: 0 25px 50px rgba(0,0,0,0.8);
-            ">
+    
+    # Contenedor principal de bienvenida
+    with st.container():
+        st.markdown(
+            """
                 <div style="
-                    font-size: 38px; 
-                    margin-bottom: 12px; 
-                    background: rgba(212, 175, 55, 0.1); 
-                    display: inline-block; 
-                    padding: 15px; 
-                    border-radius: 50%;
-                    border: 1px solid rgba(212, 175, 55, 0.2);
-                ">✨</div>
-                <h2 style="color: #ffffff; font-weight: 700; font-size: 26px; margin-bottom: 6px; letter-spacing: 1px;">ESSENCE BOUTIQUE</h2>
-                <p style="color: #a1a1aa; font-size: 11px; text-transform: uppercase; letter-spacing: 4px; font-weight: 600; margin-bottom: 25px;">Sistema Privado de Inventario</p>
-            </div>
-        """,
-        unsafe_allow_html=True,
-    )
+                    background: linear-gradient(145deg, #18181b 0%, #09090b 100%); 
+                    padding: 45px; 
+                    border-radius: 24px; 
+                    border: 1px solid #27272a; 
+                    text-align: center;
+                    box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+                ">
+            """,
+            unsafe_allow_html=True,
+        )
+        
+        # AQUÍ INSERTAMOS TU LOGO CON EL TAMAÑO IDEAL
+        st.image("WhatsApp Image 2026-08-25 at 9.32.52 PM.jpeg", width=110)
+        
+        st.markdown(
+            """
+                    <h2 style="color: #ffffff; font-weight: 700; font-size: 26px; margin-top: 15px; margin-bottom: 6px; letter-spacing: 1px;">ESSENCE BOUTIQUE</h2>
+                    <p style="color: #a1a1aa; font-size: 11px; text-transform: uppercase; letter-spacing: 4px; font-weight: 600; margin-bottom: 25px;">Sistema Privado de Inventario</p>
+                </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     with st.form("form_login"):
       st.markdown(
