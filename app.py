@@ -132,7 +132,8 @@ def agregar_configuracion_db(tipo, valor):
         try:
             supabase.table("configuracion").insert({"tipo": tipo, "valor": valor}).execute()
             return True
-        except Exception:
+        except Exception as e:
+            st.error(f"Error de Supabase al guardar: {e}")
             return False
     return False
 
@@ -141,7 +142,8 @@ def eliminar_configuracion_db(tipo, valor):
         try:
             supabase.table("configuracion").delete().eq("tipo", tipo).eq("valor", valor).execute()
             return True
-        except Exception:
+        except Exception as e:
+            st.error(f"Error de Supabase al borrar: {e}")
             return False
     return False
 
