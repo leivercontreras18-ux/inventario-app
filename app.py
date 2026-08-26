@@ -6,6 +6,52 @@ st.set_page_config(
     page_title="Lewin // Inventario Boutique", page_icon="👕", layout="wide"
 )
 
+# --- CARGA DE TAILWIND CSS & ESTILOS BASE ---
+st.markdown(
+    """
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+    /* Ocultar elementos nativos innecesarios de Streamlit */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* Estilos personalizados para Inputs de Streamlit compatibles con el diseño Dark */
+    div[data-baseweb="input"] {
+        background-color: rgba(32, 37, 48, 0.6) !important;
+        border-radius: 0.75rem !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        color: #e2e8f0 !important;
+    }
+    div[data-baseweb="input"] input {
+        color: #e2e8f0 !important;
+    }
+    div[data-baseweb="input"]:focus-within {
+        border-color: rgba(99, 102, 241, 0.4) !important;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1) !important;
+    }
+    
+    /* Estilo para Botones primarios en Streamlit */
+    div.stButton > button, div[data-testid="stFormSubmitButton"] > button {
+        width: 100% !important;
+        background: linear-gradient(to right, #2c2724, #4a3b32, #2c2724) !important;
+        color: #ffffff !important;
+        border-radius: 0.75rem !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        font-weight: 700 !important;
+        padding: 0.85rem 1rem !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        transition: all 0.2s ease-in-out !important;
+    }
+    div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
+        filter: brightness(1.15) !important;
+        transform: translateY(-1px) !important;
+    }
+    </style>
+""",
+    unsafe_allow_html=True,
+)
+
+
 # --- CONEXIÓN A BASE DE DATOS SUPABASE ---
 @st.cache_resource
 def obtener_conexion_supabase():
@@ -118,99 +164,6 @@ def eliminar_prenda(id_prenda):
     return True
 
 
-# --- DISEÑO UI (TEXTURA DE TELA OSCURA & GLASSMORPHISM) ---
-st.markdown(
-    """
-    <style>
-    .stApp { 
-        background: linear-gradient(rgba(12, 14, 18, 0.75), rgba(12, 14, 18, 0.88)), 
-                    url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1920&auto=format&fit=crop');
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        color: #f8fafc !important; 
-    }
-    
-    section[data-testid="stSidebar"] { 
-        width: 240px !important;
-        background: rgba(18, 20, 26, 0.92) !important; 
-        border-right: 1px solid rgba(255, 255, 255, 0.08); 
-        backdrop-filter: blur(25px); 
-    }
-    section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
-    
-    /* Estilos de Cajas de Texto / Inputs */
-    div[data-baseweb="input"] {
-        background-color: #1a1d24 !important;
-        border-radius: 12px !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        color: #ffffff !important;
-    }
-    div[data-baseweb="input"] input {
-        color: #ffffff !important;
-    }
-    
-    /* Botón estilo Degradado Dorado Metalizado */
-    div.stButton > button, div[data-testid="stFormSubmitButton"] > button {
-        background: linear-gradient(135deg, #2b251d 0%, #614929 50%, #aa8344 100%) !important;
-        color: #ffffff !important;
-        border-radius: 12px !important;
-        border: 1px solid rgba(212, 175, 55, 0.3) !important;
-        font-weight: 600 !important;
-        padding: 10px 20px !important;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-        transition: all 0.3s ease;
-    }
-    div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
-        background: linear-gradient(135deg, #3d3428 0%, #7d5e35 50%, #cfa053 100%) !important;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(212, 175, 55, 0.2);
-    }
-
-    .page-header { margin-bottom: 25px; padding-bottom: 10px; }
-    .page-title { font-size: 32px; font-weight: 700; color: #ffffff !important; letter-spacing: 0.5px; }
-    .page-subtitle { font-size: 14px; color: #94a3b8 !important; margin-top: 4px; }
-    
-    .section-title { font-size: 18px; font-weight: 600; color: #ffffff; margin-bottom: 4px; }
-    .section-subtitle { font-size: 12px; color: #94a3b8; margin-bottom: 15px; }
-    
-    .metric-card {
-        background: rgba(22, 25, 33, 0.70); 
-        backdrop-filter: blur(20px); 
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        padding: 20px; border-radius: 16px; text-align: left;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-        height: 100%;
-    }
-    .metric-value { font-size: 32px; font-weight: 800; color: #d4af37 !important; margin-top: 8px; }
-    .metric-label { font-size: 11px; color: #94a3b8 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
-    
-    .user-profile { 
-        background: rgba(255, 255, 255, 0.03); 
-        padding: 14px 16px; border-radius: 14px; 
-        border: 1px solid rgba(212, 175, 55, 0.25); margin-bottom: 20px;
-        display: flex; align-items: center; gap: 12px;
-    }
-    .user-avatar {
-        width: 36px; height: 36px; background: #d4af37; color: #0d121e;
-        font-weight: 800; border-radius: 50%; display: flex; align-items: center;
-        justify-content: center; font-size: 15px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
-    }
-    .user-info-title { font-size: 9px; color: #d4af37; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
-    .user-info-name { font-size: 14px; font-weight: 600; color: #ffffff; }
-
-    div.stAlert {
-        background: rgba(22, 25, 33, 0.70) !important;
-        backdrop-filter: blur(14px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        color: #cbd5e1 !important; border-radius: 14px !important;
-    }
-    div.stAlert * { color: #cbd5e1 !important; }
-    </style>
-""",
-    unsafe_allow_html=True,
-)
-
 # --- ESTADOS DE SESIÓN ---
 USUARIOS = {"leiver": "natsudraghonil", "winderly": "coromoto"}
 
@@ -219,7 +172,7 @@ if "autenticado" not in st.session_state:
 if "usuario_actual" not in st.session_state:
   st.session_state.usuario_actual = ""
 if "pantalla" not in st.session_state:
-  st.session_state.pantalla = "portada"
+  st.session_state.pantalla = "login"
 if "menu_activo" not in st.session_state:
   st.session_state.menu_activo = "existencias"
 if "inventario_local" not in st.session_state:
@@ -235,178 +188,132 @@ if "inventario_local" not in st.session_state:
       ]
   )
 
-# --- 1. FLUJO DE LOGIN / PORTADA ---
+# --- 1. INTERFAZ DE LOGIN (TAILWIND HTML INTEGRADO) ---
 if not st.session_state.autenticado:
-  if st.session_state.pantalla == "portada":
-    col1, col2, col3 = st.columns([1, 1.1, 1])
-    with col2:
-      st.markdown("<br>", unsafe_allow_html=True)
-      # LOGO EXACTO (SVG 3D METALIZADO GENERADO)
+  col_left, col_center, col_right = st.columns([1, 2.2, 1])
+
+  with col_center:
+    # Encabezado del Card, Logotipo LW en relieve y Fondos
+    st.markdown(
+        """
+        <div class="relative flex flex-col items-center justify-center font-sans antialiased text-center pt-6">
+          <!-- LOGOTIPO GEOMÉTRICO LW -->
+          <div class="mb-6 drop-shadow-[0_10px_15px_rgba(255,255,255,0.07)] hover:scale-105 transition duration-300">
+            <svg width="100" height="110" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 20 L42 20 L42 70 L55 70 L55 85 L20 85 Z" fill="url(#metal-gradient)" stroke="#555" stroke-width="0.5"/>
+              <path d="M60 20 L75 20 L80 65 L85 20 L98 20 L90 85 L75 85 L70 45 L65 85 L52 85 Z" fill="url(#metal-gradient)" stroke="#555" stroke-width="0.5"/>
+              <path d="M42 20 L42 70 L20 85" stroke="#fff" stroke-width="0.5" opacity="0.3"/>
+              <path d="M70 45 L65 85 L52 85" stroke="#000" stroke-width="0.4" opacity="0.4"/>
+              <defs>
+                <linearGradient id="metal-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#94a3b8" />
+                  <stop offset="35%" stop-color="#cbd5e1" />
+                  <stop offset="50%" stop-color="#475569" />
+                  <stop offset="65%" stop-color="#e2e8f0" />
+                  <stop offset="100%" stop-color="#1e293b" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+
+          <!-- TARJETA GLASSMORPHISM HEADER -->
+          <div class="w-full rounded-t-3xl border border-white/[0.08] bg-[#161a22]/80 p-6 pb-2 text-center backdrop-blur-xl">
+            <h1 class="text-3xl font-medium tracking-wide text-white">
+              Welcome <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600 font-semibold">Lewin</span>
+            </h1>
+            <p class="mt-2 text-xs font-semibold tracking-wider text-amber-500/80 uppercase">
+              Sistema privado de LEWIN BOUTIQUE
+            </p>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Formulario de credenciales conectado a Streamlit Python
+    with st.form("form_login_tailwind"):
       st.markdown(
-          """
-            <div style="text-align: center; margin-bottom: 25px;">
-                <svg width="110" height="110" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="metal1" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#f1f5f9"/>
-                            <stop offset="50%" stop-color="#94a3b8"/>
-                            <stop offset="100%" stop-color="#334155"/>
-                        </linearGradient>
-                        <linearGradient id="metal2" x1="100%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stop-color="#ffffff"/>
-                            <stop offset="50%" stop-color="#cbd5e1"/>
-                            <stop offset="100%" stop-color="#475569"/>
-                        </linearGradient>
-                        <linearGradient id="metal3" x1="0%" y1="100%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#1e293b"/>
-                            <stop offset="50%" stop-color="#64748b"/>
-                            <stop offset="100%" stop-color="#94a3b8"/>
-                        </linearGradient>
-                        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-                            <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#000000" flood-opacity="0.85"/>
-                        </filter>
-                    </defs>
-                    <g filter="url(#shadow)">
-                        <path d="M 90,25 L 35,55 L 35,145 L 90,175 L 90,148 L 58,130 L 58,110 L 85,110 L 85,90 L 58,90 L 58,70 L 90,52 Z" fill="url(#metal1)"/>
-                        <path d="M 35,55 L 90,25 L 90,38 L 48,62 L 48,138 L 90,162 L 90,175 L 35,145 Z" fill="url(#metal2)"/>
-                        <path d="M 110,25 L 165,55 L 165,145 L 110,175 L 110,148 L 142,130 L 142,70 L 110,52 Z" fill="url(#metal2)"/>
-                        <path d="M 110,25 L 165,55 L 165,70 L 123,45 L 123,155 L 165,130 L 165,145 L 110,175 Z" fill="url(#metal3)"/>
-                        <path d="M 123,70 L 142,82 L 142,118 L 123,130 Z" fill="#111318" opacity="0.9"/>
-                    </g>
-                </svg>
-            </div>
-            
-            <div style="
-                background: rgba(22, 25, 32, 0.75); backdrop-filter: blur(25px);
-                padding: 35px 30px; border-radius: 24px; 
-                border: 1px solid rgba(255, 255, 255, 0.1); text-align: center;
-                box-shadow: 0 25px 50px rgba(0,0,0,0.7);
-            ">
-                <div style="color: #ffffff; font-size: 26px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 2px;">
-                    Welcome <span style="color: #d4af37;">Lewin</span>
-                </div>
-                <div style="color: #d4af37; font-size: 12px; margin-bottom: 20px; text-transform: lowercase;">sistema privado de lewin boutique</div>
-            </div>
-            """,
+          "<p class='text-xs font-bold text-slate-400 tracking-wide uppercase"
+          " pl-1 mb-1'>Usuario</p>",
           unsafe_allow_html=True,
       )
-      st.markdown("<br>", unsafe_allow_html=True)
-      if st.button("Ingresar al Sistema →", use_container_width=True):
-        st.session_state.pantalla = "login"
-        st.rerun()
-
-  elif st.session_state.pantalla == "login":
-    col1, col2, col3 = st.columns([1, 1.1, 1])
-    with col2:
-      st.markdown("<br>", unsafe_allow_html=True)
-      st.markdown(
-          """
-            <div style="text-align: center; margin-bottom: 15px;">
-                <svg width="90" height="90" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="metal1" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#f1f5f9"/>
-                            <stop offset="50%" stop-color="#94a3b8"/>
-                            <stop offset="100%" stop-color="#334155"/>
-                        </linearGradient>
-                        <linearGradient id="metal2" x1="100%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stop-color="#ffffff"/>
-                            <stop offset="50%" stop-color="#cbd5e1"/>
-                            <stop offset="100%" stop-color="#475569"/>
-                        </linearGradient>
-                        <linearGradient id="metal3" x1="0%" y1="100%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#1e293b"/>
-                            <stop offset="50%" stop-color="#64748b"/>
-                            <stop offset="100%" stop-color="#94a3b8"/>
-                        </linearGradient>
-                        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-                            <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#000000" flood-opacity="0.85"/>
-                        </filter>
-                    </defs>
-                    <g filter="url(#shadow)">
-                        <path d="M 90,25 L 35,55 L 35,145 L 90,175 L 90,148 L 58,130 L 58,110 L 85,110 L 85,90 L 58,90 L 58,70 L 90,52 Z" fill="url(#metal1)"/>
-                        <path d="M 35,55 L 90,25 L 90,38 L 48,62 L 48,138 L 90,162 L 90,175 L 35,145 Z" fill="url(#metal2)"/>
-                        <path d="M 110,25 L 165,55 L 165,145 L 110,175 L 110,148 L 142,130 L 142,70 L 110,52 Z" fill="url(#metal2)"/>
-                        <path d="M 110,25 L 165,55 L 165,70 L 123,45 L 123,155 L 165,130 L 165,145 L 110,175 Z" fill="url(#metal3)"/>
-                        <path d="M 123,70 L 142,82 L 142,118 L 123,130 Z" fill="#111318" opacity="0.9"/>
-                    </g>
-                </svg>
-            </div>
-            <div style="
-                background: rgba(22, 25, 32, 0.75); backdrop-filter: blur(25px);
-                padding: 25px 25px 10px 25px; border-radius: 24px 24px 0px 0px; 
-                border: 1px solid rgba(255, 255, 255, 0.1); border-bottom: none; text-align: center;
-            ">
-                <div style="font-size: 24px; font-weight: 700; color: #ffffff; margin-bottom: 2px;">
-                    Welcome <span style="color: #d4af37;">Lewin</span>
-                </div>
-                <div style="color: #d4af37; font-size: 12px; margin-bottom: 20px; text-transform: lowercase;">sistema privado de lewin boutique</div>
-            </div>
-            """,
-          unsafe_allow_html=True,
+      usuario_input = st.text_input(
+          "Usuario", placeholder="✉️ Entrar usuario", label_visibility="collapsed"
       )
 
-      with st.form("form_login"):
-        st.markdown(
-            "<p style='color: #cbd5e1; font-size: 12px; font-weight: 500;"
-            " margin-bottom: 2px;'>Usuario</p>",
-            unsafe_allow_html=True,
-        )
-        usuario_input = st.text_input(
-            "Usuario",
-            placeholder="Introduce tu usuario",
-            label_visibility="collapsed",
-        )
+      st.markdown(
+          "<p class='text-xs font-bold text-slate-400 tracking-wide uppercase"
+          " pl-1 mt-3 mb-1'>Contraseña</p>",
+          unsafe_allow_html=True,
+      )
+      clave_input = st.text_input(
+          "Contraseña",
+          type="password",
+          placeholder="🔒 Entrar contraseña",
+          label_visibility="collapsed",
+      )
 
-        st.markdown(
-            "<p style='color: #cbd5e1; font-size: 12px; font-weight: 500;"
-            " margin-bottom: 2px; margin-top: 8px;'>Contraseña</p>",
-            unsafe_allow_html=True,
-        )
-        clave_input = st.text_input(
-            "Contraseña",
-            type="password",
-            placeholder="••••••••••••",
-            label_visibility="collapsed",
-        )
+      st.markdown("<div class='mt-4'></div>", unsafe_allow_html=True)
+      boton_enviar = st.form_submit_button(
+          "Sign In  ➔", use_container_width=True
+      )
 
-        st.markdown("<br>", unsafe_allow_html=True)
-        col_f1, col_f2 = st.columns(2)
-        boton_enviar = col_f1.form_submit_button(
-            "Entrar →", use_container_width=True
-        )
-        boton_volver = col_f2.form_submit_button(
-            "Volver", use_container_width=True
-        )
-
-        if boton_volver:
-          st.session_state.pantalla = "portada"
+      if boton_enviar:
+        if (
+            usuario_input in USUARIOS
+            and USUARIOS[usuario_input] == clave_input
+        ):
+          st.session_state.autenticado = True
+          st.session_state.usuario_actual = usuario_input
           st.rerun()
+        else:
+          st.error("⚠️ Usuario o contraseña incorrectos.")
 
-        if boton_enviar:
-          if (
-              usuario_input in USUARIOS
-              and USUARIOS[usuario_input] == clave_input
-          ):
-            st.session_state.autenticado = True
-            st.session_state.usuario_actual = usuario_input
-            st.rerun()
-          else:
-            st.error("⚠️ Usuario o contraseña incorrectos.")
+    # Pie de página y Redes Sociales del Card
+    st.markdown(
+        """
+        <div class="w-full rounded-b-3xl border-x border-b border-white/[0.08] bg-[#161a22]/80 p-6 pt-0 text-center backdrop-blur-xl">
+          <div class="relative my-4 flex items-center justify-center">
+            <div class="w-full border-t border-white/[0.06]"></div>
+            <span class="absolute bg-[#161a22] px-3 text-[11px] font-bold uppercase tracking-widest text-slate-500">In continue with</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3">
+            <button type="button" class="flex items-center justify-center rounded-xl border border-white/[0.05] bg-[#202530]/40 py-2.5 hover:bg-[#202530]/80 transition">
+              <span class="text-lg">🌐</span>
+            </button>
+            <button type="button" class="flex items-center justify-center rounded-xl border border-white/[0.05] bg-[#202530]/40 py-2.5 hover:bg-[#202530]/80 transition">
+              <span class="text-lg">🐱</span>
+            </button>
+            <button type="button" class="flex items-center justify-center rounded-xl border border-white/[0.05] bg-[#202530]/40 py-2.5 hover:bg-[#202530]/80 transition">
+              <span class="text-lg">💼</span>
+            </button>
+          </div>
+
+          <p class="mt-6 text-xs text-slate-500">
+            Don't have an account? <a href="#" class="font-semibold text-amber-500/80 hover:text-amber-400 transition">Sign Up</a>
+          </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
   st.stop()
 
-# --- 2. PANEL PRINCIPAL ---
+# --- 2. PANEL PRINCIPAL DEL SISTEMA ---
 else:
   usuario_formateado = st.session_state.usuario_actual.capitalize()
   inicial_usuario = usuario_formateado[0]
 
   st.sidebar.markdown(
       f"""
-        <div class="user-profile">
-            <div class="user-avatar">{inicial_usuario}</div>
+        <div class="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-amber-500/20 mb-4">
+            <div class="w-9 h-9 rounded-full bg-amber-500 text-slate-900 font-extrabold flex items-center justify-center text-sm shadow-lg">
+                {inicial_usuario}
+            </div>
             <div>
-                <div class="user-info-title">● Sesión Activa</div>
-                <div class="user-info-name">{usuario_formateado}</div>
+                <div class="text-[9px] text-amber-400 font-bold uppercase tracking-wider">● Sesión Activa</div>
+                <div class="text-sm font-semibold text-white">{usuario_formateado}</div>
             </div>
         </div>
     """,
@@ -414,9 +321,8 @@ else:
   )
 
   st.sidebar.markdown(
-      "<p style='font-size:10px; color:#64748b; text-transform:uppercase;"
-      " letter-spacing:1.5px; font-weight:700; margin: 12px 0 6px 4px;'>Menú"
-      " Principal</p>",
+      "<p class='text-[10px] text-slate-500 uppercase tracking-widest"
+      " font-bold mb-2 ml-1'>Menú Principal</p>",
       unsafe_allow_html=True,
   )
 
@@ -433,15 +339,12 @@ else:
     st.rerun()
 
   st.sidebar.markdown(
-      "<hr style='margin: 25px 0 15px 0; border-color:"
-      " rgba(255,255,255,0.06);'>",
-      unsafe_allow_html=True,
+      "<hr class='my-4 border-white/[0.06]'>", unsafe_allow_html=True
   )
 
   if st.sidebar.button("🚪 Cerrar Sesión", use_container_width=True):
     st.session_state.autenticado = False
     st.session_state.usuario_actual = ""
-    st.session_state.pantalla = "portada"
     st.rerun()
 
   df = cargar_inventario()
@@ -450,9 +353,9 @@ else:
   if menu == "existencias":
     st.markdown(
         """
-            <div class="page-header">
-                <div class="page-title">Panel Principal // Lewin Boutique</div>
-                <div class="page-subtitle">Control general de stock y monitoreo en tiempo real.</div>
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-white">Panel Principal // Lewin Boutique</h1>
+                <p class="text-sm text-slate-400">Control general de stock y monitoreo en tiempo real.</p>
             </div>
         """,
         unsafe_allow_html=True,
@@ -465,21 +368,13 @@ else:
         else 0
     )
 
-    st.markdown(
-        """
-            <div class="section-title">Visión General del Inventario</div>
-            <div class="section-subtitle">Resumen general de métricas y existencias.</div>
-        """,
-        unsafe_allow_html=True,
-    )
-
     col1, col2 = st.columns(2)
     with col1:
       st.markdown(
           f"""
-                <div class="metric-card">
-                    <div class="metric-label">Total de Prendas / Modelos</div>
-                    <div class="metric-value">{total_prendas}</div>
+                <div class="p-5 rounded-2xl bg-[#161a22]/70 border border-white/[0.08] backdrop-blur-md">
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total de Prendas / Modelos</div>
+                    <div class="text-3xl font-extrabold text-amber-400 mt-2">{total_prendas}</div>
                 </div>
             """,
           unsafe_allow_html=True,
@@ -487,9 +382,9 @@ else:
     with col2:
       st.markdown(
           f"""
-                <div class="metric-card">
-                    <div class="metric-label">Stock Total Acumulado</div>
-                    <div class="metric-value">{stock_total}</div>
+                <div class="p-5 rounded-2xl bg-[#161a22]/70 border border-white/[0.08] backdrop-blur-md">
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Stock Total Acumulado</div>
+                    <div class="text-3xl font-extrabold text-amber-400 mt-2">{stock_total}</div>
                 </div>
             """,
           unsafe_allow_html=True,
@@ -498,12 +393,6 @@ else:
     st.markdown("<br>", unsafe_allow_html=True)
 
     if not df.empty:
-      st.markdown(
-          """
-                <div class="section-title">📋 Registro Actual de Inventario</div>
-            """,
-          unsafe_allow_html=True,
-      )
       st.dataframe(df, use_container_width=True)
     else:
       st.info("No hay prendas registradas todavía en el sistema.")
@@ -511,9 +400,9 @@ else:
   elif menu == "registrar":
     st.markdown(
         """
-            <div class="page-header">
-                <div class="page-title">Registro de Nuevas Prendas</div>
-                <div class="page-subtitle">Añade artículos al catálogo de la boutique.</div>
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-white">Registro de Nuevas Prendas</h1>
+                <p class="text-sm text-slate-400">Añade artículos al catálogo de la boutique.</p>
             </div>
         """,
         unsafe_allow_html=True,
@@ -559,9 +448,9 @@ else:
   elif menu == "modificar":
     st.markdown(
         """
-            <div class="page-header">
-                <div class="page-title">Modificar o Eliminar Prenda</div>
-                <div class="page-subtitle">Selecciona una prenda existente para actualizar sus datos o borrarla.</div>
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-white">Modificar o Eliminar Prenda</h1>
+                <p class="text-sm text-slate-400">Selecciona una prenda existente para actualizar sus datos o borrarla.</p>
             </div>
         """,
         unsafe_allow_html=True,
@@ -570,7 +459,6 @@ else:
     if not df.empty:
       lista_ids = df["ID"].astype(str).tolist()
       id_seleccionado = st.selectbox("Seleccione el ID de la prenda", lista_ids)
-
       fila_data = df[df["ID"].astype(str) == id_seleccionado].iloc[0]
 
       with st.form("form_editar"):
