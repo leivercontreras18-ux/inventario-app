@@ -5,7 +5,7 @@ st.set_page_config(
     page_title="Lewin // Inventario Boutique", page_icon="👕", layout="wide"
 )
 
-# --- DISEÑO UI (ESTILO GLASSMORPHISM & SIDEBAR COMPACTA) ---
+# --- DISEÑO UI (ESTILO GLASSMORPHISM & MENÚ COMPACTO DE ICONOS) ---
 st.markdown(
     """
     <style>
@@ -18,12 +18,12 @@ st.markdown(
         color: #fafafa !important; 
     }
     
-    /* ANCHO Y ESTILO DE LA BARRA LATERAL REDUCIDO */
+    /* BARRA LATERAL ESTRECHA Y ELEGANTE */
     section[data-testid="stSidebar"] { 
-        width: 240px !important;
-        background-color: rgba(18, 18, 22, 0.92) !important; 
-        border-right: 1px solid #27272a; 
-        backdrop-filter: blur(10px); 
+        width: 190px !important;
+        background-color: rgba(18, 18, 22, 0.85) !important; 
+        border-right: 1px solid rgba(255, 255, 255, 0.08); 
+        backdrop-filter: blur(14px); 
     }
     section[data-testid="stSidebar"] * { color: #f4f4f5 !important; }
     
@@ -45,43 +45,41 @@ st.markdown(
     
     /* USUARIO COMPACTO */
     .user-badge { 
-        background: rgba(24, 24, 27, 0.8); 
-        padding: 12px 14px; 
+        background: rgba(255, 255, 255, 0.04); 
+        padding: 10px 12px; 
         border-radius: 12px; 
-        border: 1px solid #27272a; 
-        margin-bottom: 15px; 
+        border: 1px solid rgba(255, 255, 255, 0.08); 
+        margin-bottom: 12px; 
+        text-align: center;
     }
-    .user-status-title { font-size: 8px; color: #71717a; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 4px; }
-    .user-content { display: flex; align-items: center; gap: 10px; }
-    .status-dot { width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; box-shadow: 0 0 8px #10b981; }
-    .user-name { font-size: 15px; font-weight: 600; color: #fafafa; }
+    .user-status-title { font-size: 7px; color: #71717a; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 2px; }
+    .user-name { font-size: 14px; font-weight: 600; color: #fafafa; }
 
-    /* ESTILOS DE ENTRADAS Y BOTONES */
-    .stTextInput input {
-        background-color: rgba(255, 255, 255, 0.06) !important; 
-        color: #ffffff !important; 
-        border: 1px solid rgba(255, 255, 255, 0.15) !important; 
-        border-radius: 12px !important; 
-        backdrop-filter: blur(8px);
-        padding: 12px !important;
+    /* BOTONES DE NAVEGACIÓN ESTILO PÍLDORA/ICONA */
+    .stSidebar .stButton>button {
+        background: rgba(255, 255, 255, 0.03) !important; 
+        color: #d4d4d8 !important;
+        font-weight: 500; 
+        font-size: 13px;
+        border-radius: 10px; 
+        border: 1px solid rgba(255, 255, 255, 0.06) !important; 
+        padding: 8px 12px;
+        text-align: left;
+        margin-bottom: 4px;
+        box-shadow: none !important;
+        transition: all 0.2s ease;
     }
-    .stTextInput input:focus {
-        border-color: #38bdf8 !important;
-        box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+    .stSidebar .stButton>button:hover { 
+        background: rgba(56, 189, 248, 0.12) !important; 
+        color: #38bdf8 !important;
+        border-color: rgba(56, 189, 248, 0.3) !important;
     }
-    .stButton>button {
+    
+    /* BOTÓN DE ACCIÓN PRINCIPAL (Cerrar sesión / Ingresar) */
+    .btn-action button {
         background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important; 
         color: #ffffff !important;
-        font-weight: 600; 
-        border-radius: 10px; 
-        border: none !important; 
-        padding: 8px 16px;
-        box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
-        transition: all 0.3s ease;
-    }
-    .stButton>button:hover { 
-        background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%) !important; 
-        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.5);
+        border: none !important;
     }
     </style>
 """,
@@ -99,6 +97,9 @@ if "usuario_actual" not in st.session_state:
 
 if "pantalla" not in st.session_state:
   st.session_state.pantalla = "portada"
+
+if "menu_activo" not in st.session_state:
+  st.session_state.menu_activo = "existencias"
 
 if "inventario" not in st.session_state:
   st.session_state.inventario = pd.DataFrame(
@@ -249,45 +250,52 @@ if not st.session_state.autenticado:
 # --- 2. FLUJO PRINCIPAL CUANDO YA ESTÁ AUTENTICADO ---
 else:
   usuario_formateado = st.session_state.usuario_actual.capitalize()
+
+  # BARRA LATERAL ESTILO PANEL MINIMALISTA COMPACTO
   st.sidebar.markdown(
       f"""
         <div class="user-badge">
-            <div class="user-status-title">En línea</div>
-            <div class="user-content">
-                <span class="status-dot"></span>
-                <div class="user-name">{usuario_formateado}</div>
-            </div>
+            <div class="user-status-title">🟢 Activo</div>
+            <div class="user-name">{usuario_formateado}</div>
         </div>
     """,
       unsafe_allow_html=True,
   )
 
-  if st.sidebar.button("Cerrar Sesión", use_container_width=True):
+  st.sidebar.markdown(
+      "<p style='font-size:10px; color:#71717a; text-transform:uppercase;"
+      " letter-spacing:1px; margin: 8px 0 4px 2px;'>Navegación</p>",
+      unsafe_allow_html=True,
+  )
+
+  if st.sidebar.button("📊 Existencias", use_container_width=True):
+    st.session_state.menu_activo = "existencias"
+    st.rerun()
+
+  if st.sidebar.button("➕ Registrar", use_container_width=True):
+    st.session_state.menu_activo = "registrar"
+    st.rerun()
+
+  if st.sidebar.button("✏️ Editar / Borrar", use_container_width=True):
+    st.session_state.menu_activo = "modificar"
+    st.rerun()
+
+  st.sidebar.markdown(
+      "<hr style='margin: 15px 0; border-color: rgba(255,255,255,0.06);'>"
+      "",
+      unsafe_allow_html=True,
+  )
+
+  if st.sidebar.button("🚪 Cerrar Sesión", use_container_width=True):
     st.session_state.autenticado = False
     st.session_state.usuario_actual = ""
     st.session_state.pantalla = "portada"
     st.rerun()
 
-  st.sidebar.markdown(
-      "<hr style='margin: 15px 0; border-color: rgba(255,255,255,0.1);'>"
-      "<p style='font-size:11px; color:#a1a1aa; text-transform:uppercase;"
-      " letter-spacing:1px; margin-bottom:5px;'>Navegación</p>",
-      unsafe_allow_html=True,
-  )
-
   df = st.session_state.inventario
+  menu = st.session_state.menu_activo
 
-  menu = st.sidebar.selectbox(
-      "Navegación del Sistema",
-      [
-          "📊 Estado de Existencias",
-          "➕ Registrar Prenda",
-          "✏️ Modificar / Eliminar Prenda",
-      ],
-      label_visibility="collapsed",
-  )
-
-  if menu == "📊 Estado de Existencias":
+  if menu == "existencias":
     st.markdown(
         """
             <div class="hero-banner">
@@ -332,7 +340,7 @@ else:
     else:
       st.info("No hay prendas registradas todavía.")
 
-  elif menu == "➕ Registrar Prenda":
+  elif menu == "registrar":
     st.markdown(
         """
             <div class="hero-banner">
@@ -382,7 +390,7 @@ else:
           st.success("¡Prenda guardada con éxito!")
           st.rerun()
 
-  elif menu == "✏️ Modificar / Eliminar Prenda":
+  elif menu == "modificar":
     st.markdown(
         """
             <div class="hero-banner">
