@@ -225,6 +225,14 @@ if "inventario_local" not in st.session_state:
         ]
     )
 
+# Listas maestras almacenadas en session_state para poder gestionarlas dinámicamente
+if "categorias_maestras" not in st.session_state:
+    st.session_state.categorias_maestras = [
+        "Vestidos", "Blusas", "Pantalones", "Jeans", "Chaquetas", "Calzado", "Accesorios"
+    ]
+if "tallas_maestras" not in st.session_state:
+    st.session_state.tallas_maestras = ["XS", "S", "M", "L", "XL", "Única"]
+
 query_params = st.query_params
 if not st.session_state.autenticado and "recuerdame_user" in query_params:
     saved_user = query_params["recuerdame_user"]
@@ -339,6 +347,10 @@ else:
         st.session_state.menu_activo = "modificar"
         st.rerun()
 
+    if st.sidebar.button("⚙️ Configuración", use_container_width=True):
+        st.session_state.menu_activo = "configuracion"
+        st.rerun()
+
     st.sidebar.markdown(
         "<hr style='margin: 25px 0 15px 0; border-color: rgba(255,255,255,0.06);'>",
         unsafe_allow_html=True,
@@ -373,7 +385,6 @@ else:
             else 0
         )
         
-        # Cálculo de alertas: prendas cuya cantidad es menor o igual a su umbral de alerta
         total_alertas = 0
         if not df.empty and "cantidad" in df.columns and "alerta" in df.columns:
             total_alertas = int(df[df["cantidad"] <= df["alerta"]].shape[0])
@@ -386,7 +397,6 @@ else:
             unsafe_allow_html=True,
         )
 
-        # Se amplía a 3 columnas para incluir la tarjeta de alertas críticas
         col1, col2, col3 = st.columns(3)
         with col1:
             st.markdown(
@@ -430,7 +440,6 @@ else:
                 unsafe_allow_html=True,
             )
 
-            # Controles de filtrado y búsqueda avanzados
             col_f1, col_f2 = st.columns([1.5, 1])
             with col_f1:
                 busqueda = st.text_input("🔍 Buscar por nombre o ID", placeholder="Escribe el nombre de la prenda o su ID...")
@@ -438,7 +447,6 @@ else:
                 categorias_disponibles = ["Todas"] + list(df["Categoria"].dropna().unique())
                 filtro_categoria = st.selectbox("📂 Filtrar por Categoría", categorias_disponibles)
 
-            # Aplicación de los filtros sobre el DataFrame original
             df_filtrado = df.copy()
             if busqueda.strip():
                 query = busqueda.strip().lower()
@@ -470,19 +478,13 @@ else:
         with st.form("form_ropa"):
             sku = st.text_input("ID (Ej: A1)")
             nombre = st.text_input("Producto (Ej: Short)")
-            categoria = st.selectbox(
-                "Categoria",
-                [
-                    "Vestidos",
-                    "Blusas",
-                    "Pantalones",
-                    "Jeans",
-                    "Chaquetas",
-                    "Calzado",
-                    "Accesorios",
-                ],
-            )
-            talla = st.selectbox("talla", ["XS", "S", "M", "L", "XL", "Única"])
+            
+            # Se enlazan las categorías desde el session_state dinámico
+            categoria = st.selectbox("Categoria", st.session_state.categorias_maestras)
+            
+            # Se enlazan las tallas desde el session_state dinámico
+            talla = st.selectbox("talla", st.session_state.tallas_maestras)
+            
             color = st.text_input("color")
             cantidad = st.number_input("cantidad", min_value=0, step=1)
             alerta = st.number_input("alerta de stock", min_value=0, step=1)
@@ -524,10 +526,17 @@ else:
             with st.form("form_editar"):
                 nuevo_id = st.text_input("ID", value=str(fila_data["ID"]))
                 nuevo_nombre = st.text_input("Producto", value=str(fila_data["Producto"]))
-                nueva_categoria = st.text_input(
-                    "Categoria", value=str(fila_data["Categoria"])
-                )
-                nueva_talla = st.text_input("talla", value=str(fila_data["talla"]))
+                
+                # Menú desplegable dinámico para categoría
+                cat_actual = str(fila_data["Categoria"])
+                idx_cat = st.session_state.categorias_maestras.index(cat_actual) if cat_actual in st.session_state.categorias_maestras else 0
+                nueva_categoria = st.selectbox("Categoria", st.session_state.categorias_maestras, index=idx_cat)
+                
+                # Menú desplegable dinámico para talla
+                talla_actual = str(fila_data["talla"])
+                idx_talla = st.session_state.tallas_maestras.index(talla_actual) if talla_actual in st.session_state.tallas_maestras else 0
+                nueva_talla = st.selectbox("talla", st.session_state.tallas_maestras, index=idx_talla)
+                
                 nuevo_color = st.text_input("color", value=str(fila_data["color"]))
                 nueva_cantidad = st.number_input(
                     "cantidad", min_value=0, value=int(fila_data["cantidad"]), step=1
@@ -567,3 +576,76 @@ else:
                         st.rerun()
         else:
             st.info("No hay registros disponibles para modificar.")
+
+    elif menu == "configuracion":
+        st.markdown(
+            """
+<div class="page-header">
+    <div class="page-title">⚙️ Configuración del Sistema</div>
+    <div class="page-subtitle">Gestiona y personaliza las opciones maestras de categorías y tallas.</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        col_cfg1, col_cfg2 = st.columns(2)
+
+        # GESTIÓN DE CATEGORÍAS
+        with col_cfg1:
+            with st.container(border=True):
+                st.markdown("<div class='section-title'>📂 Categorías Disponibles</div>", unsafe_allow_html=True)
+                st.markdown("<p style='font-size:12px; color:#94a3b8;'>Añade o elimina categorías para tus prendas.</p>", unsafe_allow_html=True)
+                
+                # Mostrar lista actual
+                for cat in st.session_state.categorias_maestras:
+                    c_col1, c_col2 = st.columns([3, 1])
+                    c_col1.markdown(f"- {cat}")
+                    if c_col2.button("❌", key=f"del_cat_{cat}"):
+                        if len(st.session_state.categorias_maestras) > 1:
+                            st.session_state.categorias_maestras.remove(cat)
+                            st.success(f"Categoría '{cat}' eliminada.")
+                            st.rerun()
+                        else:
+                            st.error("Debe existir al menos una categoría.")
+
+                st.markdown("<br>", unsafe_allow_html=True)
+                with st.form("form_nueva_cat"):
+                    nueva_cat_input = st.text_input("Nueva Categoría", placeholder="Ej: Faldas, Abrigos...")
+                    if st.form_submit_button("Agregar Categoría"):
+                        clean_cat = nueva_cat_input.strip().capitalize()
+                        if clean_cat and clean_cat not in st.session_state.categorias_maestras:
+                            st.session_state.categorias_maestras.append(clean_cat)
+                            st.success(f"¡Categoría '{clean_cat}' agregada con éxito!")
+                            st.rerun()
+                        else:
+                            st.warning("Escribe un nombre válido o que no esté repetido.")
+
+        # GESTIÓN DE TALLAS
+        with col_cfg2:
+            with st.container(border=True):
+                st.markdown("<div class='section-title'>📏 Tallas Disponibles</div>", unsafe_allow_html=True)
+                st.markdown("<p style='font-size:12px; color:#94a3b8;'>Añade o elimina tallas para tus prendas.</p>", unsafe_allow_html=True)
+                
+                # Mostrar lista actual
+                for t in st.session_state.tallas_maestras:
+                    t_col1, t_col2 = st.columns([3, 1])
+                    t_col1.markdown(f"- {t}")
+                    if t_col2.button("❌", key=f"del_talla_{t}"):
+                        if len(st.session_state.tallas_maestras) > 1:
+                            st.session_state.tallas_maestras.remove(t)
+                            st.success(f"Talla '{t}' eliminada.")
+                            st.rerun()
+                        else:
+                            st.error("Debe existir al menos una talla.")
+
+                st.markdown("<br>", unsafe_allow_html=True)
+                with st.form("form_nueva_talla"):
+                    nueva_talla_input = st.text_input("Nueva Talla", placeholder="Ej: 28, 30, XXL...")
+                    if st.form_submit_button("Agregar Talla"):
+                        clean_talla = nueva_talla_input.strip().upper()
+                        if clean_talla and clean_talla not in st.session_state.tallas_maestras:
+                            st.session_state.tallas_maestras.append(clean_talla)
+                            st.success(f"¡Talla '{clean_talla}' agregada con éxito!")
+                            st.rerun()
+                        else:
+                            st.warning("Escribe una talla válida o que no esté repetida.")
