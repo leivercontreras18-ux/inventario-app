@@ -1,4 +1,3 @@
-import textwrap
 import pandas as pd
 import streamlit as st
 from supabase import create_client
@@ -119,12 +118,12 @@ def eliminar_prenda(id_prenda):
     return True
 
 
-# --- DISEÑO UI EXACTO ---
+# --- DISEÑO UI (TEXTURA DE TELA OSCURA & GLASSMORPHISM) ---
 st.markdown(
-    textwrap.dedent("""
+    """
     <style>
     .stApp { 
-        background: linear-gradient(rgba(10, 12, 16, 0.78), rgba(10, 12, 16, 0.88)), 
+        background: linear-gradient(rgba(12, 14, 18, 0.75), rgba(12, 14, 18, 0.88)), 
                     url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1920&auto=format&fit=crop');
         background-size: cover;
         background-position: center;
@@ -132,54 +131,51 @@ st.markdown(
         color: #f8fafc !important; 
     }
     
-    header[data-testid="stHeader"] { background: transparent !important; }
-    
     section[data-testid="stSidebar"] { 
         width: 240px !important;
-        background: rgba(16, 18, 23, 0.94) !important; 
+        background: rgba(18, 20, 26, 0.92) !important; 
         border-right: 1px solid rgba(255, 255, 255, 0.08); 
         backdrop-filter: blur(25px); 
     }
     section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
     
+    /* Estilos de Cajas de Texto / Inputs */
     div[data-baseweb="input"] {
         background-color: #1a1d24 !important;
         border-radius: 12px !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         color: #ffffff !important;
     }
-    div[data-baseweb="input"]:focus-within {
-        border-color: #c99846 !important;
-    }
     div[data-baseweb="input"] input {
         color: #ffffff !important;
-        font-size: 13px !important;
     }
     
+    /* Botón estilo Degradado Dorado Metalizado */
     div.stButton > button, div[data-testid="stFormSubmitButton"] > button {
-        background: linear-gradient(135deg, #2b2e36 0%, #4a3e2c 50%, #8c6d3b 100%) !important;
+        background: linear-gradient(135deg, #2b251d 0%, #614929 50%, #aa8344 100%) !important;
         color: #ffffff !important;
         border-radius: 12px !important;
-        border: 1px solid rgba(201, 152, 70, 0.3) !important;
+        border: 1px solid rgba(212, 175, 55, 0.3) !important;
         font-weight: 600 !important;
-        padding: 12px 20px !important;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
-        transition: all 0.3s ease !important;
+        padding: 10px 20px !important;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        transition: all 0.3s ease;
     }
     div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
-        background: linear-gradient(135deg, #353945 0%, #5c4d37 50%, #a68247 100%) !important;
-        transform: translateY(-1px) !important;
+        background: linear-gradient(135deg, #3d3428 0%, #7d5e35 50%, #cfa053 100%) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(212, 175, 55, 0.2);
     }
 
     .page-header { margin-bottom: 25px; padding-bottom: 10px; }
-    .page-title { font-size: 32px; font-weight: 700; color: #ffffff !important; }
+    .page-title { font-size: 32px; font-weight: 700; color: #ffffff !important; letter-spacing: 0.5px; }
     .page-subtitle { font-size: 14px; color: #94a3b8 !important; margin-top: 4px; }
     
     .section-title { font-size: 18px; font-weight: 600; color: #ffffff; margin-bottom: 4px; }
     .section-subtitle { font-size: 12px; color: #94a3b8; margin-bottom: 15px; }
     
     .metric-card {
-        background: rgba(20, 23, 30, 0.75); 
+        background: rgba(22, 25, 33, 0.70); 
         backdrop-filter: blur(20px); 
         border: 1px solid rgba(255, 255, 255, 0.08);
         padding: 20px; border-radius: 16px; text-align: left;
@@ -203,24 +199,15 @@ st.markdown(
     .user-info-title { font-size: 9px; color: #d4af37; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
     .user-info-name { font-size: 14px; font-weight: 600; color: #ffffff; }
 
-    .social-btn-container {
-        display: flex;
-        justify-content: center;
-        gap: 16px;
-        margin-top: 18px;
+    div.stAlert {
+        background: rgba(22, 25, 33, 0.70) !important;
+        backdrop-filter: blur(14px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        color: #cbd5e1 !important; border-radius: 14px !important;
     }
-    .social-btn {
-        width: 48px;
-        height: 48px;
-        background: #181a20;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+    div.stAlert * { color: #cbd5e1 !important; }
     </style>
-"""),
+""",
     unsafe_allow_html=True,
 )
 
@@ -248,156 +235,145 @@ if "inventario_local" not in st.session_state:
       ]
   )
 
-# --- LOGO 3D EN SVG ---
-LOGO_ED_SVG = """
-<div style="text-align: center; margin-bottom: 25px;">
-    <svg width="110" height="110" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <linearGradient id="metal1" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#f1f5f9"/>
-                <stop offset="50%" stop-color="#94a3b8"/>
-                <stop offset="100%" stop-color="#334155"/>
-            </linearGradient>
-            <linearGradient id="metal2" x1="100%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stop-color="#ffffff"/>
-                <stop offset="50%" stop-color="#cbd5e1"/>
-                <stop offset="100%" stop-color="#475569"/>
-            </linearGradient>
-            <linearGradient id="metal3" x1="0%" y1="100%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#1e293b"/>
-                <stop offset="50%" stop-color="#64748b"/>
-                <stop offset="100%" stop-color="#94a3b8"/>
-            </linearGradient>
-            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#000000" flood-opacity="0.85"/>
-            </filter>
-        </defs>
-        <g filter="url(#shadow)">
-            <path d="M 90,25 L 35,55 L 35,145 L 90,175 L 90,148 L 58,130 L 58,110 L 85,110 L 85,90 L 58,90 L 58,70 L 90,52 Z" fill="url(#metal1)"/>
-            <path d="M 35,55 L 90,25 L 90,38 L 48,62 L 48,138 L 90,162 L 90,175 L 35,145 Z" fill="url(#metal2)"/>
-            <path d="M 110,25 L 165,55 L 165,145 L 110,175 L 110,148 L 142,130 L 142,70 L 110,52 Z" fill="url(#metal2)"/>
-            <path d="M 110,25 L 165,55 L 165,70 L 123,45 L 123,155 L 165,130 L 165,145 L 110,175 Z" fill="url(#metal3)"/>
-            <path d="M 123,70 L 142,82 L 142,118 L 123,130 Z" fill="#111318" opacity="0.9"/>
-        </g>
-    </svg>
-</div>
-"""
-
 # --- 1. FLUJO DE LOGIN / PORTADA ---
 if not st.session_state.autenticado:
   if st.session_state.pantalla == "portada":
-    col1, col2, col3 = st.columns([1, 1.25, 1])
+    col1, col2, col3 = st.columns([1, 1.1, 1])
     with col2:
       st.markdown("<br>", unsafe_allow_html=True)
-      st.markdown(textwrap.dedent(LOGO_ED_SVG), unsafe_allow_html=True)
-
+      # LOGO EXACTO (SVG 3D METALIZADO GENERADO)
       st.markdown(
-          textwrap.dedent("""
-                <div style="
-                    background: rgba(20, 22, 28, 0.88); backdrop-filter: blur(25px);
-                    padding: 35px 30px 25px 30px; border-radius: 22px; 
-                    border: 1px solid rgba(255, 255, 255, 0.08); text-align: center;
-                    box-shadow: 0 30px 60px rgba(0,0,0,0.8);
-                ">
-                    <div style="color: #ffffff; font-size: 26px; font-weight: 700; letter-spacing: 0.3px; margin-bottom: 4px;">
-                        Welcome <span style="color: #c99846;">Back</span>
-                    </div>
-                    <div style="color: #788294; font-size: 12px; margin-bottom: 25px;">
-                        Sign in to continue your engineering journey
-                    </div>
-            """),
+          """
+            <div style="text-align: center; margin-bottom: 25px;">
+                <svg width="110" height="110" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="metal1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#f1f5f9"/>
+                            <stop offset="50%" stop-color="#94a3b8"/>
+                            <stop offset="100%" stop-color="#334155"/>
+                        </linearGradient>
+                        <linearGradient id="metal2" x1="100%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#ffffff"/>
+                            <stop offset="50%" stop-color="#cbd5e1"/>
+                            <stop offset="100%" stop-color="#475569"/>
+                        </linearGradient>
+                        <linearGradient id="metal3" x1="0%" y1="100%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#1e293b"/>
+                            <stop offset="50%" stop-color="#64748b"/>
+                            <stop offset="100%" stop-color="#94a3b8"/>
+                        </linearGradient>
+                        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#000000" flood-opacity="0.85"/>
+                        </filter>
+                    </defs>
+                    <g filter="url(#shadow)">
+                        <path d="M 90,25 L 35,55 L 35,145 L 90,175 L 90,148 L 58,130 L 58,110 L 85,110 L 85,90 L 58,90 L 58,70 L 90,52 Z" fill="url(#metal1)"/>
+                        <path d="M 35,55 L 90,25 L 90,38 L 48,62 L 48,138 L 90,162 L 90,175 L 35,145 Z" fill="url(#metal2)"/>
+                        <path d="M 110,25 L 165,55 L 165,145 L 110,175 L 110,148 L 142,130 L 142,70 L 110,52 Z" fill="url(#metal2)"/>
+                        <path d="M 110,25 L 165,55 L 165,70 L 123,45 L 123,155 L 165,130 L 165,145 L 110,175 Z" fill="url(#metal3)"/>
+                        <path d="M 123,70 L 142,82 L 142,118 L 123,130 Z" fill="#111318" opacity="0.9"/>
+                    </g>
+                </svg>
+            </div>
+            
+            <div style="
+                background: rgba(22, 25, 32, 0.75); backdrop-filter: blur(25px);
+                padding: 35px 30px; border-radius: 24px; 
+                border: 1px solid rgba(255, 255, 255, 0.1); text-align: center;
+                box-shadow: 0 25px 50px rgba(0,0,0,0.7);
+            ">
+                <div style="color: #ffffff; font-size: 26px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 2px;">
+                    Welcome <span style="color: #d4af37;">Back</span>
+                </div>
+                <div style="color: #94a3b8; font-size: 12px; margin-bottom: 20px;">Inicia sesión para gestionar el inventario boutique</div>
+            </div>
+            """,
           unsafe_allow_html=True,
       )
-
-      if st.button("Sign In  →", use_container_width=True):
+      st.markdown("<br>", unsafe_allow_html=True)
+      if st.button("Ingresar al Sistema →", use_container_width=True):
         st.session_state.pantalla = "login"
         st.rerun()
 
-      st.markdown(
-          textwrap.dedent("""
-                    <div style="margin-top: 25px; color: #525866; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                        <div style="flex:1; height:1px; background: rgba(255,255,255,0.08);"></div>
-                        or continue with
-                        <div style="flex:1; height:1px; background: rgba(255,255,255,0.08);"></div>
-                    </div>
-                    
-                    <div class="social-btn-container">
-                        <div class="social-btn">
-                            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 10.8 0 12.5s.7 2.8 1.9 5.2l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16C3.7 19.7 7.5 22.3 12 22.3z"/></svg>
-                        </div>
-                        <div class="social-btn">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-                        </div>
-                        <div class="social-btn">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="#0077b5"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-                        </div>
-                    </div>
-
-                    <div style="color: #6a7282; font-size: 12px; margin-top: 25px; text-align: center;">
-                        Don't have an account? <span style="color: #c99846; font-weight: 600;">Sign Up</span>
-                    </div>
-                </div>
-            """),
-          unsafe_allow_html=True,
-      )
-
   elif st.session_state.pantalla == "login":
-    col1, col2, col3 = st.columns([1, 1.25, 1])
+    col1, col2, col3 = st.columns([1, 1.1, 1])
     with col2:
       st.markdown("<br>", unsafe_allow_html=True)
-      st.markdown(textwrap.dedent(LOGO_ED_SVG), unsafe_allow_html=True)
       st.markdown(
-          textwrap.dedent("""
-                <div style="
-                    background: rgba(20, 22, 28, 0.88); backdrop-filter: blur(25px);
-                    padding: 30px 28px 10px 28px; border-radius: 22px 22px 0px 0px; 
-                    border: 1px solid rgba(255, 255, 255, 0.08); border-bottom: none; text-align: center;
-                ">
-                    <div style="font-size: 24px; font-weight: 700; color: #ffffff; margin-bottom: 2px;">
-                        Welcome <span style="color: #c99846;">Back</span>
-                    </div>
-                    <div style="font-size: 12px; color: #788294; margin-bottom: 15px;">
-                        Sign in to continue your engineering journey
-                    </div>
+          """
+            <div style="text-align: center; margin-bottom: 15px;">
+                <svg width="90" height="90" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="metal1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#f1f5f9"/>
+                            <stop offset="50%" stop-color="#94a3b8"/>
+                            <stop offset="100%" stop-color="#334155"/>
+                        </linearGradient>
+                        <linearGradient id="metal2" x1="100%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#ffffff"/>
+                            <stop offset="50%" stop-color="#cbd5e1"/>
+                            <stop offset="100%" stop-color="#475569"/>
+                        </linearGradient>
+                        <linearGradient id="metal3" x1="0%" y1="100%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#1e293b"/>
+                            <stop offset="50%" stop-color="#64748b"/>
+                            <stop offset="100%" stop-color="#94a3b8"/>
+                        </linearGradient>
+                        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#000000" flood-opacity="0.85"/>
+                        </filter>
+                    </defs>
+                    <g filter="url(#shadow)">
+                        <path d="M 90,25 L 35,55 L 35,145 L 90,175 L 90,148 L 58,130 L 58,110 L 85,110 L 85,90 L 58,90 L 58,70 L 90,52 Z" fill="url(#metal1)"/>
+                        <path d="M 35,55 L 90,25 L 90,38 L 48,62 L 48,138 L 90,162 L 90,175 L 35,145 Z" fill="url(#metal2)"/>
+                        <path d="M 110,25 L 165,55 L 165,145 L 110,175 L 110,148 L 142,130 L 142,70 L 110,52 Z" fill="url(#metal2)"/>
+                        <path d="M 110,25 L 165,55 L 165,70 L 123,45 L 123,155 L 165,130 L 165,145 L 110,175 Z" fill="url(#metal3)"/>
+                        <path d="M 123,70 L 142,82 L 142,118 L 123,130 Z" fill="#111318" opacity="0.9"/>
+                    </g>
+                </svg>
+            </div>
+            <div style="
+                background: rgba(22, 25, 32, 0.75); backdrop-filter: blur(25px);
+                padding: 25px 25px 10px 25px; border-radius: 24px 24px 0px 0px; 
+                border: 1px solid rgba(255, 255, 255, 0.1); border-bottom: none; text-align: center;
+            ">
+                <div style="font-size: 24px; font-weight: 700; color: #ffffff; margin-bottom: 2px;">
+                    Welcome <span style="color: #d4af37;">Back</span>
                 </div>
-            """),
+                <div style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">Ingresa tus datos de acceso</div>
+            </div>
+            """,
           unsafe_allow_html=True,
       )
 
       with st.form("form_login"):
         st.markdown(
-            "<p style='color: #94a3b8; font-size: 11px; font-weight: 500;"
-            " margin-bottom: 4px;'>✉️ Email Address</p>",
+            "<p style='color: #cbd5e1; font-size: 12px; font-weight: 500;"
+            " margin-bottom: 2px;'>Usuario</p>",
             unsafe_allow_html=True,
         )
         usuario_input = st.text_input(
             "Usuario",
-            placeholder="Enter your email",
+            placeholder="Introduce tu usuario",
             label_visibility="collapsed",
         )
 
         st.markdown(
-            "<p style='color: #94a3b8; font-size: 11px; font-weight: 500;"
-            " margin-bottom: 4px; margin-top: 10px;'>🔒 Password</p>",
+            "<p style='color: #cbd5e1; font-size: 12px; font-weight: 500;"
+            " margin-bottom: 2px; margin-top: 8px;'>Contraseña</p>",
             unsafe_allow_html=True,
         )
         clave_input = st.text_input(
             "Contraseña",
             type="password",
-            placeholder="Enter your password",
+            placeholder="••••••••••••",
             label_visibility="collapsed",
         )
 
-        st.markdown(
-            "<div style='text-align: right; margin-top: -5px; margin-bottom:"
-            " 15px;'><a style='color: #c99846; font-size: 11px;"
-            " text-decoration: none;' href='#'>Forgot Password?</a></div>",
-            unsafe_allow_html=True,
-        )
-
+        st.markdown("<br>", unsafe_allow_html=True)
         col_f1, col_f2 = st.columns(2)
         boton_enviar = col_f1.form_submit_button(
-            "Sign In →", use_container_width=True
+            "Entrar →", use_container_width=True
         )
         boton_volver = col_f2.form_submit_button(
             "Volver", use_container_width=True
