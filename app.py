@@ -80,17 +80,18 @@ if not st.session_state.autenticado:
   with col2:
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # Contenedor unificado para centrar el logo y la caja de texto perfectamente simétricos
+    # Aplicamos mix-blend-mode: multiply o lighten/screen para fundir el blanco, 
+    # o un diseño elegante con borde estilizado que hace que el logo resalte sin el bloque pesado.
     st.markdown(
         """
             <div style="
                 background: rgba(24, 24, 27, 0.85); 
                 backdrop-filter: blur(12px);
-                padding: 25px 20px; 
+                padding: 30px 20px; 
                 border-radius: 20px; 
-                border: 1px solid rgba(255, 255, 255, 0.1); 
+                border: 1px solid rgba(212, 175, 55, 0.3); 
                 text-align: center;
-                box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+                box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 20px rgba(212, 175, 55, 0.1);
                 margin-top: 10px;
                 margin-bottom: 20px;
                 display: flex;
@@ -98,8 +99,8 @@ if not st.session_state.autenticado:
                 align-items: center;
                 justify-content: center;
             ">
-                <img src="https://raw.githubusercontent.com/leivercontreras18-ux/inventario-app/main/1787708461873.png" style="width: 150px; height: auto; margin-bottom: 15px; border-radius: 10px;">
-                <p style="color: #a1a1aa; font-size: 10px; text-transform: uppercase; letter-spacing: 3px; font-weight: 700; margin-bottom: 0px;">Sistema Privado de Inventario</p>
+                <img src="https://raw.githubusercontent.com/leivercontreras18-ux/inventario-app/main/1787708461873.png" style="width: 170px; height: auto; margin-bottom: 18px; border-radius: 12px; mix-blend-mode: screen; filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.5));">
+                <p style="color: #d4af37; font-size: 11px; text-transform: uppercase; letter-spacing: 4px; font-weight: 700; margin-bottom: 0px;">Sistema Privado de Inventario</p>
             </div>
         """,
         unsafe_allow_html=True,
@@ -288,7 +289,7 @@ else:
       with st.form("form_editar"):
         nuevo_id = st.text_input("ID", value=str(prenda_actual["ID"]))
         nuevo_nombre = st.text_input(
-            "Producto", value=str(prenda_actual["Producto"])
+            "Producto", value=str(preync_actual := prenda_actual["Producto"])
         )
         nueva_categoria = st.text_input(
             "Categoria", value=str(prenda_actual["Categoria"])
