@@ -134,8 +134,8 @@ if not st.session_state.autenticado:
                 <div style="color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: 5px; margin-bottom: 4px;">
                     LEWIN
                 </div>
-                <div style="color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 35px;">
-                    Sistema de Inventario Boutique
+                <div style="color: #38bdf8; font-size: 14px; text-transform: uppercase; letter-spacing: 4px; font-weight: 600; margin-bottom: 35px;">
+                    Boutique
                 </div>
             </div>
             """,
