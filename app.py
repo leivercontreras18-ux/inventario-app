@@ -210,6 +210,8 @@ if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
 if "usuario_actual" not in st.session_state:
     st.session_state.usuario_actual = ""
+if "etapa" not in st.session_state:
+    st.session_state.etapa = "bienvenida"  # "bienvenida", "login"
 if "inventario_local" not in st.session_state:
     st.session_state.inventario_local = pd.DataFrame(
         columns=[
@@ -223,7 +225,7 @@ if "inventario_local" not in st.session_state:
         ]
     )
 
-# Comprobamos si hay una sesión guardada en los parámetros de la URL (Remember me)
+# Comprobamos sesión recordada en query params
 query_params = st.query_params
 if not st.session_state.autenticado and "recuerdame_user" in query_params:
     saved_user = query_params["recuerdame_user"]
@@ -231,16 +233,56 @@ if not st.session_state.autenticado and "recuerdame_user" in query_params:
         st.session_state.autenticado = True
         st.session_state.usuario_actual = saved_user
 
-# --- 1. FLUJO DE LOGIN ---
-if not st.session_state.autenticado:
+# --- 1. PANTALLA DE BIENVENIDA (PORTADA CON LOGO Y BOTÓN LOGIN ARRIBA) ---
+if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
+    # Cabecera superior para alinear el botón de Login a la derecha
+    col_vacia, col_btn = st.columns([5, 1])
+    with col_btn:
+        st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+        if st.button("Login ➔", use_container_width=True):
+            st.session_state.etapa = "login"
+            st.rerun()
+
+    # Contenido central de la portada con el Logo
+    st.markdown("<br><br><br>", unsafe_allow_html=True)
+    _, col_centro, _ = st.columns([1, 1.5, 1])
+    with col_centro:
+        st.markdown(
+            """
+            <div style="text-align: center; padding: 40px 20px;">
+                <div style="font-size: 64px; margin-bottom: 20px; filter: drop-shadow(0 0 20px rgba(212,175,55,0.4));">👕</div>
+                <h1 style="font-family: 'Cinzel', serif; font-size: 42px; font-weight: 700; color: #ffffff; letter-spacing: 2px; margin-bottom: 10px;">LEWIN</h1>
+                <p style="font-size: 14px; color: #d4af37; text-transform: uppercase; letter-spacing: 4px; font-weight: 600; margin-bottom: 30px;">Boutique & Inventory Control</p>
+                <p style="color: #94a3b8; font-size: 14px; line-height: 1.6; max-width: 450px; margin: 0 auto 35px auto;">
+                    Sistema exclusivo de gestión de stock, monitoreo de existencias y control de colecciones en tiempo real.
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        _, col_boton_centro, _ = st.columns([1, 1.2, 1])
+        with col_boton_centro:
+            if st.button("Acceder al Sistema", use_container_width=True):
+                st.session_state.etapa = "login"
+                st.rerun()
+
+    st.stop()
+
+# --- 2. FLUJO DE LOGIN ---
+elif not st.session_state.autenticado and st.session_state.etapa == "login":
+    # Botón para volver atrás si lo desea
+    if st.button("← Volver a la portada"):
+        st.session_state.etapa = "bienvenida"
+        st.rerun()
+
     _, col_centro, _ = st.columns([1, 1.4, 1])
     
     with col_centro:
-        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
         
         with st.container(border=True):
-            st.markdown("### ✦ Lewin Boutique")
-            st.markdown("<p style='color: #94a3b8; font-size: 12px;'>Sistema exclusivo de control de inventario.</p>", unsafe_allow_html=True)
+            st.markdown("<h3>✦ Lewin Boutique</h3>", unsafe_allow_html=True)
+            st.markdown("<p style='color: #94a3b8; font-size: 12px;'>Ingrese sus credenciales de acceso.</p>", unsafe_allow_html=True)
             
             usuario_input = st.text_input("Email Address / Usuario", placeholder="Ingrese su usuario")
             clave_input = st.text_input("Password / Contraseña", type="password", placeholder="Ingrese su contraseña")
@@ -254,7 +296,6 @@ if not st.session_state.autenticado:
                     st.session_state.autenticado = True
                     st.session_state.usuario_actual = user_clean
                     
-                    # Si activa "Remember me", guardamos el usuario en los query parameters para recordarlo
                     if remember_checked:
                         st.query_params["recuerdame_user"] = user_clean
                     else:
@@ -267,7 +308,7 @@ if not st.session_state.autenticado:
                     
     st.stop()
 
-# --- 2. PANEL PRINCIPAL ---
+# --- 3. PANEL PRINCIPAL ---
 else:
     usuario_formateado = st.session_state.usuario_actual.capitalize()
     inicial_usuario = usuario_formateado[0]
@@ -310,7 +351,7 @@ else:
     if st.sidebar.button("🚪 Cerrar Sesión", use_container_width=True):
         st.session_state.autenticado = False
         st.session_state.usuario_actual = ""
-        # Al cerrar sesión, limpiamos el parámetro de recuerdo de la URL
+        st.session_state.etapa = "bienvenida"
         if "recuerdame_user" in st.query_params:
             del st.query_params["recuerdame_user"]
         st.rerun()
