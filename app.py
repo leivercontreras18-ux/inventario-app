@@ -112,7 +112,7 @@ def eliminar_prenda(id_prenda):
         ].reset_index(drop=True)
         return True
 
-# --- ESTILOS NÍTIDOS UI (FORZANDO ANCHO Y CENTRADO DE LOGIN) ---
+# --- ESTILOS NÍTIDOS UI ---
 st.markdown(
     """
 <style>
@@ -125,13 +125,9 @@ st.markdown(
 
 header[data-testid="stHeader"] { background: transparent !important; }
 
-/* Ajuste general para eliminar los márgenes laterales gigantes de Streamlit en pantallas grandes */
 .block-container {
     max-width: 100% !important;
-    padding-top: 2rem !important;
-    padding-bottom: 2rem !important;
-    padding-left: 2rem !important;
-    padding-right: 2rem !important;
+    padding: 2rem !important;
 }
 
 section[data-testid="stSidebar"] { 
@@ -143,9 +139,9 @@ section[data-testid="stSidebar"] {
 section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
 
 div[data-baseweb="input"] {
-    background-color: #12151c !important;
+    background-color: #151821 !important;
     border-radius: 8px !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
     color: #ffffff !important;
 }
 div[data-baseweb="input"]:focus-within {
@@ -227,79 +223,83 @@ if "inventario_local" not in st.session_state:
         ]
     )
 
-# --- 1. FLUJO DE LOGIN IDÉNTICO A LA REFERENCIA ---
+# --- 1. FLUJO DE LOGIN IDÉNTICO A PINTEREST (CONTENEDOR UNIFICADO) ---
 if not st.session_state.autenticado:
-    # Columnas para centrar la tarjeta exactamente en medio de la pantalla
-    _, col_tarjeta, _ = st.columns([0.5, 9, 0.5])
+    _, col_centro, _ = st.columns([1, 10, 1])
     
-    with col_tarjeta:
-        st.markdown("<br><br>", unsafe_allow_html=True)
+    with col_centro:
+        st.markdown("<br>", unsafe_allow_html=True)
         
-        # Estructura de dos columnas simétricas sin bordes extraños entre ellas
-        col_izq, col_der = st.columns([1.1, 1], gap="small")
-
-        with col_izq:
-            st.markdown(
-                """
+        # Contenedor maestro de dos mitades exactas
+        st.markdown(
+            """
+            <div style="
+                display: flex;
+                width: 100%;
+                max-width: 950px;
+                margin: 0 auto;
+                background: #11141b;
+                border-radius: 20px;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+                overflow: hidden;
+                min-height: 500px;
+            ">
+                <!-- Mitad Izquierda (Imagen y Bienvenida) -->
                 <div style="
-                    background: linear-gradient(135deg, rgba(12, 15, 22, 0.9) 0%, rgba(20, 15, 30, 0.95) 100%), 
+                    flex: 1.1;
+                    background: linear-gradient(135deg, rgba(12, 15, 22, 0.8) 0%, rgba(20, 15, 30, 0.9) 100%), 
                                 url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
                     background-size: cover;
                     background-position: center;
-                    padding: 85px 40px;
-                    border-radius: 18px 0 0 18px;
-                    height: 100%;
-                    min-height: 440px;
+                    padding: 60px 40px;
                     display: flex;
                     flex-direction: column;
                     justify-content: center;
-                    border: 1px solid rgba(255, 255, 255, 0.08);
-                    border-right: none;
                 ">
-                    <h1 style="font-family: 'Cinzel', serif; color: #ffffff; font-size: 38px; font-weight: 700; margin-bottom: 8px; line-height: 1.1;">Hello<br>Welcome<span style="color: #ff3b3b;">!</span></h1>
-                    <p style="color: #94a3b8; font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: 0.8px; line-height: 1.5; margin-top: 10px;">Sistema exclusivo de control de inventario.</p>
+                    <h1 style="font-family: 'Cinzel', serif; color: #ffffff; font-size: 42px; font-weight: 700; margin-bottom: 12px; line-height: 1.1;">Hello<br>Welcome<span style="color: #ff3b3b;">!</span></h1>
+                    <p style="color: #94a3b8; font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: 0.8px; line-height: 1.5;">Sistema exclusivo de control de inventario boutique.</p>
                 </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-        with col_der:
-            st.markdown(
-                """
+                
+                <!-- Mitad Derecha (Texto de guía estético) -->
                 <div style="
-                    background: #11141b;
-                    padding: 40px 35px;
-                    border-radius: 0 18px 18px 0;
-                    height: 100%;
-                    min-height: 440px;
-                    border: 1px solid rgba(255, 255, 255, 0.08);
-                    border-left: none;
+                    flex: 1;
+                    padding: 50px 40px;
                     display: flex;
                     flex-direction: column;
                     justify-content: center;
+                    background: #11141b;
                 ">
-                    <div style="font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 17px; color: #ffffff; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                        <span style="color: #ff3b3b; font-size: 16px;">✦</span> NexCoin <span style="font-size: 11px; color: #64748b; font-weight: 400;">// Lewin</span>
+                    <div style="font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 16px; color: #ffffff; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        <span style="color: #ff3b3b; font-size: 15px;">✦</span> NexCoin <span style="font-size: 11px; color: #64748b; font-weight: 400;">// Lewin</span>
                     </div>
-                    <div style="display: flex; gap: 20px; margin-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 6px;">
-                        <span style="color: #ff3b3b; font-size: 12px; font-weight: 600; border-bottom: 2px solid #ff3b3b; padding-bottom: 6px; margin-bottom: -7px;">Log in</span>
-                        <span style="color: #64748b; font-size: 12px; font-weight: 500; cursor: pointer;">Sign Up</span>
+                    <div style="display: flex; gap: 20px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">
+                        <span style="color: #ff3b3b; font-size: 12px; font-weight: 600; border-bottom: 2px solid #ff3b3b; padding-bottom: 8px; margin-bottom: -9px;">Log in</span>
+                        <span style="color: #64748b; font-size: 12px; font-weight: 500;">Sign Up</span>
                     </div>
-                """,
-                unsafe_allow_html=True,
-            )
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-            st.markdown("<p style='color: #94a3b8; font-size: 11px; font-weight: 500; margin-bottom: 4px;'>Email Address</p>", unsafe_allow_html=True)
+        # Superposición de los inputs reales de Streamlit exactamente alineados al lado derecho de la tarjeta
+        col_dummy_izq, col_inputs = st.columns([1.1, 1])
+        with col_inputs:
+            # Subimos visualmente los campos para que calcen dentro de la tarjeta derecha
+            st.markdown("<div style='margin-top: -380px; padding: 0 40px;'>", unsafe_allow_html=True)
+            
+            st.markdown("<p style='color: #94a3b8; font-size: 11px; font-weight: 500; margin-bottom: 2px;'>Email Address</p>", unsafe_allow_html=True)
             usuario_input = st.text_input("Usuario", placeholder="Enter your email address", label_visibility="collapsed")
 
-            st.markdown("<p style='color: #94a3b8; font-size: 11px; font-weight: 500; margin-bottom: 4px; margin-top: 10px;'>Password</p>", unsafe_allow_html=True)
+            st.markdown("<p style='color: #94a3b8; font-size: 11px; font-weight: 500; margin-bottom: 2px; margin-top: 8px;'>Password</p>", unsafe_allow_html=True)
             clave_input = st.text_input("Contraseña", type="password", placeholder="Enter your password", label_visibility="collapsed")
 
             st.markdown(
                 """
-                <div style='display: flex; justify-content: space-between; align-items: center; margin-top: 8px; margin-bottom: 16px;'>
-                    <span style='color: #94a3b8; font-size: 11px;'>⬜ Remember me</span>
-                    <a style='color: #ff3b3b; font-size: 11px; text-decoration: none;' href='#'>Forgot password?</a>
+                <div style='display: flex; justify-content: space-between; align-items: center; margin-top: 6px; margin-bottom: 14px;'>
+                    <span style='color: #94a3b8; font-size: 10px;'>⬜ Remember me</span>
+                    <a style='color: #ff3b3b; font-size: 10px; text-decoration: none;' href='#'>Forgot password?</a>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -315,11 +315,11 @@ if not st.session_state.autenticado:
 
             st.markdown(
                 """
-                    <div style='text-align: center; color: #64748b; font-size: 11px; margin: 12px 0;'>or</div>
-                    <div style='display: flex; gap: 8px;'>
-                        <div style='background: #171b26; border: 1px solid rgba(255,255,255,0.08); padding: 8px; border-radius: 8px; font-size: 11px; color: #ffffff; text-align: center; flex: 1;'>🌐 Google</div>
-                        <div style='background: #171b26; border: 1px solid rgba(255,255,255,0.08); padding: 8px; border-radius: 8px; font-size: 11px; color: #ffffff; text-align: center; flex: 1;'>🍎 Apple</div>
-                    </div>
+                <div style='text-align: center; color: #64748b; font-size: 10px; margin: 10px 0;'>or</div>
+                <div style='display: flex; gap: 8px;'>
+                    <div style='background: #171b26; border: 1px solid rgba(255,255,255,0.08); padding: 7px; border-radius: 8px; font-size: 10px; color: #ffffff; text-align: center; flex: 1;'>🌐 Google</div>
+                    <div style='background: #171b26; border: 1px solid rgba(255,255,255,0.08); padding: 7px; border-radius: 8px; font-size: 10px; color: #ffffff; text-align: center; flex: 1;'>🍎 Apple</div>
+                </div>
                 </div>
                 """,
                 unsafe_allow_html=True,
