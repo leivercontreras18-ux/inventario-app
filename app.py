@@ -619,6 +619,3 @@ else:
             st.rerun()
     else:
       st.info("No hay registros disponibles para modificar.")
-```¡Entendido perfectamente! He modificado el código para que refleje exactamente esos cambios en el texto y el diseño que visualizamos anteriormente. He quitado "Welcome Back", he puesto "Welcome Lewin" en ese color ámbar/dorado y he añadido la línea inferior "sistema privado de lewin boutique".
-
-Aquí tienes el código completo y actualizado. Copia todo este bloque y reemplázalo en tu archivo `app.py` en GitHub para aplicar el cambio:
