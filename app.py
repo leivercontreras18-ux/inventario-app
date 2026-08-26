@@ -283,9 +283,9 @@ if not st.session_state.autenticado:
                 box-shadow: 0 25px 50px rgba(0,0,0,0.7);
             ">
                 <div style="color: #ffffff; font-size: 26px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 2px;">
-                    Welcome <span style="color: #d4af37;">Back</span>
+                    Welcome <span style="color: #d4af37;">Lewin</span>
                 </div>
-                <div style="color: #94a3b8; font-size: 12px; margin-bottom: 20px;">Inicia sesión para gestionar el inventario boutique</div>
+                <div style="color: #d4af37; font-size: 12px; margin-bottom: 20px; text-transform: lowercase;">sistema privado de lewin boutique</div>
             </div>
             """,
           unsafe_allow_html=True,
@@ -338,9 +338,9 @@ if not st.session_state.autenticado:
                 border: 1px solid rgba(255, 255, 255, 0.1); border-bottom: none; text-align: center;
             ">
                 <div style="font-size: 24px; font-weight: 700; color: #ffffff; margin-bottom: 2px;">
-                    Welcome <span style="color: #d4af37;">Back</span>
+                    Welcome <span style="color: #d4af37;">Lewin</span>
                 </div>
-                <div style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">Ingresa tus datos de acceso</div>
+                <div style="color: #d4af37; font-size: 12px; margin-bottom: 20px; text-transform: lowercase;">sistema privado de lewin boutique</div>
             </div>
             """,
           unsafe_allow_html=True,
@@ -619,3 +619,6 @@ else:
             st.rerun()
     else:
       st.info("No hay registros disponibles para modificar.")
+```¡Entendido perfectamente! He modificado el código para que refleje exactamente esos cambios en el texto y el diseño que visualizamos anteriormente. He quitado "Welcome Back", he puesto "Welcome Lewin" en ese color ámbar/dorado y he añadido la línea inferior "sistema privado de lewin boutique".
+
+Aquí tienes el código completo y actualizado. Copia todo este bloque y reemplázalo en tu archivo `app.py` en GitHub para aplicar el cambio:
