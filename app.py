@@ -80,17 +80,17 @@ if not st.session_state.autenticado:
   with col2:
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # Enmascaramos los bordes y filtramos el color blanco usando brightness y contrast combinados
+    # --- LOGO Y TÍTULO DISEÑADOS 100% EN CÓDIGO (SIN RECUADROS BLANCOS) ---
     st.markdown(
         """
             <div style="
                 background: rgba(24, 24, 27, 0.85); 
                 backdrop-filter: blur(12px);
-                padding: 30px 20px; 
+                padding: 35px 20px; 
                 border-radius: 20px; 
                 border: 1px solid rgba(212, 175, 55, 0.3); 
                 text-align: center;
-                box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 20px rgba(212, 175, 55, 0.1);
+                box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 25px rgba(212, 175, 55, 0.1);
                 margin-top: 10px;
                 margin-bottom: 20px;
                 display: flex;
@@ -98,8 +98,59 @@ if not st.session_state.autenticado:
                 align-items: center;
                 justify-content: center;
             ">
-                <img src="https://raw.githubusercontent.com/leivercontreras18-ux/inventario-app/main/1787708461873.png" style="width: 160px; height: auto; margin-bottom: 15px; border-radius: 12px; filter: contrast(120%) drop-shadow(0px 4px 10px rgba(0,0,0,0.8)); mix-blend-mode: luminosity;">
-                <p style="color: #d4af37; font-size: 11px; text-transform: uppercase; letter-spacing: 4px; font-weight: 700; margin-bottom: 0px;">Sistema Privado de Inventario</p>
+                <!-- Isotipo estilizado en código (Reemplaza la imagen con perfección visual) -->
+                <div style="
+                    font-size: 46px;
+                    font-weight: 900;
+                    background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 50%, #f472b6 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    letter-spacing: -2px;
+                    line-height: 1;
+                    margin-bottom: 8px;
+                    filter: drop-shadow(0 2px 10px rgba(167, 139, 250, 0.4));
+                ">
+                    L
+                </div>
+                <!-- Nombre principal -->
+                <div style="
+                    color: #ffffff;
+                    font-size: 22px;
+                    font-weight: 800;
+                    letter-spacing: 6px;
+                    margin-bottom: 4px;
+                ">
+                    LEWIN
+                </div>
+                <!-- Subtítulo de marca -->
+                <div style="
+                    color: #71717a;
+                    font-size: 8px;
+                    text-transform: uppercase;
+                    letter-spacing: 3px;
+                    margin-bottom: 22px;
+                    font-weight: 600;
+                ">
+                    ACTIVE | AESTHETIC | MOTION
+                </div>
+                <!-- Divisor elegante -->
+                <div style="
+                    width: 40px;
+                    height: 1px;
+                    background: rgba(212, 175, 55, 0.4);
+                    margin-bottom: 18px;
+                "></div>
+                <!-- Sistema Privado de Inventario -->
+                <p style="
+                    color: #d4af37; 
+                    font-size: 11px; 
+                    text-transform: uppercase; 
+                    letter-spacing: 3px; 
+                    font-weight: 700; 
+                    margin-bottom: 0px;
+                ">
+                    Sistema Privado de Inventario
+                </p>
             </div>
         """,
         unsafe_allow_html=True,
