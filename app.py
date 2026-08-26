@@ -147,7 +147,7 @@ div[data-baseweb="input"] input {
     font-size: 13px !important;
 }
 
-div.stButton > button, div[data-testid="stFormSubmitButton"] > button {
+div.stButton > button {
     background: #ff3b3b !important;
     color: #ffffff !important;
     border-radius: 10px !important;
@@ -157,15 +157,9 @@ div.stButton > button, div[data-testid="stFormSubmitButton"] > button {
     box-shadow: 0 4px 15px rgba(255, 59, 59, 0.3) !important;
     transition: all 0.3s ease !important;
 }
-div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
+div.stButton > button:hover {
     background: #e03131 !important;
     transform: translateY(-1px) !important;
-}
-
-div[data-testid="stForm"] {
-    background: transparent !important;
-    border: none !important;
-    padding: 0px !important;
 }
 
 .page-header { margin-bottom: 25px; padding-bottom: 10px; }
@@ -228,30 +222,12 @@ if "inventario_local" not in st.session_state:
 if not st.session_state.autenticado:
     st.markdown("<br><br>", unsafe_allow_html=True)
 
-    # Contenedor exterior para centrar la tarjeta de login
-    outer_c1, outer_c2, outer_c3 = st.columns([0.1, 3.8, 0.1])
-    with outer_c2:
-        # Abrimos el contenedor general con estilo de tarjeta unificada
-        st.markdown(
-            """
-            <div style="
-                background: #12151c;
-                border-radius: 24px;
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                box-shadow: 0 25px 50px rgba(0,0,0,0.9);
-                overflow: hidden;
-                width: 100%;
-                max-width: 950px;
-                margin: 0 auto;
-            ">
-            """,
-            unsafe_allow_html=True,
-        )
+    col1, col2, col3 = st.columns([0.1, 3.8, 0.1])
+    with col2:
+        # Usamos dos columnas nativas de Streamlit para simular la tarjeta de dos mitades sin desajustes
+        c_izq, c_der = st.columns(2, gap="small")
 
-        # Usamos columnas internas de Streamlit para separar perfectamente la izquierda y la derecha
-        col_banner, col_form = st.columns([1.1, 1], gap="small")
-
-        with col_banner:
+        with c_izq:
             st.markdown(
                 """
                 <div style="
@@ -259,13 +235,15 @@ if not st.session_state.autenticado:
                                 url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
                     background-size: cover;
                     background-position: center;
-                    padding: 75px 35px;
+                    padding: 70px 35px;
+                    border-radius: 24px 0px 0px 24px;
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border-right: none;
+                    height: 100%;
+                    box-sizing: border-box;
                     display: flex;
                     flex-direction: column;
                     justify-content: center;
-                    height: 100%;
-                    box-sizing: border-box;
-                    border-right: 1px solid rgba(255, 255, 255, 0.06);
                 ">
                     <h1 style="font-family: 'Cinzel', serif; color: #ffffff; font-size: 38px; font-weight: 700; margin-bottom: 12px; line-height: 1.1;">HELLO<br>WELCOME<span style="color: #ff3b3b;">!</span></h1>
                     <p style="color: #94a3b8; font-family: 'Montserrat', sans-serif; font-size: 12px; letter-spacing: 0.8px; line-height: 1.5; margin-top: 10px;">Sistema exclusivo de control de inventario boutique Lewin.</p>
@@ -274,85 +252,78 @@ if not st.session_state.autenticado:
                 unsafe_allow_html=True,
             )
 
-        with col_form:
-            # Contenedor con padding para el formulario interior
+        with c_der:
             st.markdown(
                 """
-                <div style="padding: 40px 35px; background: #12151c; display: flex; flex-direction: column; justify-content: center;">
-                """,
-                unsafe_allow_html=True,
-            )
-
-            with st.form("form_login_nitido"):
-                st.markdown(
-                    """
+                <div style="
+                    background: #12151c;
+                    padding: 40px 35px;
+                    border-radius: 0px 24px 24px 0px;
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border-left: none;
+                    height: 100%;
+                    box-sizing: border-box;
+                ">
                     <div style="font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 18px; color: #ffffff; margin-bottom: 2px;">Lewin Boutique</div>
                     <div style="display: flex; gap: 15px; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px;">
                         <span style="color: #ff3b3b; font-size: 11px; font-weight: 600; border-bottom: 2px solid #ff3b3b; padding-bottom: 4px; margin-bottom: -5px;">Log in</span>
                         <span style="color: #64748b; font-size: 11px; font-weight: 500;">Sign Up</span>
                     </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
+                """,
+                unsafe_allow_html=True,
+            )
 
-                st.markdown(
-                    "<p style='color: #94a3b8; font-size: 10px; font-weight: 500; margin-bottom: 2px;'>Email Address</p>",
-                    unsafe_allow_html=True,
-                )
-                usuario_input = st.text_input(
-                    "Usuario",
-                    placeholder="Enter your email address",
-                    label_visibility="collapsed",
-                )
+            st.markdown(
+                "<p style='color: #94a3b8; font-size: 10px; font-weight: 500; margin-bottom: 2px;'>Email Address</p>",
+                unsafe_allow_html=True,
+            )
+            usuario_input = st.text_input(
+                "Usuario",
+                placeholder="Enter your email address",
+                label_visibility="collapsed",
+            )
 
-                st.markdown(
-                    "<p style='color: #94a3b8; font-size: 10px; font-weight: 500; margin-bottom: 2px; margin-top: 8px;'>Password</p>",
-                    unsafe_allow_html=True,
-                )
-                clave_input = st.text_input(
-                    "Contraseña",
-                    type="password",
-                    placeholder="Enter your password",
-                    label_visibility="collapsed",
-                )
+            st.markdown(
+                "<p style='color: #94a3b8; font-size: 10px; font-weight: 500; margin-bottom: 2px; margin-top: 8px;'>Password</p>",
+                unsafe_allow_html=True,
+            )
+            clave_input = st.text_input(
+                "Contraseña",
+                type="password",
+                placeholder="Enter your password",
+                label_visibility="collapsed",
+            )
 
-                st.markdown(
-                    "<div style='display: flex; justify-content: space-between; align-items: center; margin-top: 6px; margin-bottom: 12px;'>"
-                    "<span style='color: #94a3b8; font-size: 10px;'>⬜ Remember me</span>"
-                    "<a style='color: #ff3b3b; font-size: 10px; text-decoration: none;' href='#'>Forgot password?</a>"
-                    "</div>",
-                    unsafe_allow_html=True,
-                )
+            st.markdown(
+                "<div style='display: flex; justify-content: space-between; align-items: center; margin-top: 6px; margin-bottom: 12px;'>"
+                "<span style='color: #94a3b8; font-size: 10px;'>⬜ Remember me</span>"
+                "<a style='color: #ff3b3b; font-size: 10px; text-decoration: none;' href='#'>Forgot password?</a>"
+                "</div>",
+                unsafe_allow_html=True,
+            )
 
-                boton_enviar = st.form_submit_button(
-                    "Log in", use_container_width=True
-                )
+            if st.button("Log in", use_container_width=True):
+                if (
+                    usuario_input in USUARIOS
+                    and USUARIOS[usuario_input] == clave_input
+                ):
+                    st.session_state.autenticado = True
+                    st.session_state.usuario_actual = usuario_input
+                    st.rerun()
+                else:
+                    st.error("⚠️ Usuario o contraseña incorrectos.")
 
-                st.markdown(
-                    """
+            st.markdown(
+                """
                     <div style="text-align: center; color: #64748b; font-size: 10px; margin: 8px 0;">or</div>
                     <div style="display: flex; gap: 8px; justify-content: center;">
                         <div style="background: #1a1e29; border: 1px solid rgba(255,255,255,0.08); padding: 6px 10px; border-radius: 8px; font-size: 10px; color: #ffffff; text-align: center; flex: 1;">🌐 Google</div>
                         <div style="background: #1a1e29; border: 1px solid rgba(255,255,255,0.08); padding: 6px 10px; border-radius: 8px; font-size: 10px; color: #ffffff; text-align: center; flex: 1;">🍎 Apple</div>
                     </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-
-                if boton_enviar:
-                    if (
-                        usuario_input in USUARIOS
-                        and USUARIOS[usuario_input] == clave_input
-                    ):
-                        st.session_state.autenticado = True
-                        st.session_state.usuario_actual = usuario_input
-                        st.rerun()
-                    else:
-                        st.error("⚠️ Usuario o contraseña incorrectos.")
-
-            st.markdown("</div>", unsafe_allow_html=True)  # Cierre del div derecho
-
-        st.markdown("</div>", unsafe_allow_html=True)  # Cierre del contenedor general
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
     st.stop()
 
