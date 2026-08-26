@@ -91,6 +91,19 @@ st.markdown(
         border-color: rgba(255, 255, 255, 0.1) !important;
         transform: translateX(4px);
     }
+
+    /* ESTILO ELEGANTE PARA MENSAJES DE INFORMACIÓN (st.info) */
+    div.stAlert {
+        background: rgba(18, 24, 38, 0.7) !important;
+        backdrop-filter: blur(12px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        color: #cbd5e1 !important;
+        border-radius: 16px !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important;
+    }
+    div.stAlert * {
+        color: #cbd5e1 !important;
+    }
     </style>
 """,
     unsafe_allow_html=True,
@@ -422,7 +435,7 @@ else:
         nueva_categoria = st.text_input(
             "Categoria", value=str(prenda_actual["Categoria"])
         )
-        nueva_talla = st.text_input("talla", value=str(prenda_actual["talla"]))
+        nueva_talla = st.text_input("talla", value=str(prenewData_actual["talla"]))
         nuevo_color = st.text_input("color", value=str(prenda_actual["color"]))
         nueva_cantidad = st.number_input(
             "cantidad", min_value=0, value=int(prenda_actual["cantidad"]), step=1
