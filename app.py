@@ -211,7 +211,7 @@ if "autenticado" not in st.session_state:
 if "usuario_actual" not in st.session_state:
     st.session_state.usuario_actual = ""
 if "etapa" not in st.session_state:
-    st.session_state.etapa = "bienvenida"  # "bienvenida", "login"
+    st.session_state.etapa = "bienvenida"
 if "inventario_local" not in st.session_state:
     st.session_state.inventario_local = pd.DataFrame(
         columns=[
@@ -225,7 +225,6 @@ if "inventario_local" not in st.session_state:
         ]
     )
 
-# Comprobamos sesión recordada en query params
 query_params = st.query_params
 if not st.session_state.autenticado and "recuerdame_user" in query_params:
     saved_user = query_params["recuerdame_user"]
@@ -233,9 +232,8 @@ if not st.session_state.autenticado and "recuerdame_user" in query_params:
         st.session_state.autenticado = True
         st.session_state.usuario_actual = saved_user
 
-# --- 1. PANTALLA DE BIENVENIDA (PORTADA CON LOGO Y BOTÓN LOGIN ARRIBA) ---
+# --- 1. PANTALLA DE BIENVENIDA ---
 if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
-    # Cabecera superior para alinear el botón de Login a la derecha
     col_vacia, col_btn = st.columns([5, 1])
     with col_btn:
         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
@@ -243,7 +241,6 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             st.session_state.etapa = "login"
             st.rerun()
 
-    # Contenido central de la portada con el Logo
     st.markdown("<br><br><br>", unsafe_allow_html=True)
     _, col_centro, _ = st.columns([1, 1.5, 1])
     with col_centro:
@@ -270,7 +267,6 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
 
 # --- 2. FLUJO DE LOGIN ---
 elif not st.session_state.autenticado and st.session_state.etapa == "login":
-    # Botón para volver atrás si lo desea
     if st.button("← Volver a la portada"):
         st.session_state.etapa = "bienvenida"
         st.rerun()
@@ -376,6 +372,11 @@ else:
             if not df.empty and "cantidad" in df.columns
             else 0
         )
+        
+        # Cálculo de alertas: prendas cuya cantidad es menor o igual a su umbral de alerta
+        total_alertas = 0
+        if not df.empty and "cantidad" in df.columns and "alerta" in df.columns:
+            total_alertas = int(df[df["cantidad"] <= df["alerta"]].shape[0])
 
         st.markdown(
             """
@@ -385,7 +386,8 @@ else:
             unsafe_allow_html=True,
         )
 
-        col1, col2 = st.columns(2)
+        # Se amplía a 3 columnas para incluir la tarjeta de alertas críticas
+        col1, col2, col3 = st.columns(3)
         with col1:
             st.markdown(
                 f"""
@@ -406,17 +408,51 @@ else:
 """,
                 unsafe_allow_html=True,
             )
+        with col3:
+            st.markdown(
+                f"""
+<div class="metric-card">
+    <div class="metric-label">Alertas de Stock Bajo</div>
+    <div class="metric-value" style="color: {'#ff3b3b' if total_alertas > 0 else '#d4af37'} !important;">{total_alertas}</div>
+</div>
+""",
+                unsafe_allow_html=True,
+            )
 
         st.markdown("<br>", unsafe_allow_html=True)
 
         if not df.empty:
             st.markdown(
                 """
-<div class="section-title">📋 Registro Actual de Inventario</div>
+<div class="section-title">📋 Filtros y Búsqueda de Inventario</div>
+<div class="section-subtitle">Filtra por categoría o busca un producto en específico de forma inmediata.</div>
 """,
                 unsafe_allow_html=True,
             )
-            st.dataframe(df, use_container_width=True)
+
+            # Controles de filtrado y búsqueda avanzados
+            col_f1, col_f2 = st.columns([1.5, 1])
+            with col_f1:
+                busqueda = st.text_input("🔍 Buscar por nombre o ID", placeholder="Escribe el nombre de la prenda o su ID...")
+            with col_f2:
+                categorias_disponibles = ["Todas"] + list(df["Categoria"].dropna().unique())
+                filtro_categoria = st.selectbox("📂 Filtrar por Categoría", categorias_disponibles)
+
+            # Aplicación de los filtros sobre el DataFrame original
+            df_filtrado = df.copy()
+            if busqueda.strip():
+                query = busqueda.strip().lower()
+                df_filtrado = df_filtrado[
+                    df_filtrado["ID"].astype(str).str.lower().str.contains(query) | 
+                    df_filtrado["Producto"].astype(str).str.lower().str.contains(query)
+                ]
+            
+            if filtro_categoria != "Todas":
+                df_filtrado = df_filtrado[df_filtrado["Categoria"] == filtro_categoria]
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown(f"<div class='section-title'>Resultados de la Búsqueda ({len(df_filtrado)} registros)</div>", unsafe_allow_html=True)
+            st.dataframe(df_filtrado, use_container_width=True)
         else:
             st.info("No hay prendas registradas todavía en el sistema.")
 
