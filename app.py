@@ -223,272 +223,35 @@ if "inventario_local" not in st.session_state:
         ]
     )
 
-# --- 1. FLUJO DE LOGIN CON BOTÓN DE VER CONTRASEÑA ---
+# --- 1. FLUJO DE LOGIN ROBUSTO Y FUNCIONAL ---
 if not st.session_state.autenticado:
-    _, col_centro, _ = st.columns([1, 10, 1])
+    _, col_centro, _ = st.columns([1, 1.4, 1])
     
     with col_centro:
         st.markdown("<br><br>", unsafe_allow_html=True)
         
-        login_html = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-        <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
-        <style>
-            body {
-                background-color: transparent;
-                margin: 0;
-                padding: 0;
-                font-family: 'Montserrat', sans-serif;
-            }
-            .pinterest-card {
-                display: flex;
-                width: 100%;
-                max-width: 900px;
-                margin: 0 auto;
-                background: #11141b;
-                border-radius: 20px;
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                box-shadow: 0 25px 50px rgba(0,0,0,0.7);
-                overflow: hidden;
-            }
-            .left-side {
-                flex: 1.1;
-                background: linear-gradient(135deg, rgba(12, 15, 22, 0.85) 0%, rgba(20, 15, 30, 0.95) 100%), 
-                            url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
-                background-size: cover;
-                background-position: center;
-                padding: 60px 40px;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-            }
-            .left-side h1 {
-                font-family: 'Cinzel', serif;
-                color: #ffffff;
-                font-size: 38px;
-                font-weight: 700;
-                margin: 0 0 12px 0;
-                line-height: 1.1;
-            }
-            .left-side p {
-                color: #94a3b8;
-                font-size: 11px;
-                letter-spacing: 0.8px;
-                line-height: 1.5;
-                margin: 0;
-            }
-            .right-side {
-                flex: 1;
-                padding: 45px 40px;
-                background: #11141b;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-            }
-            .brand-title {
-                font-weight: 700;
-                font-size: 15px;
-                color: #ffffff;
-                margin-bottom: 12px;
-                display: flex;
-                align-items: center;
-                gap: 6px;
-            }
-            .tabs {
-                display: flex;
-                gap: 20px;
-                margin-bottom: 20px;
-                border-bottom: 1px solid rgba(255,255,255,0.06);
-                padding-bottom: 6px;
-            }
-            .tab-active {
-                color: #ff3b3b;
-                font-size: 12px;
-                font-weight: 600;
-                border-bottom: 2px solid #ff3b3b;
-                padding-bottom: 6px;
-                margin-bottom: -7px;
-            }
-            .tab-inactive {
-                color: #64748b;
-                font-size: 12px;
-                font-weight: 500;
-            }
-            .input-group {
-                margin-bottom: 12px;
-            }
-            .input-group label {
-                display: block;
-                color: #94a3b8;
-                font-size: 11px;
-                font-weight: 500;
-                margin-bottom: 4px;
-            }
-            .input-group input[type="text"], .input-group input[type="password"] {
-                width: 100%;
-                background-color: #151821;
-                border-radius: 8px;
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                color: #ffffff;
-                padding: 10px 12px;
-                font-size: 13px;
-                box-sizing: border-box;
-                outline: none;
-            }
-            .input-group input:focus {
-                border-color: #ff3b3b;
-            }
-            .password-wrapper {
-                position: relative;
-                display: flex;
-                align-items: center;
-            }
-            .password-wrapper input {
-                padding-right: 35px !important;
-            }
-            .toggle-password {
-                position: absolute;
-                right: 10px;
-                background: none;
-                border: none;
-                color: #94a3b8;
-                cursor: pointer;
-                font-size: 14px;
-                padding: 0;
-            }
-            .options-row {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-top: 4px;
-                margin-bottom: 16px;
-                font-size: 10px;
-                color: #94a3b8;
-            }
-            .options-row label {
-                display: flex;
-                align-items: center;
-                gap: 5px;
-                cursor: pointer;
-            }
-            .options-row a {
-                color: #ff3b3b;
-                text-decoration: none;
-            }
-            .btn-login {
-                background: #ff3b3b;
-                color: #ffffff;
-                border-radius: 8px;
-                border: none;
-                font-weight: 600;
-                padding: 11px;
-                width: 100%;
-                font-size: 13px;
-                cursor: pointer;
-                box-shadow: 0 4px 15px rgba(255, 59, 59, 0.3);
-                transition: background 0.2s;
-            }
-            .btn-login:hover {
-                background: #e03131;
-            }
-            .divider {
-                text-align: center;
-                color: #64748b;
-                font-size: 10px;
-                margin: 12px 0;
-            }
-            .social-buttons {
-                display: flex;
-                gap: 8px;
-            }
-            .social-btn {
-                background: #171b26;
-                border: 1px solid rgba(255,255,255,0.08);
-                padding: 8px;
-                border-radius: 8px;
-                font-size: 10px;
-                color: #ffffff;
-                text-align: center;
-                flex: 1;
-            }
-        </style>
-        <script>
-            function togglePasswordVisibility() {
-                const passwordInput = document.getElementById('password-field');
-                const toggleBtn = document.getElementById('toggle-btn');
-                if (passwordInput.type === 'password') {
-                    passwordInput.type = 'text';
-                    toggleBtn.textContent = '👁️‍🗨️';
-                } else {
-                    passwordInput.type = 'password';
-                    toggleBtn.textContent = '👁️';
-                }
-            }
-        </script>
-        </head>
-        <body>
-            <div class="pinterest-card">
-                <div class="left-side">
-                    <h1>Hello<br>Welcome<span style="color: #ff3b3b;">!</span></h1>
-                    <p>Sistema exclusivo de control de inventario boutique.</p>
-                </div>
-                <div class="right-side">
-                    <div class="brand-title">
-                        <span style="color: #ff3b3b;">✦</span> Lewin Boutique
-                    </div>
-                    <div class="tabs">
-                        <span class="tab-active">Log in</span>
-                        <span class="tab-inactive">Sign Up</span>
-                    </div>
-                    <form method="GET">
-                        <div class="input-group">
-                            <label>Email Address</label>
-                            <input type="text" name="usuario" placeholder="Enter your email address" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Password</label>
-                            <div class="password-wrapper">
-                                <input type="password" id="password-field" name="clave" placeholder="Enter your password" required>
-                                <button type="button" id="toggle-btn" class="toggle-password" onclick="togglePasswordVisibility()">👁️</button>
-                            </div>
-                        </div>
-                        <div class="options-row">
-                            <label>
-                                <input type="checkbox" name="remember" value="true" style="accent-color: #ff3b3b;"> Remember me
-                            </label>
-                            <a href="#">Forgot password?</a>
-                        </div>
-                        <button type="submit" class="btn-login">Log in</button>
-                    </form>
-                    <div class="divider">or</div>
-                    <div class="social-buttons">
-                        <div class="social-btn">🌐 Google</div>
-                        <div class="social-btn">🍎 Apple</div>
-                    </div>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-        
-        st.components.v1.html(login_html, height=520)
-
-        # Capturamos los datos enviados por el formulario HTML
-        params = st.query_params
-        if "usuario" in params and "clave" in params:
-            usuario_input = params["usuario"]
-            clave_input = params["clave"]
+        with st.container(border=True):
+            st.markdown("### ✦ Lewin Boutique")
+            st.markdown("<p style='color: #94a3b8; font-size: 12px;'>Sistema exclusivo de control de inventario.</p>", unsafe_allow_html=True)
             
-            if usuario_input in USUARIOS and USUARIOS[usuario_input] == clave_input:
-                st.session_state.autenticado = True
-                st.session_state.usuario_actual = usuario_input
-                st.query_params.clear()
-                st.rerun()
-            else:
-                st.error("⚠️ Usuario o contraseña incorrectos.")
-
+            usuario_input = st.text_input("Email Address / Usuario", placeholder="Ingrese su usuario")
+            clave_input = st.text_input("Password / Contraseña", type="password", placeholder="Ingrese su contraseña")
+            remember_checked = st.checkbox("Remember me")
+            
+            if st.button("Log in", use_container_width=True):
+                # Limpiamos espacios por si acaso
+                user_clean = usuario_input.strip().lower()
+                pass_clean = clave_input.strip()
+                
+                if user_clean in USUARIOS and USUARIOS[user_clean] == pass_clean:
+                    st.session_state.autenticado = True
+                    st.session_state.usuario_actual = user_clean
+                    if remember_checked:
+                        st.toast("Sesión recordada correctamente.", icon="🔒")
+                    st.rerun()
+                else:
+                    st.error("⚠️ Usuario o contraseña incorrectos.")
+                    
     st.stop()
 
 # --- 2. PANEL PRINCIPAL ---
