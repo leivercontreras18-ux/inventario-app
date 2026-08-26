@@ -71,29 +71,30 @@ if not st.session_state.autenticado:
   with col2:
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # Renderizamos todo integrado dentro del mismo bloque visual con HTML puro para que no se descuadre
+    # Renderizamos el logo nativamente en Streamlit y luego la tarjeta justo debajo, 
+    # o mejor aún: usamos st.image directamente dentro de las columnas de Streamlit centradas.
+    col_sub1, col_sub2, col_sub3 = st.columns([1, 1.8, 1])
+    with col_sub2:
+        st.image("WhatsApp Image 2026-08-25 at 9.32.52 PM.jpeg", use_container_width=True)
+
     st.markdown(
         """
             <div style="
                 background: linear-gradient(145deg, #18181b 0%, #09090b 100%); 
-                padding: 35px 25px; 
-                border-radius: 24px; 
+                padding: 25px 20px; 
+                border-radius: 20px; 
                 border: 1px solid #27272a; 
                 text-align: center;
-                box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+                box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+                margin-top: -10px;
                 margin-bottom: 20px;
             ">
-                <h2 style="color: #ffffff; font-weight: 700; font-size: 24px; margin-top: 10px; margin-bottom: 4px; letter-spacing: 1px;">ESSENCE BOUTIQUE</h2>
-                <p style="color: #a1a1aa; font-size: 10px; text-transform: uppercase; letter-spacing: 3px; font-weight: 600; margin-bottom: 0px;">Sistema Privado de Inventario</p>
+                <h2 style="color: #ffffff; font-weight: 700; font-size: 22px; margin-top: 0px; margin-bottom: 4px; letter-spacing: 1px;">ESSENCE BOUTIQUE</h2>
+                <p style="color: #a1a1aa; font-size: 9px; text-transform: uppercase; letter-spacing: 3px; font-weight: 600; margin-bottom: 0px;">Sistema Privado de Inventario</p>
             </div>
         """,
         unsafe_allow_html=True,
     )
-    
-    # Aquí colocamos el logo de manera controlada arriba del login
-    col_img1, col_img2, col_img3 = st.columns([1, 1.5, 1])
-    with col_img2:
-        st.image("WhatsApp Image 2026-08-25 at 9.32.52 PM.jpeg", use_container_width=True)
 
     with st.form("form_login"):
       st.markdown(
