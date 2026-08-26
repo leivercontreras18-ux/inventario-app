@@ -125,6 +125,11 @@ st.markdown(
 
 header[data-testid="stHeader"] { background: transparent !important; }
 
+.block-container {
+    max-width: 100% !important;
+    padding: 2rem !important;
+}
+
 section[data-testid="stSidebar"] { 
     width: 240px !important;
     background: rgba(16, 18, 23, 0.94) !important; 
@@ -135,7 +140,7 @@ section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
 
 div[data-baseweb="input"] {
     background-color: #151821 !important;
-    border-radius: 10px !important;
+    border-radius: 8px !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     color: #ffffff !important;
 }
@@ -147,17 +152,17 @@ div[data-baseweb="input"] input {
     font-size: 13px !important;
 }
 
-div.stButton > button, div[data-testid="stFormSubmitButton"] > button {
+div.stButton > button {
     background: #ff3b3b !important;
     color: #ffffff !important;
-    border-radius: 10px !important;
+    border-radius: 8px !important;
     border: none !important;
     font-weight: 600 !important;
     padding: 10px 20px !important;
     box-shadow: 0 4px 15px rgba(255, 59, 59, 0.3) !important;
     transition: all 0.3s ease !important;
 }
-div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
+div.stButton > button:hover {
     background: #e03131 !important;
     transform: translateY(-1px) !important;
 }
@@ -218,131 +223,229 @@ if "inventario_local" not in st.session_state:
         ]
     )
 
-# --- 1. FLUJO DE LOGIN NÍTIDO Y UNIFICADO ---
+# --- 1. FLUJO DE LOGIN IDÉNTICO A PINTEREST (BLOQUE HTML UNIFICADO) ---
 if not st.session_state.autenticado:
-    col1, col2, col3 = st.columns([0.05, 4.9, 0.05])
-    with col2:
-        st.markdown("<br>", unsafe_allow_html=True)
-
-        # Contenedor principal que agrupa tanto el banner como el formulario sin sobreposiciones borrosas
-        st.markdown(
-            """
-            <div style="
+    _, col_centro, _ = st.columns([1, 10, 1])
+    
+    with col_centro:
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        
+        # Usamos st.components.v1.html para renderizar la tarjeta completa y armónica sin fallos de diseño
+        login_html = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+        <style>
+            body {
+                background-color: transparent;
+                margin: 0;
+                padding: 0;
+                font-family: 'Montserrat', sans-serif;
+            }
+            .pinterest-card {
                 display: flex;
-                flex-direction: row;
-                background: #12151c;
-                border-radius: 24px;
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                box-shadow: 0 25px 50px rgba(0,0,0,0.9);
-                overflow: hidden;
                 width: 100%;
-                max-width: 950px;
+                max-width: 900px;
                 margin: 0 auto;
-            ">
-                <!-- Lado Izquierdo: Banner Gráfico de Alta Nitidez -->
-                <div style="
-                    flex: 1.1;
-                    background: linear-gradient(135deg, rgba(15, 18, 25, 0.85) 0%, rgba(20, 15, 30, 0.95) 100%), 
-                                url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
-                    background-size: cover;
-                    background-position: center;
-                    padding: 80px 45px;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    border-right: 1px solid rgba(255, 255, 255, 0.06);
-                    min-height: 500px;
-                ">
-                    <h1 style="font-family: 'Cinzel', serif; color: #ffffff; font-size: 40px; font-weight: 700; margin-bottom: 12px; line-height: 1.1;">HELLO<br>WELCOME<span style="color: #ff3b3b;">!</span></h1>
-                    <p style="color: #94a3b8; font-family: 'Montserrat', sans-serif; font-size: 13px; letter-spacing: 0.8px; line-height: 1.5; margin-top: 10px;">Sistema exclusivo de control de inventario boutique Lewin.</p>
+                background: #11141b;
+                border-radius: 20px;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                box-shadow: 0 25px 50px rgba(0,0,0,0.7);
+                overflow: hidden;
+            }
+            .left-side {
+                flex: 1.1;
+                background: linear-gradient(135deg, rgba(12, 15, 22, 0.85) 0%, rgba(20, 15, 30, 0.95) 100%), 
+                            url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
+                background-size: cover;
+                background-position: center;
+                padding: 60px 40px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            .left-side h1 {
+                font-family: 'Cinzel', serif;
+                color: #ffffff;
+                font-size: 38px;
+                font-weight: 700;
+                margin: 0 0 12px 0;
+                line-height: 1.1;
+            }
+            .left-side p {
+                color: #94a3b8;
+                font-size: 11px;
+                letter-spacing: 0.8px;
+                line-height: 1.5;
+                margin: 0;
+            }
+            .right-side {
+                flex: 1;
+                padding: 45px 40px;
+                background: #11141b;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            .brand-title {
+                font-weight: 700;
+                font-size: 15px;
+                color: #ffffff;
+                margin-bottom: 12px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .tabs {
+                display: flex;
+                gap: 20px;
+                margin-bottom: 20px;
+                border-bottom: 1px solid rgba(255,255,255,0.06);
+                padding-bottom: 6px;
+            }
+            .tab-active {
+                color: #ff3b3b;
+                font-size: 12px;
+                font-weight: 600;
+                border-bottom: 2px solid #ff3b3b;
+                padding-bottom: 6px;
+                margin-bottom: -7px;
+            }
+            .tab-inactive {
+                color: #64748b;
+                font-size: 12px;
+                font-weight: 500;
+            }
+            .input-group {
+                margin-bottom: 12px;
+            }
+            .input-group label {
+                display: block;
+                color: #94a3b8;
+                font-size: 11px;
+                font-weight: 500;
+                margin-bottom: 4px;
+            }
+            .input-group input {
+                width: 100%;
+                background-color: #151821;
+                border-radius: 8px;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                color: #ffffff;
+                padding: 10px 12px;
+                font-size: 13px;
+                box-sizing: border-box;
+                outline: none;
+            }
+            .input-group input:focus {
+                border-color: #ff3b3b;
+            }
+            .options-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 4px;
+                margin-bottom: 16px;
+                font-size: 10px;
+                color: #94a3b8;
+            }
+            .options-row a {
+                color: #ff3b3b;
+                text-decoration: none;
+            }
+            .btn-login {
+                background: #ff3b3b;
+                color: #ffffff;
+                border-radius: 8px;
+                border: none;
+                font-weight: 600;
+                padding: 11px;
+                width: 100%;
+                font-size: 13px;
+                cursor: pointer;
+                box-shadow: 0 4px 15px rgba(255, 59, 59, 0.3);
+                transition: background 0.2s;
+            }
+            .btn-login:hover {
+                background: #e03131;
+            }
+            .divider {
+                text-align: center;
+                color: #64748b;
+                font-size: 10px;
+                margin: 12px 0;
+            }
+            .social-buttons {
+                display: flex;
+                gap: 8px;
+            }
+            .social-btn {
+                background: #171b26;
+                border: 1px solid rgba(255,255,255,0.08);
+                padding: 8px;
+                border-radius: 8px;
+                font-size: 10px;
+                color: #ffffff;
+                text-align: center;
+                flex: 1;
+            }
+        </style>
+        </head>
+        <body>
+            <div class="pinterest-card">
+                <div class="left-side">
+                    <h1>Hello<br>Welcome<span style="color: #ff3b3b;">!</span></h1>
+                    <p>Sistema exclusivo de control de inventario boutique.</p>
+                </div>
+                <div class="right-side">
+                    <div class="brand-title">
+                        <span style="color: #ff3b3b;">✦</span> Lewin Boutique
+                    </div>
+                    <div class="tabs">
+                        <span class="tab-active">Log in</span>
+                        <span class="tab-inactive">Sign Up</span>
+                    </div>
+                    <form method="GET">
+                        <div class="input-group">
+                            <label>Email Address</label>
+                            <input type="text" name="usuario" placeholder="Enter your email address" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Password</label>
+                            <input type="password" name="clave" placeholder="Enter your password" required>
+                        </div>
+                        <div class="options-row">
+                            <span>⬜ Remember me</span>
+                            <a href="#">Forgot password?</a>
+                        </div>
+                        <button type="submit" class="btn-login">Log in</button>
+                    </form>
+                    <div class="divider">or</div>
+                    <div class="social-buttons">
+                        <div class="social-btn">🌐 Google</div>
+                        <div class="social-btn">🍎 Apple</div>
+                    </div>
                 </div>
             </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        </body>
+        </html>
+        """
+        
+        st.components.v1.html(login_html, height=520)
 
-        # Estilo para ajustar el formulario de Streamlit de manera limpia sobre el lado derecho
-        st.markdown(
-            """
-            <style>
-            div[data-testid="stForm"] {
-                background: transparent !important;
-                border: none !important;
-                padding: 0px !important;
-                margin-top: -475px !important;
-                margin-left: 50% !important;
-                width: 48% !important;
-                padding-right: 45px !important;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        with st.form("form_login_nitido"):
-            st.markdown(
-                """
-                <div style="font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 20px; color: #ffffff; margin-bottom: 4px;">Lewin Boutique</div>
-                <div style="display: flex; gap: 15px; margin-bottom: 22px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">
-                    <span style="color: #ff3b3b; font-size: 12px; font-weight: 600; border-bottom: 2px solid #ff3b3b; padding-bottom: 8px; margin-bottom: -9px;">Log in</span>
-                    <span style="color: #64748b; font-size: 12px; font-weight: 500;">Sign Up</span>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-            st.markdown(
-                "<p style='color: #94a3b8; font-size: 11px; font-weight: 500; margin-bottom: 4px;'>Email Address</p>",
-                unsafe_allow_html=True,
-            )
-            usuario_input = st.text_input(
-                "Usuario",
-                placeholder="Enter your email address",
-                label_visibility="collapsed",
-            )
-
-            st.markdown(
-                "<p style='color: #94a3b8; font-size: 11px; font-weight: 500; margin-bottom: 4px; margin-top: 12px;'>Password</p>",
-                unsafe_allow_html=True,
-            )
-            clave_input = st.text_input(
-                "Contraseña",
-                type="password",
-                placeholder="Enter your password",
-                label_visibility="collapsed",
-            )
-
-            st.markdown(
-                "<div style='display: flex; justify-content: space-between; align-items: center; margin-top: 8px; margin-bottom: 18px;'>"
-                "<span style='color: #94a3b8; font-size: 11px;'>⬜ Remember me</span>"
-                "<a style='color: #ff3b3b; font-size: 11px; text-decoration: none;' href='#'>Forgot password?</a>"
-                "</div>",
-                unsafe_allow_html=True,
-            )
-
-            boton_enviar = st.form_submit_button("Log in", use_container_width=True)
-
-            st.markdown(
-                """
-                <div style="text-align: center; color: #64748b; font-size: 11px; margin: 14px 0;">or</div>
-                <div style="display: flex; gap: 10px; justify-content: center;">
-                    <div style="background: #1a1e29; border: 1px solid rgba(255,255,255,0.08); padding: 9px 16px; border-radius: 8px; font-size: 11px; color: #ffffff; text-align: center; flex: 1;">🌐 Google</div>
-                    <div style="background: #1a1e29; border: 1px solid rgba(255,255,255,0.08); padding: 9px 16px; border-radius: 8px; font-size: 11px; color: #ffffff; text-align: center; flex: 1;">🍎 Apple</div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-            if boton_enviar:
-                if (
-                    usuario_input in USUARIOS
-                    and USUARIOS[usuario_input] == clave_input
-                ):
-                    st.session_state.autenticado = True
-                    st.session_state.usuario_actual = usuario_input
-                    st.rerun()
-                else:
-                    st.error("⚠️ Usuario o contraseña incorrectos.")
+        # Capturamos los datos enviados por el formulario HTML incrustado mediante query params
+        params = st.query_params
+        if "usuario" in params and "clave" in params:
+            usuario_input = params["usuario"]
+            clave_input = params["clave"]
+            if usuario_input in USUARIOS and USUARIOS[usuario_input] == clave_input:
+                st.session_state.autenticado = True
+                st.session_state.usuario_actual = usuario_input
+                st.query_params.clear()
+                st.rerun()
+            else:
+                st.error("⚠️ Usuario o contraseña incorrectos.")
 
     st.stop()
 
