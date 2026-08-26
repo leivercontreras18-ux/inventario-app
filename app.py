@@ -225,7 +225,6 @@ if "inventario_local" not in st.session_state:
         ]
     )
 
-# Control de versión para limpiar el formulario de registro de forma limpia
 if "form_version" not in st.session_state:
     st.session_state.form_version = 0
 
@@ -480,7 +479,6 @@ else:
             unsafe_allow_html=True,
         )
 
-        # Se usa form_version como clave dinámica para que al cambiar de valor, Streamlit reinicie los campos en blanco
         with st.form(f"form_ropa_{st.session_state.form_version}"):
             sku = st.text_input("ID (Ej: A1)")
             nombre = st.text_input("Producto (Ej: Short)")
@@ -505,7 +503,6 @@ else:
                     }
                     if guardar_prenda(nueva_prenda):
                         st.success("¡Prenda guardada con éxito!")
-                        # Incrementamos la versión para forzar el reinicio visual del formulario
                         st.session_state.form_version += 1
                         st.rerun()
 
@@ -514,70 +511,98 @@ else:
             """
 <div class="page-header">
     <div class="page-title">Modificar o Eliminar Prenda</div>
-    <div class="page-subtitle">Selecciona una prenda existente para actualizar sus datos o borrarla.</div>
+    <div class="page-subtitle">Busca o selecciona una prenda existente para actualizar sus datos o borrarla.</div>
 </div>
 """,
             unsafe_allow_html=True,
         )
 
         if not df.empty:
-            lista_ids = df["ID"].astype(str).tolist()
-            id_seleccionado = st.selectbox("Seleccione el ID de la prenda", lista_ids)
+            # Selector de modo: Seleccionar o Buscar
+            modo_seleccion = st.radio(
+                "¿Cómo deseas encontrar la prenda?", 
+                ["Seleccionar de la lista", "Buscar por ID / Nombre"], 
+                horizontal=True
+            )
 
-            fila_data = df[df["ID"].astype(str) == id_seleccionado].iloc[0]
+            id_seleccionado = None
 
-            with st.form("form_editar"):
-                nuevo_id = st.text_input("ID", value=str(fila_data["ID"]))
-                nuevo_nombre = st.text_input("Producto", value=str(fila_data["Producto"]))
-                
-                cat_actual = str(fila_data["Categoria"])
-                idx_cat = st.session_state.categorias_maestras.index(cat_actual) if cat_actual in st.session_state.categorias_maestras else 0
-                nueva_categoria = st.selectbox("Categoria", st.session_state.categorias_maestras, index=idx_cat)
-                
-                talla_actual = str(fila_data["talla"])
-                idx_talla = st.session_state.tallas_maestras.index(talla_actual) if talla_actual in st.session_state.tallas_maestras else 0
-                nueva_talla = st.selectbox("talla", st.session_state.tallas_maestras, index=idx_talla)
-                
-                color_actual = str(fila_data["color"])
-                idx_color = st.session_state.colores_maestros.index(color_actual) if color_actual in st.session_state.colores_maestros else 0
-                nuevo_color = st.selectbox("color", st.session_state.colores_maestros, index=idx_color)
-                
-                nueva_cantidad = st.number_input(
-                    "cantidad", min_value=0, value=int(fila_data["cantidad"]), step=1
-                )
-                nueva_alerta = st.number_input(
-                    "alerta de stock",
-                    min_value=0,
-                    value=int(fila_data["alerta"]),
-                    step=1,
-                )
+            if modo_seleccion == "Seleccionar de la lista":
+                lista_ids = df["ID"].astype(str).tolist()
+                id_seleccionado = st.selectbox("Seleccione el ID de la prenda", lista_ids)
+            else:
+                texto_busqueda = st.text_input("Escribe el ID o nombre del producto a buscar:", placeholder="Ej: A1 o Short...")
+                if texto_busqueda.strip():
+                    q = texto_busqueda.strip().lower()
+                    df_coincidencias = df[
+                        df["ID"].astype(str).str.lower().str.contains(q) | 
+                        df["Producto"].astype(str).str.lower().str.contains(q)
+                    ]
+                    if not df_coincidencias.empty:
+                        opciones_encontradas = df_coincidencias["ID"].astype(str).tolist()
+                        id_seleccionado = st.selectbox(
+                            f"Coincidencias encontradas ({len(opciones_encontradas)}):", 
+                            opciones_encontradas,
+                            format_func=lambda x: f"ID: {x} - {df_coincidencias[df_coincidencias['ID'].astype(str) == x]['Producto'].values[0]}"
+                        )
+                    else:
+                        st.warning("No se encontraron prendas con ese criterio.")
 
-                col_btn1, col_btn2 = st.columns(2)
-                actualizar = col_btn1.form_submit_button(
-                    "💾 Guardar Cambios", use_container_width=True
-                )
-                eliminar = col_btn2.form_submit_button(
-                    "🗑️ Eliminar Prenda", use_container_width=True
-                )
+            if id_seleccionado:
+                fila_data = df[df["ID"].astype(str) == str(id_seleccionado)].iloc[0]
 
-                if actualizar:
-                    datos_mod = {
-                        "ID": nuevo_id,
-                        "Producto": nuevo_nombre,
-                        "Categoria": nueva_categoria,
-                        "talla": nueva_talla,
-                        "color": nuevo_color,
-                        "cantidad": nueva_cantidad,
-                        "alerta": nueva_alerta,
-                    }
-                    if actualizar_prenda(id_seleccionado, datos_mod):
-                        st.success("¡Prenda actualizada correctamente!")
-                        st.rerun()
+                with st.form("form_editar"):
+                    nuevo_id = st.text_input("ID", value=str(fila_data["ID"]))
+                    nuevo_nombre = st.text_input("Producto", value=str(fila_data["Producto"]))
+                    
+                    cat_actual = str(fila_data["Categoria"])
+                    idx_cat = st.session_state.categorias_maestras.index(cat_actual) if cat_actual in st.session_state.categorias_maestras else 0
+                    nueva_categoria = st.selectbox("Categoria", st.session_state.categorias_maestras, index=idx_cat)
+                    
+                    talla_actual = str(fila_data["talla"])
+                    idx_talla = st.session_state.tallas_maestras.index(talla_actual) if talla_actual in st.session_state.tallas_maestras else 0
+                    nueva_talla = st.selectbox("talla", st.session_state.tallas_maestras, index=idx_talla)
+                    
+                    color_actual = str(fila_data["color"])
+                    idx_color = st.session_state.colores_maestros.index(color_actual) if color_actual in st.session_state.colores_maestros else 0
+                    nuevo_color = st.selectbox("color", st.session_state.colores_maestros, index=idx_color)
+                    
+                    nueva_cantidad = st.number_input(
+                        "cantidad", min_value=0, value=int(fila_data["cantidad"]), step=1
+                    )
+                    nueva_alerta = st.number_input(
+                        "alerta de stock",
+                        min_value=0,
+                        value=int(fila_data["alerta"]),
+                        step=1,
+                    )
 
-                if eliminar:
-                    if eliminar_prenda(id_seleccionado):
-                        st.success("¡Prenda eliminada del sistema!")
-                        st.rerun()
+                    col_btn1, col_btn2 = st.columns(2)
+                    actualizar = col_btn1.form_submit_button(
+                        "💾 Guardar Cambios", use_container_width=True
+                    )
+                    eliminar = col_btn2.form_submit_button(
+                        "🗑️ Eliminar Prenda", use_container_width=True
+                    )
+
+                    if actualizar:
+                        datos_mod = {
+                            "ID": nuevo_id,
+                            "Producto": nuevo_nombre,
+                            "Categoria": nueva_categoria,
+                            "talla": nueva_talla,
+                            "color": nuevo_color,
+                            "cantidad": nueva_cantidad,
+                            "alerta": nueva_alerta,
+                        }
+                        if actualizar_prenda(id_seleccionado, datos_mod):
+                            st.success("¡Prenda actualizada correctamente!")
+                            st.rerun()
+
+                    if eliminar:
+                        if eliminar_prenda(id_seleccionado):
+                            st.success("¡Prenda eliminada del sistema!")
+                            st.rerun()
         else:
             st.info("No hay registros disponibles para modificar.")
 
