@@ -80,23 +80,25 @@ if not st.session_state.autenticado:
   with col2:
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # Imagen del logo principal centrada
-    st.image("1787708461873.png", width=160)
-
-    # Subtítulo integrado y unificado sin recuadro de título repetido
+    # Contenedor unificado para centrar el logo y la caja de texto perfectamente simétricos
     st.markdown(
         """
             <div style="
                 background: rgba(24, 24, 27, 0.85); 
                 backdrop-filter: blur(12px);
-                padding: 15px 20px; 
-                border-radius: 16px; 
+                padding: 25px 20px; 
+                border-radius: 20px; 
                 border: 1px solid rgba(255, 255, 255, 0.1); 
                 text-align: center;
                 box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-                margin-top: 12px;
-                margin-bottom: 25px;
+                margin-top: 10px;
+                margin-bottom: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
             ">
+                <img src="https://raw.githubusercontent.com/leivercontreras18-ux/inventario-app/main/1787708461873.png" style="width: 150px; height: auto; margin-bottom: 15px; border-radius: 10px;">
                 <p style="color: #a1a1aa; font-size: 10px; text-transform: uppercase; letter-spacing: 3px; font-weight: 700; margin-bottom: 0px;">Sistema Privado de Inventario</p>
             </div>
         """,
