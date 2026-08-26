@@ -83,7 +83,7 @@ if "usuario_actual" not in st.session_state:
   st.session_state.usuario_actual = ""
 
 if "pantalla" not in st.session_state:
-  st.session_state.pantalla = "portada"  # "portada" o "login"
+  st.session_state.pantalla = "portada"
 
 if "inventario" not in st.session_state:
   st.session_state.inventario = pd.DataFrame(
@@ -101,7 +101,7 @@ if "inventario" not in st.session_state:
 # --- 1. FLUJO DE NO AUTENTICADO ---
 if not st.session_state.autenticado:
 
-  # PANTALLA 1: PORTADA PRINCIPAL SOLO CON LOGO Y BOTÓN DE INICIO
+  # PANTALLA 1: PORTADA PRINCIPAL
   if st.session_state.pantalla == "portada":
     col1, col2, col3 = st.columns([1, 1.2, 1])
     with col2:
@@ -112,7 +112,7 @@ if not st.session_state.autenticado:
                 background: rgba(18, 24, 38, 0.65); 
                 backdrop-filter: blur(16px);
                 -webkit-backdrop-filter: blur(16px);
-                padding: 50px 30px; 
+                padding: 45px 30px; 
                 border-radius: 24px; 
                 border: 1px solid rgba(255, 255, 255, 0.12); 
                 text-align: center;
@@ -134,8 +134,11 @@ if not st.session_state.autenticado:
                 <div style="color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: 5px; margin-bottom: 4px;">
                     LEWIN
                 </div>
-                <div style="color: #38bdf8; font-size: 14px; text-transform: uppercase; letter-spacing: 4px; font-weight: 600; margin-bottom: 35px;">
+                <div style="color: #38bdf8; font-size: 14px; text-transform: uppercase; letter-spacing: 4px; font-weight: 600; margin-bottom: 10px;">
                     Boutique
+                </div>
+                <div style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 2px;">
+                    Sistema Privado
                 </div>
             </div>
             """,
