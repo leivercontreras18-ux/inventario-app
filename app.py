@@ -224,7 +224,7 @@ if not st.session_state.autenticado:
 
     col1, col2, col3 = st.columns([0.1, 3.8, 0.1])
     with col2:
-        # Contenedor Grid maestro que une ambas mitades en una sola caja visual idéntica a la referencia
+        # Contenedor envolvente total con la tarjeta unificada en HTML puro
         st.markdown(
             """
             <div style="
@@ -239,22 +239,23 @@ if not st.session_state.autenticado:
                 max-width: 900px;
                 margin: 0 auto;
             ">
-                <!-- Columna Izquierda: Imagen y Banner -->
+                <!-- Columna Izquierda: Banner con Imagen -->
                 <div style="
                     background: linear-gradient(135deg, rgba(15, 18, 25, 0.85) 0%, rgba(20, 15, 30, 0.95) 100%), 
                                 url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
                     background-size: cover;
                     background-position: center;
-                    padding: 65px 35px;
+                    padding: 70px 35px;
                     display: flex;
                     flex-direction: column;
                     justify-content: center;
+                    height: 100%;
                 ">
                     <h1 style="font-family: 'Cinzel', serif; color: #ffffff; font-size: 38px; font-weight: 700; margin-bottom: 12px; line-height: 1.1;">HELLO<br>WELCOME<span style="color: #ff3b3b;">!</span></h1>
                     <p style="color: #94a3b8; font-family: 'Montserrat', sans-serif; font-size: 12px; letter-spacing: 0.8px; line-height: 1.5; margin-top: 10px;">Sistema exclusivo de control de inventario boutique Lewin.</p>
                 </div>
 
-                <!-- Columna Derecha: Encabezado estático del formulario -->
+                <!-- Columna Derecha: Cabecera visual del formulario -->
                 <div style="
                     padding: 40px 35px;
                     display: flex;
