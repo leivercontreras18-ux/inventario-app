@@ -71,30 +71,34 @@ if not st.session_state.autenticado:
   with col2:
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # Renderizamos el logo nativamente en Streamlit y luego la tarjeta justo debajo, 
-    # o mejor aún: usamos st.image directamente dentro de las columnas de Streamlit centradas.
-    col_sub1, col_sub2, col_sub3 = st.columns([1, 1.8, 1])
-    with col_sub2:
-        st.image("WhatsApp Image 2026-08-25 at 9.32.52 PM.jpeg", use_container_width=True)
-
-    st.markdown(
-        """
-            <div style="
-                background: linear-gradient(145deg, #18181b 0%, #09090b 100%); 
-                padding: 25px 20px; 
-                border-radius: 20px; 
-                border: 1px solid #27272a; 
-                text-align: center;
-                box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-                margin-top: -10px;
-                margin-bottom: 20px;
-            ">
-                <h2 style="color: #ffffff; font-weight: 700; font-size: 22px; margin-top: 0px; margin-bottom: 4px; letter-spacing: 1px;">ESSENCE BOUTIQUE</h2>
-                <p style="color: #a1a1aa; font-size: 9px; text-transform: uppercase; letter-spacing: 3px; font-weight: 600; margin-bottom: 0px;">Sistema Privado de Inventario</p>
-            </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    # Contenedor principal que envuelve todo (el logo y los textos juntos dentro de la misma tarjeta oscura)
+    with st.container():
+        st.markdown(
+            """
+                <div style="
+                    background: linear-gradient(145deg, #18181b 0%, #09090b 100%); 
+                    padding: 30px 20px; 
+                    border-radius: 20px; 
+                    border: 1px solid #27272a; 
+                    text-align: center;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+                    margin-bottom: 20px;
+                ">
+            """,
+            unsafe_allow_html=True,
+        )
+        
+        # Imagen colocada estrictamente adentro del contenedor estético
+        st.image("WhatsApp Image 2026-08-25 at 9.32.52 PM.jpeg", width=130)
+        
+        st.markdown(
+            """
+                    <h2 style="color: #ffffff; font-weight: 700; font-size: 22px; margin-top: 15px; margin-bottom: 4px; letter-spacing: 1px;">ESSENCE BOUTIQUE</h2>
+                    <p style="color: #a1a1aa; font-size: 9px; text-transform: uppercase; letter-spacing: 3px; font-weight: 600; margin-bottom: 0px;">Sistema Privado de Inventario</p>
+                </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     with st.form("form_login"):
       st.markdown(
