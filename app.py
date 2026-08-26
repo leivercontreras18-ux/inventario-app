@@ -222,107 +222,107 @@ if "inventario_local" not in st.session_state:
 if not st.session_state.autenticado:
     st.markdown("<br><br>", unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns([0.1, 3.8, 0.1])
-    with col2:
-        # Contenedor envolvente total con la tarjeta unificada en HTML puro
-        st.markdown(
-            """
-            <div style="
-                display: grid;
-                grid-template-columns: 1.1fr 1fr;
-                background: #12151c;
-                border-radius: 24px;
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                box-shadow: 0 25px 50px rgba(0,0,0,0.9);
-                overflow: hidden;
-                width: 100%;
-                max-width: 900px;
-                margin: 0 auto;
-            ">
-                <!-- Columna Izquierda: Banner con Imagen -->
-                <div style="
-                    background: linear-gradient(135deg, rgba(15, 18, 25, 0.85) 0%, rgba(20, 15, 30, 0.95) 100%), 
-                                url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
-                    background-size: cover;
-                    background-position: center;
-                    padding: 70px 35px;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    height: 100%;
-                ">
-                    <h1 style="font-family: 'Cinzel', serif; color: #ffffff; font-size: 38px; font-weight: 700; margin-bottom: 12px; line-height: 1.1;">HELLO<br>WELCOME<span style="color: #ff3b3b;">!</span></h1>
-                    <p style="color: #94a3b8; font-family: 'Montserrat', sans-serif; font-size: 12px; letter-spacing: 0.8px; line-height: 1.5; margin-top: 10px;">Sistema exclusivo de control de inventario boutique Lewin.</p>
-                </div>
+    col_centrar1, col_tarjeta, col_centrar2 = st.columns([1, 4.5, 1])
+    with col_tarjeta:
+        # Contenedor envolvente general limpio
+        with st.container():
+            col_izq, col_der = st.columns(2, gap="medium")
 
-                <!-- Columna Derecha: Cabecera visual del formulario -->
-                <div style="
-                    padding: 40px 35px;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                ">
-                    <div style="font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 18px; color: #ffffff; margin-bottom: 2px;">Lewin Boutique</div>
-                    <div style="display: flex; gap: 15px; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px;">
-                        <span style="color: #ff3b3b; font-size: 11px; font-weight: 600; border-bottom: 2px solid #ff3b3b; padding-bottom: 4px; margin-bottom: -5px;">Log in</span>
-                        <span style="color: #64748b; font-size: 11px; font-weight: 500;">Sign Up</span>
+            with col_izq:
+                st.markdown(
+                    """
+                    <div style="
+                        background: linear-gradient(135deg, rgba(15, 18, 25, 0.85) 0%, rgba(20, 15, 30, 0.95) 100%), 
+                                    url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');
+                        background-size: cover;
+                        background-position: center;
+                        padding: 70px 30px;
+                        border-radius: 20px 0 0 20px;
+                        height: 100%;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        border: 1px solid rgba(255, 255, 255, 0.08);
+                        border-right: none;
+                    ">
+                        <h1 style="font-family: 'Cinzel', serif; color: #ffffff; font-size: 34px; font-weight: 700; margin-bottom: 12px; line-height: 1.1;">HELLO<br>WELCOME<span style="color: #ff3b3b;">!</span></h1>
+                        <p style="color: #94a3b8; font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: 0.8px; line-height: 1.5; margin-top: 10px;">Sistema exclusivo de control de inventario boutique Lewin.</p>
                     </div>
-            """,
-            unsafe_allow_html=True,
-        )
+                    """,
+                    unsafe_allow_html=True,
+                )
 
-        st.markdown(
-            "<p style='color: #94a3b8; font-size: 10px; font-weight: 500; margin-bottom: 2px;'>Email Address</p>",
-            unsafe_allow_html=True,
-        )
-        usuario_input = st.text_input(
-            "Usuario",
-            placeholder="Enter your email address",
-            label_visibility="collapsed",
-        )
+            with col_der:
+                st.markdown(
+                    """
+                    <div style="
+                        background: #12151c;
+                        padding: 35px 30px;
+                        border-radius: 0 20px 20px 0;
+                        height: 100%;
+                        border: 1px solid rgba(255, 255, 255, 0.08);
+                        border-left: none;
+                    ">
+                        <div style="font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 18px; color: #ffffff; margin-bottom: 2px;">Lewin Boutique</div>
+                        <div style="display: flex; gap: 15px; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px;">
+                            <span style="color: #ff3b3b; font-size: 11px; font-weight: 600; border-bottom: 2px solid #ff3b3b; padding-bottom: 4px; margin-bottom: -5px;">Log in</span>
+                            <span style="color: #64748b; font-size: 11px; font-weight: 500;">Sign Up</span>
+                        </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
 
-        st.markdown(
-            "<p style='color: #94a3b8; font-size: 10px; font-weight: 500; margin-bottom: 2px; margin-top: 8px;'>Password</p>",
-            unsafe_allow_html=True,
-        )
-        clave_input = st.text_input(
-            "Contraseña",
-            type="password",
-            placeholder="Enter your password",
-            label_visibility="collapsed",
-        )
+                st.markdown(
+                    "<p style='color: #94a3b8; font-size: 10px; font-weight: 500; margin-bottom: 2px;'>Email Address</p>",
+                    unsafe_allow_html=True,
+                )
+                usuario_input = st.text_input(
+                    "Usuario",
+                    placeholder="Enter your email address",
+                    label_visibility="collapsed",
+                )
 
-        st.markdown(
-            "<div style='display: flex; justify-content: space-between; align-items: center; margin-top: 6px; margin-bottom: 12px;'>"
-            "<span style='color: #94a3b8; font-size: 10px;'>⬜ Remember me</span>"
-            "<a style='color: #ff3b3b; font-size: 10px; text-decoration: none;' href='#'>Forgot password?</a>"
-            "</div>",
-            unsafe_allow_html=True,
-        )
+                st.markdown(
+                    "<p style='color: #94a3b8; font-size: 10px; font-weight: 500; margin-bottom: 2px; margin-top: 8px;'>Password</p>",
+                    unsafe_allow_html=True,
+                )
+                clave_input = st.text_input(
+                    "Contraseña",
+                    type="password",
+                    placeholder="Enter your password",
+                    label_visibility="collapsed",
+                )
 
-        if st.button("Log in", use_container_width=True):
-            if (
-                usuario_input in USUARIOS
-                and USUARIOS[usuario_input] == clave_input
-            ):
-                st.session_state.autenticado = True
-                st.session_state.usuario_actual = usuario_input
-                st.rerun()
-            else:
-                st.error("⚠️ Usuario o contraseña incorrectos.")
+                st.markdown(
+                    "<div style='display: flex; justify-content: space-between; align-items: center; margin-top: 6px; margin-bottom: 12px;'>"
+                    "<span style='color: #94a3b8; font-size: 10px;'>⬜ Remember me</span>"
+                    "<a style='color: #ff3b3b; font-size: 10px; text-decoration: none;' href='#'>Forgot password?</a>"
+                    "</div>",
+                    unsafe_allow_html=True,
+                )
 
-        st.markdown(
-            """
-                    <div style="text-align: center; color: #64748b; font-size: 10px; margin: 8px 0;">or</div>
-                    <div style="display: flex; gap: 8px; justify-content: center;">
-                        <div style="background: #1a1e29; border: 1px solid rgba(255,255,255,0.08); padding: 6px 10px; border-radius: 8px; font-size: 10px; color: #ffffff; text-align: center; flex: 1;">🌐 Google</div>
-                        <div style="background: #1a1e29; border: 1px solid rgba(255,255,255,0.08); padding: 6px 10px; border-radius: 8px; font-size: 10px; color: #ffffff; text-align: center; flex: 1;">🍎 Apple</div>
+                if st.button("Log in", use_container_width=True):
+                    if (
+                        usuario_input in USUARIOS
+                        and USUARIOS[usuario_input] == clave_input
+                    ):
+                        st.session_state.autenticado = True
+                        st.session_state.usuario_actual = usuario_input
+                        st.rerun()
+                    else:
+                        st.error("⚠️ Usuario o contraseña incorrectos.")
+
+                st.markdown(
+                    """
+                        <div style="text-align: center; color: #64748b; font-size: 10px; margin: 8px 0;">or</div>
+                        <div style="display: flex; gap: 8px; justify-content: center;">
+                            <div style="background: #1a1e29; border: 1px solid rgba(255,255,255,0.08); padding: 6px 10px; border-radius: 8px; font-size: 10px; color: #ffffff; text-align: center; flex: 1;">🌐 Google</div>
+                            <div style="background: #1a1e29; border: 1px solid rgba(255,255,255,0.08); padding: 6px 10px; border-radius: 8px; font-size: 10px; color: #ffffff; text-align: center; flex: 1;">🍎 Apple</div>
+                        </div>
                     </div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+                    """,
+                    unsafe_allow_html=True,
+                )
 
     st.stop()
 
