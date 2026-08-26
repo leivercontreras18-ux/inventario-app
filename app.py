@@ -80,15 +80,8 @@ if not st.session_state.autenticado:
   with col2:
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # Logo integrado en HTML puro sin recuadro blanco separado
-    st.markdown(
-        """
-        <div style="text-align: center; margin-bottom: 10px;">
-            <img src="app/static/1787708461873.png" width="130" style="border-radius: 12px; filter: drop-shadow(0px 8px 16px rgba(0,0,0,0.6)); mix-blend-mode: luminosity;">
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    # Usamos la función estándar de Streamlit que se conecta directo a tu archivo subido
+    st.image("1787708461873.png", width=130)
 
     st.markdown(
         """
@@ -284,7 +277,7 @@ else:
     )
 
     if not df.empty:
-      lista_ids = df["ID"].astype(str).tolist()  
+      lista_ids = df["ID"].astype(str).tolist()
       id_seleccionado = st.selectbox("Seleccione el ID de la prenda", lista_ids)
 
       fila_idx = df[df["ID"].astype(str) == id_seleccionado].index[0]
