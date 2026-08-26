@@ -5,7 +5,7 @@ st.set_page_config(
     page_title="Lewin // Inventario Boutique", page_icon="👕", layout="wide"
 )
 
-# --- DISEÑO UI (ESTILO GLASSMORPHISM & MENÚ COMPACTO DE ICONOS) ---
+# --- DISEÑO UI (ESTILO CAJÓN FLOTANTE / EXPANSOR LATERAL) ---
 st.markdown(
     """
     <style>
@@ -18,12 +18,12 @@ st.markdown(
         color: #fafafa !important; 
     }
     
-    /* BARRA LATERAL ESTRECHA Y ELEGANTE */
+    /* BARRA LATERAL */
     section[data-testid="stSidebar"] { 
-        width: 190px !important;
-        background-color: rgba(18, 18, 22, 0.85) !important; 
+        width: 220px !important;
+        background-color: rgba(15, 23, 30, 0.9) !important; 
         border-right: 1px solid rgba(255, 255, 255, 0.08); 
-        backdrop-filter: blur(14px); 
+        backdrop-filter: blur(16px); 
     }
     section[data-testid="stSidebar"] * { color: #f4f4f5 !important; }
     
@@ -43,7 +43,7 @@ st.markdown(
     .metric-value { font-size: 36px; font-weight: 800; color: #d4af37 !important; margin-top: 8px; }
     .metric-label { font-size: 11px; color: #71717a !important; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
     
-    /* USUARIO COMPACTO */
+    /* USUARIO */
     .user-badge { 
         background: rgba(255, 255, 255, 0.04); 
         padding: 10px 12px; 
@@ -55,7 +55,7 @@ st.markdown(
     .user-status-title { font-size: 7px; color: #71717a; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 2px; }
     .user-name { font-size: 14px; font-weight: 600; color: #fafafa; }
 
-    /* BOTONES DE NAVEGACIÓN ESTILO PÍLDORA/ICONA */
+    /* BOTONES DE NAVEGACIÓN */
     .stSidebar .stButton>button {
         background: rgba(255, 255, 255, 0.03) !important; 
         color: #d4d4d8 !important;
@@ -66,7 +66,6 @@ st.markdown(
         padding: 8px 12px;
         text-align: left;
         margin-bottom: 4px;
-        box-shadow: none !important;
         transition: all 0.2s ease;
     }
     .stSidebar .stButton>button:hover { 
@@ -75,11 +74,17 @@ st.markdown(
         border-color: rgba(56, 189, 248, 0.3) !important;
     }
     
-    /* BOTÓN DE ACCIÓN PRINCIPAL (Cerrar sesión / Ingresar) */
-    .btn-action button {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important; 
-        color: #ffffff !important;
-        border: none !important;
+    /* PANEL FLOTANTE TIPO CAJÓN (DRAWER BLANCO) */
+    .drawer-panel {
+        background: #f8fafc !important;
+        color: #0f172a !important;
+        padding: 20px;
+        border-radius: 16px;
+        box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+        margin-bottom: 15px;
+    }
+    .drawer-panel * {
+        color: #0f172a !important;
     }
     </style>
 """,
@@ -91,16 +96,14 @@ USUARIOS = {"leiver": "natsudraghonil", "winderly": "coromoto"}
 
 if "autenticado" not in st.session_state:
   st.session_state.autenticado = False
-
 if "usuario_actual" not in st.session_state:
   st.session_state.usuario_actual = ""
-
 if "pantalla" not in st.session_state:
   st.session_state.pantalla = "portada"
-
 if "menu_activo" not in st.session_state:
   st.session_state.menu_activo = "existencias"
-
+if "mostrar_drawer" not in st.session_state:
+  st.session_state.mostrar_drawer = False
 if "inventario" not in st.session_state:
   st.session_state.inventario = pd.DataFrame(
       columns=[
@@ -117,7 +120,6 @@ if "inventario" not in st.session_state:
 # --- 1. FLUJO DE NO AUTENTICADO ---
 if not st.session_state.autenticado:
 
-  # PANTALLA 1: PORTADA PRINCIPAL
   if st.session_state.pantalla == "portada":
     col1, col2, col3 = st.columns([1, 1.2, 1])
     with col2:
@@ -127,7 +129,6 @@ if not st.session_state.autenticado:
             <div style="
                 background: rgba(18, 24, 38, 0.65); 
                 backdrop-filter: blur(16px);
-                -webkit-backdrop-filter: blur(16px);
                 padding: 45px 30px; 
                 border-radius: 24px; 
                 border: 1px solid rgba(255, 255, 255, 0.12); 
@@ -166,18 +167,15 @@ if not st.session_state.autenticado:
         st.session_state.pantalla = "login"
         st.rerun()
 
-  # PANTALLA 2: FORMULARIO DE LOGIN
   elif st.session_state.pantalla == "login":
     col1, col2, col3 = st.columns([1, 1.2, 1])
     with col2:
       st.markdown("<br>", unsafe_allow_html=True)
-
       st.markdown(
           """
             <div style="
                 background: rgba(18, 24, 38, 0.6); 
                 backdrop-filter: blur(16px);
-                -webkit-backdrop-filter: blur(16px);
                 padding: 30px 25px 10px 25px; 
                 border-radius: 24px 24px 0px 0px; 
                 border: 1px solid rgba(255, 255, 255, 0.12); 
@@ -251,7 +249,7 @@ if not st.session_state.autenticado:
 else:
   usuario_formateado = st.session_state.usuario_actual.capitalize()
 
-  # BARRA LATERAL ESTILO PANEL MINIMALISTA COMPACTO
+  # BARRA LATERAL CON BOTÓN PARA ABRIR/CERRAR CAJÓN FLOTANTE
   st.sidebar.markdown(
       f"""
         <div class="user-badge">
@@ -262,11 +260,18 @@ else:
       unsafe_allow_html=True,
   )
 
-  st.sidebar.markdown(
-      "<p style='font-size:10px; color:#71717a; text-transform:uppercase;"
-      " letter-spacing:1px; margin: 8px 0 4px 2px;'>Navegación</p>",
-      unsafe_allow_html=True,
-  )
+  # Botón superior del cajón (Estilo de la imagen de referencia)
+  col_d1, col_d2 = st.sidebar.columns([4, 1])
+  with col_d1:
+    st.markdown(
+        "<p style='font-size:10px; color:#71717a; text-transform:uppercase;"
+        " letter-spacing:1px; margin: 8px 0 4px 2px;'>Menú Principal</p>",
+        unsafe_allow_html=True,
+    )
+  with col_d2:
+    if st.button("⚙️" if not st.session_state.mostrar_drawer else "❌"):
+      st.session_state.mostrar_drawer = not st.session_state.mostrar_drawer
+      st.rerun()
 
   if st.sidebar.button("📊 Existencias", use_container_width=True):
     st.session_state.menu_activo = "existencias"
@@ -291,6 +296,20 @@ else:
     st.session_state.usuario_actual = ""
     st.session_state.pantalla = "portada"
     st.rerun()
+
+  # CAJÓN FLOTANTE DESPLEGABLE (DRAWER BLANCO)
+  if st.session_state.mostrar_drawer:
+    st.sidebar.markdown(
+        """
+        <div class="drawer-panel">
+            <h4 style="margin-top:0; font-weight: 700;">Panel Flotante</h4>
+            <p style="font-size: 12px; margin-bottom: 10px;">Acceso rápido a herramientas adicionales del sistema boutique.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    if st.sidebar.button("📥 Exportar Datos (CSV)", use_container_width=True):
+      st.sidebar.success("Generando reporte...")
 
   df = st.session_state.inventario
   menu = st.session_state.menu_activo
