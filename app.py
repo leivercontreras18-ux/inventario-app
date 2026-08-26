@@ -20,7 +20,6 @@ def obtener_conexion_supabase():
 supabase = obtener_conexion_supabase()
 
 
-# Funciones CRUD para Supabase con respaldo local
 def cargar_inventario():
   if supabase:
     try:
@@ -119,13 +118,13 @@ def eliminar_prenda(id_prenda):
     return True
 
 
-# --- DISEÑO UI (GLASSMORPHISM & BOUTIQUE STYLE) ---
+# --- DISEÑO UI (TEXTURA DE TELA OSCURA & GLASSMORPHISM) ---
 st.markdown(
     """
     <style>
     .stApp { 
-        background: linear-gradient(rgba(10, 15, 30, 0.6), rgba(10, 15, 30, 0.9)), 
-                    url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1920&auto=format&fit=crop');
+        background: linear-gradient(rgba(10, 15, 25, 0.7), rgba(10, 15, 25, 0.85)), 
+                    url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920&auto=format&fit=crop');
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -148,11 +147,11 @@ st.markdown(
     .section-subtitle { font-size: 12px; color: #94a3b8; margin-bottom: 15px; }
     
     .metric-card {
-        background: rgba(18, 24, 38, 0.5); 
-        backdrop-filter: blur(12px); 
+        background: rgba(18, 24, 38, 0.55); 
+        backdrop-filter: blur(14px); 
         border: 1px solid rgba(255, 255, 255, 0.08);
         padding: 20px; border-radius: 16px; text-align: left;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
         height: 100%;
     }
     .metric-value { font-size: 32px; font-weight: 800; color: #d4af37 !important; margin-top: 8px; }
@@ -184,8 +183,8 @@ st.markdown(
     }
 
     div.stAlert {
-        background: rgba(18, 24, 38, 0.5) !important;
-        backdrop-filter: blur(10px) !important;
+        background: rgba(18, 24, 38, 0.55) !important;
+        backdrop-filter: blur(12px) !important;
         border: 1px solid rgba(255, 255, 255, 0.08) !important;
         color: #cbd5e1 !important; border-radius: 14px !important;
     }
