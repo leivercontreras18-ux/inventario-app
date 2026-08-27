@@ -19,7 +19,7 @@ def obtener_conexion_supabase():
 
 supabase = obtener_conexion_supabase()
 
-# --- CARGAR INVENTARIO Y CONFIGURACIÓN PERSISTENTE ---
+# --- CARGAR INVENTARIO Y CONFIGURACIÓN DESDE TABLAS SEPARADAS ---
 def cargar_datos_completos():
     cats_default = ["Vestidos", "Blusas", "Pantalones", "Jeans", "Chaquetas", "Calzado", "Accesorios"]
     tallas_default = ["XS", "S", "M", "L", "XL", "Única"]
@@ -30,78 +30,69 @@ def cargar_datos_completos():
 
     if supabase:
         try:
-            res = supabase.table("inventario").select("*").execute()
-            if res.data:
-                df_full = pd.DataFrame(res.data)
-                
-                # Extraer configuración guardada
-                fila_config = df_full[df_full["id"].astype(str) == "__CONFIG__"]
-                if not fila_config.empty:
-                    try:
-                        config_data = json.loads(fila_config.iloc[0]["producto"])
-                        cats = config_data.get("categorias", cats_default)
-                        tallas = config_data.get("tallas", tallas_default)
-                        colores = config_data.get("colores", colores_default)
-                    except:
-                        pass
-                
-                # Filtrar el inventario real (excluyendo la fila de config)
-                df = df_full[df_full["id"].astype(str) != "__CONFIG__"]
-                if not df.empty:
-                    df = df.rename(
-                        columns={
-                            "id": "ID",
-                            "producto": "Producto",
-                            "categoria": "Categoria",
-                        }
-                    )
+            # 1. Cargar Inventario
+            res_inv = supabase.table("inventario").select("*").execute()
+            if res_inv.data:
+                df = pd.DataFrame(res_inv.data)
+                df = df.rename(
+                    columns={
+                        "id": "ID",
+                        "producto": "Producto",
+                        "categoria": "Categoria",
+                    }
+                )
+            
+            # 2. Cargar Configuración desde la tabla 'configuracion'
+            res_cfg = supabase.table("configuracion").select("*").execute()
+            if res_cfg.data:
+                for row in res_cfg.data:
+                    clave = str(row.get("id") or row.get("clave", "")).strip().lower()
+                    valor = row.get("valor") or row.get("value") or row.get("producto")
+                    
+                    if valor:
+                        if isinstance(valor, str):
+                            try:
+                                parsed_val = json.loads(valor)
+                            except:
+                                parsed_val = [v.strip() for v in valor.split(",")]
+                        else:
+                            parsed_val = valor
+
+                        if "cat" in clave:
+                            cats = parsed_val
+                        elif "tall" in clave:
+                            tallas = parsed_val
+                        elif "col" in clave:
+                            colores = parsed_val
+                            
             return df, cats, tallas, colores
-        except Exception:
+        except Exception as e:
             pass
 
     # Modo local si no hay Supabase
     df_local = st.session_state.get(
         "inventario_local",
-        pd.DataFrame(
-            columns=[
-                "ID",
-                "Producto",
-                "Categoria",
-                "talla",
-                "color",
-                "cantidad",
-                "alerta",
-            ]
-        ),
+        pd.DataFrame(columns=["ID", "Producto", "Categoria", "talla", "color", "cantidad", "alerta"])
     )
     return df_local, st.session_state.get("cats_local", cats_default), st.session_state.get("tallas_local", tallas_default), st.session_state.get("colores_local", colores_default)
 
 def guardar_configuracion_completa(cats, tallas, colores):
-    config_payload = json.dumps({"categorias": cats, "tallas": tallas, "colores": colores})
     if supabase:
         try:
-            res = supabase.table("inventario").select("*").eq("id", "__CONFIG__").execute()
-            if res.data:
-                supabase.table("inventario").update({
-                    "producto": config_payload,
-                    "categoria": "CONFIG",
-                    "talla": "-",
-                    "color": "-",
-                    "cantidad": 0,
-                    "alerta": 0
-                }).eq("id", "__CONFIG__").execute()
-            else:
-                supabase.table("inventario").insert({
-                    "id": "__CONFIG__",
-                    "producto": config_payload,
-                    "categoria": "CONFIG",
-                    "talla": "-",
-                    "color": "-",
-                    "cantidad": 0,
-                    "alerta": 0
-                }).execute()
+            # Guardar en la tabla 'configuracion' usando upsert
+            configs = [
+                {"id": "categorias", "valor": json.dumps(cats)},
+                {"id": "tallas", "valor": json.dumps(tallas)},
+                {"id": "colores", "valor": json.dumps(colores)}
+            ]
+            for cfg in configs:
+                try:
+                    supabase.table("configuracion").upsert(cfg, on_conflict="id").execute()
+                except:
+                    # Fallback por si la columna se llama 'clave' en lugar de 'id'
+                    supabase.table("configuracion").upsert({"clave": cfg["id"], "valor": cfg["valor"]}, on_conflict="clave").execute()
         except Exception as e:
-            st.error(f"Error al guardar configuración: {e}")
+            st.error(f"Error al guardar configuración en la nube: {e}")
     else:
         st.session_state.cats_local = cats
         st.session_state.tallas_local = tallas
@@ -285,15 +276,12 @@ if "inventario_local" not in st.session_state:
 if "form_version" not in st.session_state:
     st.session_state.form_version = 0
 
-# Cargar datos e inicializar listas maestras
+# Cargar datos e inicializar listas maestras desde Supabase
 df, cats_init, tallas_init, colores_init = cargar_datos_completos()
 
-if "categorias_maestras" not in st.session_state:
-    st.session_state.categorias_maestras = cats_init
-if "tallas_maestras" not in st.session_state:
-    st.session_state.tallas_maestras = tallas_init
-if "colores_maestros" not in st.session_state:
-    st.session_state.colores_maestros = colores_init
+st.session_state.categorias_maestras = cats_init
+st.session_state.tallas_maestras = tallas_init
+st.session_state.colores_maestros = colores_init
 
 query_params = st.query_params
 if not st.session_state.autenticado and "recuerdame_user" in query_params:
