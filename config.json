@@ -1,0 +1,29 @@
+{
+    "categorias": [
+        "Vestidos",
+        "Blusas",
+        "Pantalones",
+        "Jeans",
+        "Chaquetas",
+        "Calzado",
+        "Accesorios",
+        "Falda"
+    ],
+    "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "Única"
+    ],
+    "colores": [
+        "Negro",
+        "Blanco",
+        "Beige",
+        "Rojo",
+        "Azul",
+        "Rosa",
+        "Verde"
+    ]
+}
