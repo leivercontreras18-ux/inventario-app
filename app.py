@@ -67,7 +67,7 @@ def cargar_datos_completos():
                             
             return df, cats, tallas, colores
         except Exception as e:
-            pass
+            st.warning(f"Aviso al cargar datos de la nube: {e}")
 
     # Modo local si no hay Supabase
     df_local = st.session_state.get(
@@ -79,24 +79,29 @@ def cargar_datos_completos():
 def guardar_configuracion_completa(cats, tallas, colores):
     if supabase:
         try:
-            # Guardar en la tabla 'configuracion' usando upsert
             configs = [
-                {"id": "categorias", "valor": json.dumps(cats)},
-                {"id": "tallas", "valor": json.dumps(tallas)},
-                {"id": "colores", "valor": json.dumps(colores)}
+                ("categorias", json.dumps(cats)),
+                ("tallas", json.dumps(tallas)),
+                ("colores", json.dumps(colores))
             ]
-            for cfg in configs:
+            for clave, valor in configs:
                 try:
-                    supabase.table("configuracion").upsert(cfg, on_conflict="id").execute()
-                except:
-                    # Fallback por si la columna se llama 'clave' en lugar de 'id'
-                    supabase.table("configuracion").upsert({"clave": cfg["id"], "valor": cfg["valor"]}, on_conflict="clave").execute()
+                    supabase.table("configuracion").upsert({"id": clave, "valor": valor}, on_conflict="id").execute()
+                except Exception as e1:
+                    try:
+                        supabase.table("configuracion").upsert({"clave": clave, "valor": valor}, on_conflict="clave").execute()
+                    except Exception as e2:
+                        st.error(f"Error detallado en Supabase al guardar '{clave}': {e1} / {e2}")
+                        return False
+            return True
         except Exception as e:
-            st.error(f"Error al guardar configuración en la nube: {e}")
+            st.error(f"Error general al guardar configuración: {e}")
+            return False
     else:
         st.session_state.cats_local = cats
         st.session_state.tallas_local = tallas
         st.session_state.colores_local = colores
+        return True
 
 def guardar_prenda(nueva_prenda):
     if supabase:
