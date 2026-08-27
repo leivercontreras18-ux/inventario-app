@@ -20,6 +20,17 @@ def obtener_conexion_supabase():
 
 supabase = obtener_conexion_supabase()
 
+# --- CARGAR CONFIGURACIÓN DESDE GITHUB CON CACHÉ (OPTIMIZACIÓN DE VELOCIDAD) ---
+@st.cache_data(ttl=60)
+def cargar_config_github():
+    try:
+        g = Github(st.secrets["GITHUB_TOKEN"])
+        repo = g.get_repo("leivercontreras18-ux/inventario-app")
+        file_content = repo.get_contents("config.json", ref="main")
+        return json.loads(file_content.decoded_content.decode("utf-8"))
+    except Exception:
+        return None
+
 # --- CARGAR INVENTARIO (SUPABASE) Y CONFIGURACIÓN (GITHUB) ---
 def cargar_datos_completos():
     cats_default = ["Vestidos", "Blusas", "Pantalones", "Jeans", "Chaquetas", "Calzado", "Accesorios"]
@@ -45,18 +56,12 @@ def cargar_datos_completos():
         except Exception as e:
             st.warning(f"Aviso al cargar inventario de la nube: {e}")
 
-    # 2. Cargar Configuración desde GitHub (config.json)
-    try:
-        g = Github(st.secrets["GITHUB_TOKEN"])
-        repo = g.get_repo("leivercontreras18-ux/inventario-app")
-        file_content = repo.get_contents("config.json", ref="main")
-        config_data = json.loads(file_content.decoded_content.decode("utf-8"))
-        
+    # 2. Cargar Configuración desde GitHub usando la función con caché
+    config_data = cargar_config_github()
+    if config_data:
         cats = config_data.get("categorias", cats_default)
         tallas = config_data.get("tallas", tallas_default)
         colores = config_data.get("colores", colores_default)
-    except Exception:
-        pass  # Si no existe aún el archivo config.json, usa los valores por defecto
 
     return df, cats, tallas, colores
 
