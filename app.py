@@ -395,29 +395,10 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             -webkit-backdrop-filter: blur(40px);
             border: 1px solid rgba(219, 39, 119, 0.35);
             border-radius: 32px;
-            padding: 50px 70px;
-            min-height: 85vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-            overflow: hidden;
+            padding: 40px 60px;
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255,255,255,0.08);
             margin: 0 auto;
             max-width: 1450px;
-        }
-        .full-hero-wrapper::after {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            background: radial-gradient(circle at 50% 40%, rgba(219, 39, 119, 0.12) 0%, transparent 60%);
-            pointer-events: none;
-            z-index: 0;
-        }
-        .hero-inner {
-            position: relative;
-            z-index: 1;
         }
         .hero-brand {
             font-family: 'Cinzel', serif;
@@ -428,11 +409,10 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             display: flex;
             align-items: center;
             gap: 10px;
-            padding-top: 8px;
         }
         .hero-title {
             font-family: 'Cinzel', serif;
-            font-size: 52px;
+            font-size: 48px;
             font-weight: 800;
             color: #f9f6f8;
             letter-spacing: 2px;
@@ -445,20 +425,20 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             text-transform: uppercase;
             letter-spacing: 3px;
             font-weight: 700;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .hero-desc {
             color: #b899a6;
             font-size: 15px;
             line-height: 1.6;
             max-width: 650px;
-            margin-bottom: 35px;
+            margin-bottom: 30px;
         }
         .feature-pills-container {
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
-            margin-bottom: 40px;
+            margin-bottom: 10px;
         }
         .feature-pill {
             background: rgba(219, 39, 119, 0.1);
@@ -470,7 +450,6 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             font-weight: 600;
             letter-spacing: 0.5px;
         }
-        /* Estilo limpio para el botón de inicio */
         div[data-testid="stHorizontalBlock"] button {
             background: transparent !important;
             border: none !important;
@@ -499,12 +478,11 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         </style>
         
         <div class="full-hero-wrapper">
-            <div class="hero-inner">
         """,
         unsafe_allow_html=True,
     )
     
-    # Barra superior limpia manteniendo el estilo original y situando el botón de INICIO exactamente al lado de Tienda
+    # Barra superior dentro del mismo cuadro contenedor
     col_top1, col_top2 = st.columns([3, 2])
     with col_top1:
         st.markdown(
@@ -527,19 +505,18 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
 
     st.markdown(
         """
-                <div style="border-bottom: 1px solid rgba(219, 39, 119, 0.2); margin: 25px 0 35px 0;"></div>
-                <div class="hero-subtitle-tag">Headphones & Boutique Wireless</div>
-                <h1 class="hero-title">Lewin Boutique<br>Control Center</h1>
-                <p class="hero-desc">
-                    Mejores efectos de inventario y una experiencia de gestión auditiva y visual inigualable. Diseñado con interfaz minimalista de lujo en pantalla negra y oro rosa para cubrir toda la pantalla con absoluta elegancia.
-                </p>
-                <div class="feature-pills-container">
-                    <span class="feature-pill">✨ Cuadrícula Grid Chic</span>
-                    <span class="feature-pill">⚡ Ajuste Rápido (+1/-1)</span>
-                    <span class="feature-pill">📂 Supabase & GitHub Sync</span>
-                    <span class="feature-pill">📋 Portapapeles Inteligente</span>
-                </div>
-            </div>
+        <div style="border-bottom: 1px solid rgba(219, 39, 119, 0.2); margin: 20px 0 30px 0;"></div>
+        <div class="hero-subtitle-tag">Headphones & Boutique Wireless</div>
+        <h1 class="hero-title">Lewin Boutique<br>Control Center</h1>
+        <p class="hero-desc">
+            Mejores efectos de inventario y una experiencia de gestión auditiva y visual inigualable. Diseñado con interfaz minimalista de lujo en pantalla negra y oro rosa para cubrir toda la pantalla con absoluta elegancia.
+        </p>
+        <div class="feature-pills-container">
+            <span class="feature-pill">✨ Cuadrícula Grid Chic</span>
+            <span class="feature-pill">⚡ Ajuste Rápido (+1/-1)</span>
+            <span class="feature-pill">📂 Supabase & GitHub Sync</span>
+            <span class="feature-pill">📋 Portapapeles Inteligente</span>
+        </div>
         </div>
         """,
         unsafe_allow_html=True,
