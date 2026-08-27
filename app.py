@@ -176,9 +176,9 @@ def render_copy_button(text_to_copy: str, label: str = "Copiar Código"):
     component_code = f"""
     <div style="display: inline-block; width: 100%;">
         <button id="copy-btn" onclick="copyText()" style="
-            background: rgba(236, 72, 153, 0.1);
-            color: #db2777;
-            border: 1px solid rgba(236, 72, 153, 0.3);
+            background: rgba(219, 39, 119, 0.12);
+            color: #f472b6;
+            border: 1px solid rgba(219, 39, 119, 0.35);
             padding: 6px 12px;
             border-radius: 8px;
             cursor: pointer;
@@ -193,7 +193,7 @@ def render_copy_button(text_to_copy: str, label: str = "Copiar Código"):
         ">
             📋 {label}
         </button>
-        <div id="feedback" style="text-align: center; font-size: 11px; color: #db2777; opacity: 0; transition: opacity 0.3s; margin-top: 4px;">¡Copiado con éxito!</div>
+        <div id="feedback" style="text-align: center; font-size: 11px; color: #f472b6; opacity: 0; transition: opacity 0.3s; margin-top: 4px;">¡Copiado con éxito!</div>
     </div>
     
     <script>
@@ -212,19 +212,19 @@ def render_copy_button(text_to_copy: str, label: str = "Copiar Código"):
     """
     components.html(component_code, height=65)
 
-# --- ESTILOS NÍTIDOS UI (TEMA PINTEREST CHIC / ROSA SOFISTICADO) ---
+# --- ESTILOS NÍTIDOS UI (TEMA PINTEREST DARK LUXURY / PANTALLA NEGRA & ORO ROSA) ---
 st.markdown(
     """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500;600;700&display=swap');
 
-/* Fondo General: Estética Minimalista Pinterest / Rosa Pastel */
+/* Fondo General: Estética Pantalla Negra / Dark Luxury Pinterest */
 .stApp { 
-    background: radial-gradient(circle at 20% 20%, rgba(244, 114, 182, 0.18) 0%, transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.12) 0%, transparent 40%),
-                linear-gradient(135deg, #fff5f7 0%, #fde8ed 50%, #fce7ec 100%);
+    background: radial-gradient(circle at 20% 20%, rgba(219, 39, 119, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.08) 0%, transparent 40%),
+                linear-gradient(135deg, #0c0b0e 0%, #141117 50%, #100f13 100%);
     background-attachment: fixed;
-    color: #3b202b !important; 
+    color: #f9f6f8 !important; 
     font-family: 'Montserrat', sans-serif !important;
 }
 
@@ -237,40 +237,40 @@ header[data-testid="stHeader"] { background: transparent !important; }
 
 section[data-testid="stSidebar"] { 
     width: 240px !important;
-    background: rgba(255, 255, 255, 0.9) !important; 
-    border-right: 1px solid rgba(236, 72, 153, 0.2); 
+    background: rgba(16, 15, 19, 0.95) !important; 
+    border-right: 1px solid rgba(219, 39, 119, 0.25); 
     backdrop-filter: blur(25px); 
 }
-section[data-testid="stSidebar"] * { color: #3b202b !important; }
+section[data-testid="stSidebar"] * { color: #f9f6f8 !important; }
 
-/* Inputs estándar de Streamlit */
+/* Inputs estándar de Streamlit en modo oscuro */
 div[data-baseweb="input"], div[data-baseweb="select"] > div {
-    background-color: rgba(255, 255, 255, 0.9) !important;
+    background-color: rgba(24, 22, 28, 0.9) !important;
     border-radius: 8px !important;
-    border: 1px solid rgba(236, 72, 153, 0.3) !important;
-    color: #3b202b !important;
+    border: 1px solid rgba(219, 39, 119, 0.3) !important;
+    color: #f9f6f8 !important;
 }
 div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-within {
-    border-color: #ec4899 !important;
-    box-shadow: 0 0 8px rgba(236, 72, 153, 0.25) !important;
+    border-color: #f472b6 !important;
+    box-shadow: 0 0 10px rgba(219, 39, 119, 0.3) !important;
 }
 div[data-baseweb="input"] input {
-    color: #3b202b !important;
+    color: #f9f6f8 !important;
     font-size: 13px !important;
 }
 
-/* Botones con Estética Pinterest / Rosa Chic */
+/* Botones con Estética Pinterest Dark / Rosa Oro */
 div.stButton > button, div[data-testid="stFormSubmitButton"] > button {
-    background: #ffffff !important;
-    color: #3b202b !important;
+    background: rgba(24, 22, 28, 0.9) !important;
+    color: #f9f6f8 !important;
     border-radius: 12px !important;
-    border: 1px solid rgba(236, 72, 153, 0.35) !important;
+    border: 1px solid rgba(219, 39, 119, 0.35) !important;
     font-weight: 600 !important;
     padding: 12px 20px !important;
     position: relative;
     overflow: hidden;
     transition: all 0.3s ease !important;
-    box-shadow: 0 4px 15px rgba(236, 72, 153, 0.1) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -278,69 +278,69 @@ div.stButton > button, div[data-testid="stFormSubmitButton"] > button {
 }
 
 div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
-    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%) !important;
-    border-color: #ec4899 !important;
+    background: linear-gradient(135deg, #db2777 0%, #f472b6 100%) !important;
+    border-color: #f472b6 !important;
     color: #ffffff !important;
-    box-shadow: 0 8px 25px rgba(236, 72, 153, 0.3) !important;
+    box-shadow: 0 8px 25px rgba(219, 39, 119, 0.4) !important;
     transform: translateY(-2px);
 }
 
-/* Tarjeta de Bienvenida Glassmorphism Pinterest */
+/* Tarjeta de Bienvenida Glassmorphism Dark Pinterest (Igual referencia pantalla negra) */
 .hero-card {
-    background: rgba(255, 255, 255, 0.9) !important;
+    background: rgba(18, 16, 22, 0.9) !important;
     backdrop-filter: blur(40px) !important;
     -webkit-backdrop-filter: blur(40px) !important;
-    border: 1px solid rgba(236, 72, 153, 0.3) !important;
+    border: 1px solid rgba(219, 39, 119, 0.35) !important;
     border-radius: 32px;
-    padding: 40px 35px 35px 35px;
-    text-align: center;
+    padding: 45px 40px 40px 40px;
+    text-align: left;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 30px 60px rgba(236, 72, 153, 0.15), inset 0 1px 0 rgba(255,255,255,0.9) !important;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.08) !important;
     margin-bottom: 20px;
 }
 
-/* Formularios Glassmorphism */
+/* Formularios Glassmorphism Dark */
 div[data-testid="stForm"] {
-    background: rgba(255, 255, 255, 0.85) !important;
+    background: rgba(18, 16, 22, 0.85) !important;
     backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(236, 72, 153, 0.2) !important;
+    border: 1px solid rgba(219, 39, 119, 0.25) !important;
     border-radius: 20px !important;
     padding: 25px !important;
-    box-shadow: 0 20px 40px rgba(236, 72, 153, 0.1) !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5) !important;
 }
 
 .page-header { margin-bottom: 25px; padding-bottom: 10px; }
-.page-title { font-size: 32px; font-weight: 700; color: #3b202b !important; letter-spacing: 0.5px; }
-.page-subtitle { font-size: 14px; color: #8e6b7b !important; margin-top: 4px; }
+.page-title { font-size: 32px; font-weight: 700; color: #f9f6f8 !important; letter-spacing: 0.5px; }
+.page-subtitle { font-size: 14px; color: #b899a6 !important; margin-top: 4px; }
 
-.section-title { font-size: 18px; font-weight: 600; color: #3b202b; margin-bottom: 4px; }
-.section-subtitle { font-size: 12px; color: #8e6b7b; margin-bottom: 15px; }
+.section-title { font-size: 18px; font-weight: 600; color: #f9f6f8; margin-bottom: 4px; }
+.section-subtitle { font-size: 12px; color: #b899a6; margin-bottom: 15px; }
 
 .metric-card {
-    background: rgba(255, 255, 255, 0.9); 
+    background: rgba(18, 16, 22, 0.9); 
     backdrop-filter: blur(20px); 
-    border: 1px solid rgba(236, 72, 153, 0.2);
+    border: 1px solid rgba(219, 39, 119, 0.25);
     padding: 20px; border-radius: 18px; text-align: left;
-    box-shadow: 0 15px 35px rgba(236, 72, 153, 0.08);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
     height: 100%;
 }
-.metric-value { font-size: 32px; font-weight: 800; color: #db2777 !important; margin-top: 8px; }
-.metric-label { font-size: 11px; color: #8e6b7b !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+.metric-value { font-size: 32px; font-weight: 800; color: #f472b6 !important; margin-top: 8px; }
+.metric-label { font-size: 11px; color: #b899a6 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
 
 .user-profile { 
-    background: rgba(236, 72, 153, 0.05); 
+    background: rgba(219, 39, 119, 0.1); 
     padding: 14px 16px; border-radius: 14px; 
-    border: 1px solid rgba(236, 72, 153, 0.2); margin-bottom: 20px;
+    border: 1px solid rgba(219, 39, 119, 0.3); margin-bottom: 20px;
     display: flex; align-items: center; gap: 12px;
 }
 .user-avatar {
-    width: 36px; height: 36px; background: #ec4899; color: #ffffff;
+    width: 36px; height: 36px; background: linear-gradient(135deg, #db2777 0%, #f472b6 100%); color: #ffffff;
     font-weight: 800; border-radius: 50%; display: flex; align-items: center;
-    justify-content: center; font-size: 15px; box-shadow: 0 0 15px rgba(236, 72, 153, 0.4);
+    justify-content: center; font-size: 15px; box-shadow: 0 0 15px rgba(219, 39, 119, 0.5);
 }
-.user-info-title { font-size: 9px; color: #db2777; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
-.user-info-name { font-size: 14px; font-weight: 600; color: #3b202b; }
+.user-info-title { font-size: 9px; color: #f472b6; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+.user-info-name { font-size: 14px; font-weight: 600; color: #f9f6f8; }
 </style>
 """,
     unsafe_allow_html=True,
@@ -395,25 +395,25 @@ if not st.session_state.autenticado and "recuerdame_user" in query_params:
         st.session_state.autenticado = True
         st.session_state.usuario_actual = saved_user
 
-# --- 1. PANTALLA DE BIENVENIDA (PORTADA ESTILO PINTEREST CHIC / ROSA CON OPCIONES AVANZADAS) ---
+# --- 1. PANTALLA DE BIENVENIDA (PORTADA ESTILO PINTEREST DARK LUXURY) ---
 if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
     st.markdown("<br><br>", unsafe_allow_html=True)
-    _, col_centro, _ = st.columns([0.6, 2.2, 0.6])
+    _, col_centro, _ = st.columns([0.5, 2.4, 0.5])
     with col_centro:
         st.markdown(
             """
             <style>
             @keyframes levitar {
-                0% { transform: translateY(0px); filter: drop-shadow(0 10px 20px rgba(236,72,153,0.25)); }
-                50% { transform: translateY(-8px); filter: drop-shadow(0 20px 30px rgba(236,72,153,0.4)); }
-                100% { transform: translateY(0px); filter: drop-shadow(0 10px 20px rgba(236,72,153,0.25)); }
+                0% { transform: translateY(0px); filter: drop-shadow(0 10px 25px rgba(219,39,119,0.3)); }
+                50% { transform: translateY(-8px); filter: drop-shadow(0 20px 35px rgba(219,39,119,0.5)); }
+                100% { transform: translateY(0px); filter: drop-shadow(0 10px 25px rgba(219,39,119,0.3)); }
             }
             .hero-card::after {
                 content: '';
                 position: absolute;
                 top: -50%; left: -50%;
                 width: 200%; height: 200%;
-                background: radial-gradient(circle at 50% 40%, rgba(236, 72, 153, 0.08) 0%, transparent 60%);
+                background: radial-gradient(circle at 50% 40%, rgba(219, 39, 119, 0.1) 0%, transparent 60%);
                 pointer-events: none;
                 z-index: 0;
             }
@@ -421,62 +421,67 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                 position: relative;
                 z-index: 1;
             }
-            .hero-icon {
-                font-size: 56px;
-                display: inline-block;
-                margin-bottom: 12px;
-                animation: levitar 4s ease-in-out infinite;
-                background: rgba(236, 72, 153, 0.1);
-                padding: 14px 18px;
-                border-radius: 20px;
-                border: 1px solid rgba(236, 72, 153, 0.2);
+            .hero-topbar {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 25px;
+                border-bottom: 1px solid rgba(219, 39, 119, 0.2);
+                padding-bottom: 15px;
+            }
+            .hero-brand {
+                font-family: 'Cinzel', serif;
+                font-size: 14px;
+                font-weight: 700;
+                color: #f9f6f8;
+                letter-spacing: 2px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .hero-nav-links {
+                display: flex;
+                gap: 15px;
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                color: #b899a6;
+                font-weight: 600;
             }
             .hero-title {
                 font-family: 'Cinzel', serif;
-                font-size: 36px;
+                font-size: 42px;
                 font-weight: 800;
-                color: #3b202b;
-                letter-spacing: 3px;
-                margin-bottom: 8px;
-                text-shadow: 0 2px 10px rgba(236,72,153,0.1);
+                color: #f9f6f8;
+                letter-spacing: 2px;
+                line-height: 1.1;
+                margin-bottom: 12px;
             }
-            .hero-subtitle {
+            .hero-subtitle-tag {
                 font-size: 11px;
-                color: #db2777;
+                color: #f472b6;
                 text-transform: uppercase;
                 letter-spacing: 3px;
                 font-weight: 700;
-                margin-bottom: 20px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 12px;
-            }
-            .hero-subtitle::before, .hero-subtitle::after {
-                content: '';
-                height: 1px;
-                width: 35px;
-                background: linear-gradient(90deg, transparent, rgba(236, 72, 153, 0.5), transparent);
+                margin-bottom: 16px;
             }
             .hero-desc {
-                color: #8e6b7b;
+                color: #b899a6;
                 font-size: 13px;
-                line-height: 1.5;
-                max-width: 450px;
-                margin: 0 auto 20px auto;
-                font-weight: 400;
+                line-height: 1.6;
+                max-width: 480px;
+                margin-bottom: 24px;
             }
             .feature-pills-container {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 8px;
-                justify-content: center;
-                margin-bottom: 24px;
+                margin-bottom: 28px;
             }
             .feature-pill {
-                background: rgba(236, 72, 153, 0.08);
-                border: 1px solid rgba(236, 72, 153, 0.25);
-                color: #db2777;
+                background: rgba(219, 39, 119, 0.1);
+                border: 1px solid rgba(219, 39, 119, 0.3);
+                color: #f472b6;
                 padding: 6px 14px;
                 border-radius: 20px;
                 font-size: 11px;
@@ -487,17 +492,29 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             
             <div class="hero-card">
                 <div class="hero-content">
-                    <div class="hero-icon">👕</div>
-                    <h1 class="hero-title">LEWIN BOUTIQUE</h1>
-                    <p class="hero-subtitle">Boutique & Inventory Control</p>
+                    <div class="hero-topbar">
+                        <div class="hero-brand">
+                            <span style="width: 8px; height: 8px; background: #f472b6; border-radius: 50%; display: inline-block;"></span>
+                            PLAYING / MARKET
+                        </div>
+                        <div class="hero-nav-links">
+                            <span>Inicio</span>
+                            <span>Tienda</span>
+                            <span>Categorías</span>
+                            <span>Blog</span>
+                            <span>Contacto</span>
+                        </div>
+                    </div>
+                    <div class="hero-subtitle-tag">Headphones & Boutique Wireless</div>
+                    <h1 class="hero-title">Lewin Boutique<br>Control Center</h1>
                     <p class="hero-desc">
-                        Plataforma inteligente de control de stock inspirada en diseño minimalista aesthetic chic.
+                        Mejores efectos de inventario y una experiencia de gestión auditiva y visual inigualable. Diseñado con interfaz minimalista de lujo en pantalla negra y oro rosa.
                     </p>
                     <div class="feature-pills-container">
-                        <span class="feature-pill">✨ Catálogo en Cuadrícula</span>
+                        <span class="feature-pill">✨ Cuadrícula Grid Chic</span>
                         <span class="feature-pill">⚡ Ajuste Rápido (+1/-1)</span>
-                        <span class="feature-pill">📂 Sincronización GitHub & Supabase</span>
-                        <span class="feature-pill">📋 Copiar Detalles al Portapapeles</span>
+                        <span class="feature-pill">📂 Supabase & GitHub Sync</span>
+                        <span class="feature-pill">📋 Portapapeles Inteligente</span>
                     </div>
                 </div>
             </div>
@@ -505,9 +522,9 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             unsafe_allow_html=True,
         )
         
-        _, col_boton_centro, _ = st.columns([1, 1.3, 1])
+        _, col_boton_centro, _ = st.columns([1, 1.4, 1])
         with col_boton_centro:
-            if st.button("Acceder al Sistema 🚪🚶", use_container_width=True):
+            if st.button("IR A LA TIENDA 🚪🚶", use_container_width=True):
                 st.session_state.etapa = "login"
                 st.rerun()
 
@@ -525,8 +542,8 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
         st.markdown("<br>", unsafe_allow_html=True)
         
         with st.container(border=True):
-            st.markdown("<h3>✦ Lewin Boutique</h3>", unsafe_allow_html=True)
-            st.markdown("<p style='color: #8e6b7b; font-size: 12px;'>Ingrese sus credenciales de acceso.</p>", unsafe_allow_html=True)
+            st.markdown("<h3>✦ Lewin Boutique Access</h3>", unsafe_allow_html=True)
+            st.markdown("<p style='color: #b899a6; font-size: 12px;'>Ingrese sus credenciales en el sistema.</p>", unsafe_allow_html=True)
             
             usuario_input = st.text_input("Email Address / Usuario", placeholder="Ingrese su usuario")
             clave_input = st.text_input("Password / Contraseña", type="password", placeholder="Ingrese su contraseña")
@@ -571,7 +588,7 @@ else:
     )
 
     st.sidebar.markdown(
-        "<p style='font-size:10px; color:#8e6b7b; text-transform:uppercase; letter-spacing:1.5px; font-weight:700; margin: 12px 0 6px 4px;'>Menú Principal</p>",
+        "<p style='font-size:10px; color:#b899a6; text-transform:uppercase; letter-spacing:1.5px; font-weight:700; margin: 12px 0 6px 4px;'>Menú Principal</p>",
         unsafe_allow_html=True,
     )
 
@@ -592,7 +609,7 @@ else:
         st.rerun()
 
     st.sidebar.markdown(
-        "<hr style='margin: 25px 0 15px 0; border-color: rgba(236,72,153,0.15);'>",
+        "<hr style='margin: 25px 0 15px 0; border-color: rgba(219,39,119,0.2);'>",
         unsafe_allow_html=True,
     )
 
@@ -611,7 +628,7 @@ else:
             """
 <div class="page-header">
     <div class="page-title">Panel Principal // Lewin Boutique</div>
-    <div class="page-subtitle">Control general de stock y monitoreo en tiempo real.</div>
+    <div class="page-subtitle">Control general de stock y monitoreo en tiempo real (Dark Luxury).</div>
 </div>
 """,
             unsafe_allow_html=True,
@@ -662,7 +679,7 @@ else:
                 f"""
 <div class="metric-card">
     <div class="metric-label">Alertas de Stock Bajo</div>
-    <div class="metric-value" style="color: {'#db2777' if total_alertas > 0 else '#db2777'} !important;">{total_alertas}</div>
+    <div class="metric-value" style="color: {'#f472b6' if total_alertas > 0 else '#f472b6'} !important;">{total_alertas}</div>
 </div>
 """,
                 unsafe_allow_html=True,
@@ -723,7 +740,7 @@ else:
             st.markdown("<br>", unsafe_allow_html=True)
             st.markdown(
                 """
-<div class="section-title">📋 Filtros, Búsqueda y Paginación</div>
+<div class="section-title">📋 Artículos Destacados // Filtros & Búsqueda</div>
 <div class="section-subtitle">Filtra por categoría o busca un producto en específico.</div>
 """,
                 unsafe_allow_html=True,
@@ -783,33 +800,33 @@ else:
                     col_actual = cols_tarjetas[idx % 3]
                     
                     is_alerta = int(row["cantidad"]) <= int(row["alerta"])
-                    borde_color = "#db2777" if is_alerta else "rgba(236, 72, 153, 0.2)"
-                    badge_stock = f"<span style='color: #db2777; font-weight: 700;'>Stock Bajo ({row['cantidad']})</span>" if is_alerta else f"<span style='color: #16a34a; font-weight: 700;'>Stock: {row['cantidad']}</span>"
+                    borde_color = "#f472b6" if is_alerta else "rgba(219, 39, 119, 0.25)"
+                    badge_stock = f"<span style='color: #f472b6; font-weight: 700;'>Stock Bajo ({row['cantidad']})</span>" if is_alerta else f"<span style='color: #34d399; font-weight: 700;'>Stock: {row['cantidad']}</span>"
 
                     with col_actual:
                         st.markdown(
                             f"""
                             <div style="
-                                background: rgba(255, 255, 255, 0.9);
+                                background: rgba(18, 16, 22, 0.9);
                                 backdrop-filter: blur(20px);
                                 border: 1px solid {borde_color};
                                 padding: 18px;
                                 border-radius: 16px;
                                 margin-bottom: 8px;
-                                box-shadow: 0 10px 25px rgba(236, 72, 153, 0.08);
+                                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
                             ">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                    <span style="background: rgba(236, 72, 153, 0.1); color: #db2777; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">ID: {row['ID']}</span>
-                                    <span style="font-size: 12px; color: #8e6b7b;">{row['Categoria']}</span>
+                                    <span style="background: rgba(219, 39, 119, 0.15); color: #f472b6; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">ID: {row['ID']}</span>
+                                    <span style="font-size: 12px; color: #b899a6;">{row['Categoria']}</span>
                                 </div>
-                                <div style="font-size: 16px; font-weight: 700; color: #3b202b; margin-bottom: 8px;">{row['Producto']}</div>
-                                <div style="font-size: 13px; color: #6b4c58; display: flex; gap: 12px; margin-bottom: 12px;">
+                                <div style="font-size: 16px; font-weight: 700; color: #f9f6f8; margin-bottom: 8px;">{row['Producto']}</div>
+                                <div style="font-size: 13px; color: #d4b8cc; display: flex; gap: 12px; margin-bottom: 12px;">
                                     <span>📏 Talla: <b>{row['talla']}</b></span>
                                     <span>🎨 Color: <b>{row['color']}</b></span>
                                 </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(236, 72, 153, 0.15); padding-top: 10px; font-size: 13px; margin-bottom: 12px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(219, 39, 119, 0.2); padding-top: 10px; font-size: 13px; margin-bottom: 12px;">
                                     {badge_stock}
-                                    <span style="font-size: 11px; color: #8e6b7b;">Alerta mín: {row['alerta']}</span>
+                                    <span style="font-size: 11px; color: #b899a6;">Alerta mín: {row['alerta']}</span>
                                 </div>
                             </div>
                             """,
