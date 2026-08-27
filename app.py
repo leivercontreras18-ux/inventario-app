@@ -46,7 +46,7 @@ def cargar_datos_completos():
             res_cfg = supabase.table("configuracion").select("*").execute()
             if res_cfg.data:
                 for row in res_cfg.data:
-                    clave = str(row.get("id") or row.get("clave", "")).strip().lower()
+                    clave = str(row.get("id") or row.get("clave") or row.get("key", "")).strip().lower()
                     valor = row.get("valor") or row.get("value") or row.get("producto")
                     
                     if valor:
@@ -85,14 +85,23 @@ def guardar_configuracion_completa(cats, tallas, colores):
                 ("colores", json.dumps(colores))
             ]
             for clave, valor in configs:
-                try:
-                    supabase.table("configuracion").upsert({"id": clave, "valor": valor}, on_conflict="id").execute()
-                except Exception as e1:
+                guardado_exitoso = False
+                esquemas = [
+                    {"id": clave, "valor": valor},
+                    {"clave": clave, "valor": valor},
+                    {"id": clave, "value": valor},
+                    {"clave": clave, "value": valor}
+                ]
+                for datos in esquemas:
                     try:
-                        supabase.table("configuracion").upsert({"clave": clave, "valor": valor}, on_conflict="clave").execute()
-                    except Exception as e2:
-                        st.error(f"Error detallado en Supabase al guardar '{clave}': {e1} / {e2}")
-                        return False
+                        supabase.table("configuracion").upsert(datos).execute()
+                        guardado_exitoso = True
+                        break
+                    except Exception:
+                        continue
+                if not guardado_exitoso:
+                    st.error(f"No se pudo guardar '{clave}' en Supabase. Revisa los nombres de las columnas en tu tabla.")
+                    return False
             return True
         except Exception as e:
             st.error(f"Error general al guardar configuración: {e}")
@@ -290,6 +299,14 @@ if "tallas_maestras" not in st.session_state:
     st.session_state.tallas_maestras = tallas_init
 if "colores_maestros" not in st.session_state:
     st.session_state.colores_maestros = colores_init
+
+# Sincronizar estados de edición de configuración
+if "edit_cats" not in st.session_state:
+    st.session_state.edit_cats = list(st.session_state.categorias_maestras)
+if "edit_tallas" not in st.session_state:
+    st.session_state.edit_tallas = list(st.session_state.tallas_maestras)
+if "edit_colores" not in st.session_state:
+    st.session_state.edit_colores = list(st.session_state.colores_maestros)
 
 query_params = st.query_params
 if not st.session_state.autenticado and "recuerdame_user" in query_params:
@@ -668,14 +685,6 @@ else:
 """,
             unsafe_allow_html=True,
         )
-
-        # Estados de edición temporal para la configuración
-        if "edit_cats" not in st.session_state:
-            st.session_state.edit_cats = list(st.session_state.categorias_maestras)
-        if "edit_tallas" not in st.session_state:
-            st.session_state.edit_tallas = list(st.session_state.tallas_maestras)
-        if "edit_colores" not in st.session_state:
-            st.session_state.edit_colores = list(st.session_state.colores_maestros)
 
         col_cfg1, col_cfg2, col_cfg3 = st.columns(3)
 
