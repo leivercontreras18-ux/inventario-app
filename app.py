@@ -1025,8 +1025,8 @@ else:
         with col_save_master:
             if st.button("💾 Guardar configuración en GitHub", use_container_width=True):
                 exito = guardar_configuracion_completa(
-                    st.session_state.edit_cats, s
-                    t.session_state.edit_tallas, 
+                    st.session_state.edit_cats,
+                    st.session_state.edit_tallas,
                     st.session_state.edit_colores
                 )
                 if exito:
