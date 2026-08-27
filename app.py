@@ -20,7 +20,7 @@ def obtener_conexion_supabase():
 
 supabase = obtener_conexion_supabase()
 
-# --- CARGAR CONFIGURACIÓN DESDE GITHUB CON CACHÉ (OPTIMIZACIÓN DE VELOCIDAD) ---
+# --- CARGAR CONFIGURACIÓN DESDE GITHUB CON CACHÉ ---
 @st.cache_data(ttl=60)
 def cargar_config_github():
     try:
@@ -31,7 +31,8 @@ def cargar_config_github():
     except Exception:
         return None
 
-# --- CARGAR INVENTARIO (SUPABASE) Y CONFIGURACIÓN (GITHUB) ---
+# --- CARGAR INVENTARIO (SUPABASE) Y CONFIGURACIÓN (GITHUB) CON CACHÉ OPTIMIZADO ---
+@st.cache_data(ttl=30)
 def cargar_datos_completos():
     cats_default = ["Vestidos", "Blusas", "Pantalones", "Jeans", "Chaquetas", "Calzado", "Accesorios"]
     tallas_default = ["XS", "S", "M", "L", "XL", "Única"]
@@ -93,6 +94,7 @@ def guardar_configuracion_completa(cats, tallas, colores):
                 contenido, 
                 branch="main"
             )
+        st.cache_data.clear()
         return True
     except Exception as e:
         st.error(f"Error al guardar configuración en GitHub: {e}")
@@ -111,6 +113,7 @@ def guardar_prenda(nueva_prenda):
                 "alerta": int(nueva_prenda["alerta"]),
             }
             supabase.table("inventario").insert(datos_db).execute()
+            st.cache_data.clear()
             return True
         except Exception as e:
             st.error(f"Error al guardar en la nube: {e}")
@@ -120,6 +123,7 @@ def guardar_prenda(nueva_prenda):
         st.session_state.inventario_local = pd.concat(
             [st.session_state.inventario_local, nuevo_df], ignore_index=True
         )
+        st.cache_data.clear()
         return True
 
 def actualizar_prenda(id_prenda, datos_actualizados):
@@ -135,6 +139,7 @@ def actualizar_prenda(id_prenda, datos_actualizados):
                 "alerta": int(datos_actualizados["alerta"]),
             }
             supabase.table("inventario").eq("id", id_prenda).update(datos_db).execute()
+            st.cache_data.clear()
             return True
         except Exception as e:
             st.error(f"Error al actualizar: {e}")
@@ -144,12 +149,14 @@ def actualizar_prenda(id_prenda, datos_actualizados):
         idx = df[df["ID"].astype(str) == str(id_prenda)].index[0]
         for col, val in datos_actualizados.items():
             df.loc[idx, col] = val
+        st.cache_data.clear()
         return True
 
 def eliminar_prenda(id_prenda):
     if supabase:
         try:
             supabase.table("inventario").delete().eq("id", id_prenda).execute()
+            st.cache_data.clear()
             return True
         except Exception as e:
             st.error(f"Error al eliminar: {e}")
@@ -159,6 +166,7 @@ def eliminar_prenda(id_prenda):
         st.session_state.inventario_local = df[
             df["ID"].astype(str) != str(id_prenda)
         ].reset_index(drop=True)
+        st.cache_data.clear()
         return True
 
 # --- ESTILOS NÍTIDOS UI ---
