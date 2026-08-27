@@ -777,66 +777,37 @@ else:
             """
 <div class="page-header">
     <div class="page-title">✨ Registro de Nuevas Prendas</div>
-    <div class="page-subtitle">Añade nuevos artículos al catálogo de la boutique con un diseño optimizado en tarjetas.</div>
+    <div class="page-subtitle">Añade nuevos artículos al catálogo de la boutique con distribución en cuadrícula.</div>
 </div>
 """,
             unsafe_allow_html=True,
         )
 
         with st.form(f"form_ropa_{st.session_state.form_version}", clear_on_submit=True):
-            # Tarjeta 1: Información Básica
-            st.markdown(
-                """
-                <div style="background: rgba(16, 185, 129, 0.03); border: 1px solid rgba(16, 185, 129, 0.2); padding: 15px; border-radius: 12px; margin-bottom: 15px;">
-                    <div style="font-size: 14px; font-weight: 700; color: #10b981; margin-bottom: 10px;">📋 Información Básica</div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+            st.subheader("📦 Información Básica")
             col1, col2 = st.columns(2)
             with col1:
                 sku = st.text_input("ID", placeholder="Ej: A1")
             with col2:
                 nombre = st.text_input("Producto", placeholder="Ej: Short")
 
-            st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
-
-            # Tarjeta 2: Clasificación y Atributos
-            st.markdown(
-                """
-                <div style="background: rgba(16, 185, 129, 0.03); border: 1px solid rgba(16, 185, 129, 0.2); padding: 15px; border-radius: 12px; margin-bottom: 15px;">
-                    <div style="font-size: 14px; font-weight: 700; color: #10b981; margin-bottom: 10px;">🏷️ Clasificación y Atributos</div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+            st.subheader("🏷️ Clasificación y Atributos")
             col3, col4, col5 = st.columns(3)
             with col3:
-                categoria = st.selectbox("Categoria", st.session_state.categorias_maestras)
+                categoria = st.selectbox("Categoría", st.session_state.categorias_maestras)
             with col4:
-                talla = st.selectbox("talla", st.session_state.tallas_maestras)
+                talla = st.selectbox("Talla", st.session_state.tallas_maestras)
             with col5:
-                color = st.selectbox("color", st.session_state.colores_maestros)
+                color = st.selectbox("Color", st.session_state.colores_maestros)
 
-            st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
-
-            # Tarjeta 3: Control de Inventario
-            st.markdown(
-                """
-                <div style="background: rgba(16, 185, 129, 0.03); border: 1px solid rgba(16, 185, 129, 0.2); padding: 15px; border-radius: 12px; margin-bottom: 15px;">
-                    <div style="font-size: 14px; font-weight: 700; color: #10b981; margin-bottom: 10px;">📦 Control de Stock y Alertas</div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+            st.subheader("📊 Control de Stock y Alertas")
             col6, col7 = st.columns(2)
             with col6:
-                cantidad = st.number_input("cantidad", min_value=0, step=1)
+                cantidad = st.number_input("Cantidad", min_value=0, value=0, step=1)
             with col7:
-                alerta = st.number_input("alerta de stock", min_value=0, step=1)
+                alerta = st.number_input("Alerta de stock", min_value=0, value=0, step=1)
 
-            st.markdown("<br>", unsafe_allow_html=True)
-
+            st.markdown("---")
             if st.form_submit_button("💾 Guardar Prenda en el Sistema", use_container_width=True):
                 if sku.strip() == "":
                     st.error("El campo ID es obligatorio.")
