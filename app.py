@@ -419,14 +419,6 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             position: relative;
             z-index: 1;
         }
-        .hero-topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 35px;
-            border-bottom: 1px solid rgba(219, 39, 119, 0.2);
-            padding-bottom: 20px;
-        }
         .hero-brand {
             font-family: 'Cinzel', serif;
             font-size: 15px;
@@ -436,15 +428,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-        .hero-nav-links {
-            display: flex;
-            gap: 25px;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: #b899a6;
-            font-weight: 600;
+            padding-top: 8px;
         }
         .hero-title {
             font-family: 'Cinzel', serif;
@@ -486,22 +470,70 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             font-weight: 600;
             letter-spacing: 0.5px;
         }
+        /* Estilo para que el botón de inicio luzca exactamente como los enlaces de navegación */
+        div[data-testid="stHorizontalBlock"] button {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: #b899a6 !important;
+            font-size: 12px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1.5px !important;
+            font-weight: 600 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            min-height: unset !important;
+            height: auto !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: flex-end !important;
+            width: auto !important;
+        }
+        div[data-testid="stHorizontalBlock"] button:hover {
+            color: #f472b6 !important;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            transform: none !important;
+        }
         </style>
         
         <div class="full-hero-wrapper">
             <div class="hero-inner">
-                <div class="hero-topbar">
-                    <div class="hero-brand">
-                        <span style="width: 10px; height: 10px; background: #f472b6; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px #f472b6;"></span>
-                        PLAYING / MARKET
-                    </div>
-                    <div class="hero-nav-links">
-                        <span>Tienda</span>
-                        <span>Categorías</span>
-                        <span>Blog</span>
-                        <span>Contacto</span>
-                    </div>
-                </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    
+    # Barra superior con columnas de Streamlit para alinear el botón "INICIO" junto a las opciones de navegación
+    col_top1, col_top2 = st.columns([1, 2])
+    with col_top1:
+        st.markdown(
+            """
+            <div class="hero-brand">
+                <span style="width: 10px; height: 10px; background: #f472b6; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px #f472b6;"></span>
+                PLAYING / MARKET
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with col_top2:
+        nav_cols = st.columns(5)
+        with nav_cols[0]:
+            if st.button("INICIO", key="btn_inicio_nav"):
+                st.session_state.etapa = "login"
+                st.rerun()
+        with nav_cols[1]:
+            st.markdown("<div style='font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: #b899a6; font-weight: 600; padding-top: 4px; text-align: right;'>Tienda</div>", unsafe_allow_html=True)
+        with nav_cols[2]:
+            st.markdown("<div style='font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: #b899a6; font-weight: 600; padding-top: 4px; text-align: right;'>Categorías</div>", unsafe_allow_html=True)
+        with nav_cols[3]:
+            st.markdown("<div style='font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: #b899a6; font-weight: 600; padding-top: 4px; text-align: right;'>Blog</div>", unsafe_allow_html=True)
+        with nav_cols[4]:
+            st.markdown("<div style='font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: #b899a6; font-weight: 600; padding-top: 4px; text-align: right;'>Contacto</div>", unsafe_allow_html=True)
+
+    st.markdown(
+        """
+                <div style="border-bottom: 1px solid rgba(219, 39, 119, 0.2); margin: 25px 0 35px 0;"></div>
                 <div class="hero-subtitle-tag">Headphones & Boutique Wireless</div>
                 <h1 class="hero-title">Lewin Boutique<br>Control Center</h1>
                 <p class="hero-desc">
@@ -514,16 +546,10 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                     <span class="feature-pill">📋 Portapapeles Inteligente</span>
                 </div>
             </div>
-            <div class="hero-inner" style="max-width: 380px;">
+        </div>
         """,
         unsafe_allow_html=True,
     )
-    
-    if st.button("INICIO", use_container_width=True):
-        st.session_state.etapa = "login"
-        st.rerun()
-
-    st.markdown("</div></div>", unsafe_allow_html=True)
     st.stop()
 
 # --- 2. FLUJO DE LOGIN ---
