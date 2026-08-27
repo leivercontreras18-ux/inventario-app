@@ -119,9 +119,9 @@ def cargar_configuracion_db():
             res = supabase.table("configuracion").select("*").execute()
             if res.data:
                 df = pd.DataFrame(res.data)
-                cats = df[df["tipo"] == "categoria"]["valor"].tolist()
-                tallas = df[df["tipo"] == "talla"]["valor"].tolist()
-                colores = df[df["tipo"] == "color"]["valor"].tolist()
+                cats = df[df["tipo"] == "categoria"]["valor"].tolist() if "tipo" in df.columns else []
+                tallas = df[df["tipo"] == "talla"]["valor"].tolist() if "tipo" in df.columns else []
+                colores = df[df["tipo"] == "color"]["valor"].tolist() if "tipo" in df.columns else []
                 return cats, tallas, colores
         except Exception:
             pass
@@ -130,7 +130,6 @@ def cargar_configuracion_db():
 def agregar_configuracion_db(tipo, valor):
     if supabase:
         try:
-            # Insertar solo tipo y valor; Supabase autogenera el ID de identidad
             supabase.table("configuracion").insert({"tipo": tipo, "valor": valor}).execute()
             return True
         except Exception as e:
@@ -260,17 +259,15 @@ if "inventario_local" not in st.session_state:
             "alerta",
         ]
     )
-
 if "form_version" not in st.session_state:
     st.session_state.form_version = 0
 
-# Cargar configuraciones desde Supabase
-cats_db, tallas_db, colores_db = cargar_configuracion_db()
-
-# Inicializar listas Maestras
-st.session_state.categorias_maestras = cats_db if cats_db else ["Vestidos", "Blusas", "Pantalones", "Jeans", "Chaquetas", "Calzado", "Accesorios"]
-st.session_state.tallas_maestras = tallas_db if tallas_db else ["XS", "S", "M", "L", "XL", "Única"]
-st.session_state.colores_maestros = colores_db if colores_db else ["Negro", "Blanco", "Beige", "Rojo", "Azul", "Rosa", "Verde"]
+# Inicialización segura de listas maestras desde Supabase
+if "categorias_maestras" not in st.session_state:
+    cats_db, tallas_db, colores_db = cargar_configuracion_db()
+    st.session_state.categorias_maestras = cats_db if cats_db else ["Vestidos", "Blusas", "Pantalones", "Jeans", "Chaquetas", "Calzado", "Accesorios"]
+    st.session_state.tallas_maestras = tallas_db if tallas_db else ["XS", "S", "M", "L", "XL", "Única"]
+    st.session_state.colores_maestros = colores_db if colores_db else ["Negro", "Blanco", "Beige", "Rojo", "Azul", "Rosa", "Verde"]
 
 query_params = st.query_params
 if not st.session_state.autenticado and "recuerdame_user" in query_params:
