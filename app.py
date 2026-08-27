@@ -496,7 +496,6 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                         PLAYING / MARKET
                     </div>
                     <div class="hero-nav-links">
-                        <span>Inicio</span>
                         <span>Tienda</span>
                         <span>Categorías</span>
                         <span>Blog</span>
@@ -520,7 +519,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         unsafe_allow_html=True,
     )
     
-    if st.button("IR A LA TIENDA 🚪🚶", use_container_width=True):
+    if st.button("INICIO", use_container_width=True):
         st.session_state.etapa = "login"
         st.rerun()
 
