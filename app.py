@@ -1,5 +1,5 @@
-from github import Github
 import json
+from github import Github
 import pandas as pd
 import streamlit as st
 from supabase import create_client
@@ -57,7 +57,7 @@ def cargar_datos_completos():
         except Exception as e:
             st.warning(f"Aviso al cargar inventario de la nube: {e}")
 
-    # 2. Cargar Configuración desde GitHub usando la función con caché
+    # 2. Cargar Configuración desde GitHub
     config_data = cargar_config_github()
     if config_data:
         cats = config_data.get("categorias", cats_default)
@@ -170,14 +170,18 @@ def eliminar_prenda(id_prenda):
         cargar_datos_completos.clear()
         return True
 
-# --- ESTILOS NÍTIDOS UI CON ANIMACIÓN 3D Y FORMULARIOS GLASSMORPHISM ---
+# --- ESTILOS NÍTIDOS UI CON FONDO MEJORADO Y GLASSMORPHISM ---
 st.markdown(
     """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500;600&display=swap');
 
+/* Fondo General con Gradiente Elegante y Luces de Neón Tenues */
 .stApp { 
-    background: #090b0e;
+    background: radial-gradient(circle at 20% 20%, rgba(212, 175, 55, 0.06) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(255, 59, 59, 0.05) 0%, transparent 40%),
+                linear-gradient(135deg, #0f141d 0%, #141a24 50%, #1a2230 100%);
+    background-attachment: fixed;
     color: #f8fafc !important; 
 }
 
@@ -190,17 +194,17 @@ header[data-testid="stHeader"] { background: transparent !important; }
 
 section[data-testid="stSidebar"] { 
     width: 240px !important;
-    background: rgba(16, 18, 23, 0.94) !important; 
-    border-right: 1px solid rgba(255, 255, 255, 0.08); 
+    background: rgba(15, 20, 29, 0.85) !important; 
+    border-right: 1px solid rgba(255, 255, 255, 0.1); 
     backdrop-filter: blur(25px); 
 }
 section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
 
 /* Inputs estándar de Streamlit */
 div[data-baseweb="input"], div[data-baseweb="select"] > div {
-    background-color: #151821 !important;
+    background-color: rgba(25, 33, 47, 0.8) !important;
     border-radius: 8px !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
     color: #ffffff !important;
 }
 div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-within {
@@ -213,10 +217,10 @@ div[data-baseweb="input"] input {
 
 /* Efecto 3D Puerta para TODOS los botones */
 div.stButton > button, div[data-testid="stFormSubmitButton"] > button {
-    background: #151821 !important;
+    background: #18202c !important;
     color: #ffffff !important;
     border-radius: 8px !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
     font-weight: 600 !important;
     padding: 12px 20px !important;
     position: relative;
@@ -259,44 +263,59 @@ div.stButton > button:active, div[data-testid="stFormSubmitButton"] > button:act
     box-shadow: 0 0 5px rgba(255, 59, 59, 0.6) !important;
 }
 
-/* Estilización avanzada para los Formularios (Pantalla de Registrar y Modificar) */
+/* Tarjeta de Bienvenida Glassmorphism */
+.hero-card {
+    background: rgba(26, 34, 48, 0.65) !important;
+    backdrop-filter: blur(30px) !important;
+    -webkit-backdrop-filter: blur(30px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 24px;
+    padding: 60px 30px 40px 30px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+    margin-bottom: 25px;
+}
+
+/* Formularios Glassmorphism */
 div[data-testid="stForm"] {
-    background: rgba(20, 23, 30, 0.75) !important;
+    background: rgba(26, 34, 48, 0.65) !important;
     backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
     border-radius: 16px !important;
     padding: 25px !important;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.5) !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.4) !important;
 }
 
 .page-header { margin-bottom: 25px; padding-bottom: 10px; }
 .page-title { font-size: 32px; font-weight: 700; color: #ffffff !important; letter-spacing: 0.5px; }
-.page-subtitle { font-size: 14px; color: #94a3b8 !important; margin-top: 4px; }
+.page-subtitle { font-size: 14px; color: #a0aec0 !important; margin-top: 4px; }
 
 .section-title { font-size: 18px; font-weight: 600; color: #ffffff; margin-bottom: 4px; }
-.section-subtitle { font-size: 12px; color: #94a3b8; margin-bottom: 15px; }
+.section-subtitle { font-size: 12px; color: #a0aec0; margin-bottom: 15px; }
 
 .metric-card {
-    background: rgba(20, 23, 30, 0.75); 
+    background: rgba(26, 34, 48, 0.65); 
     backdrop-filter: blur(20px); 
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     padding: 20px; border-radius: 16px; text-align: left;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
     height: 100%;
 }
 .metric-value { font-size: 32px; font-weight: 800; color: #d4af37 !important; margin-top: 8px; }
-.metric-label { font-size: 11px; color: #94a3b8 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+.metric-label { font-size: 11px; color: #a0aec0 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
 
 .user-profile { 
-    background: rgba(255, 255, 255, 0.03); 
+    background: rgba(255, 255, 255, 0.05); 
     padding: 14px 16px; border-radius: 14px; 
-    border: 1px solid rgba(212, 175, 55, 0.25); margin-bottom: 20px;
+    border: 1px solid rgba(212, 175, 55, 0.3); margin-bottom: 20px;
     display: flex; align-items: center; gap: 12px;
 }
 .user-avatar {
     width: 36px; height: 36px; background: #d4af37; color: #0d121e;
     font-weight: 800; border-radius: 50%; display: flex; align-items: center;
-    justify-content: center; font-size: 15px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+    justify-content: center; font-size: 15px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
 }
 .user-info-title { font-size: 9px; color: #d4af37; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
 .user-info-name { font-size: 14px; font-weight: 600; color: #ffffff; }
@@ -367,19 +386,6 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                 50% { transform: translateY(-12px); filter: drop-shadow(0 20px 25px rgba(212,175,55,0.7)); }
                 100% { transform: translateY(0px); filter: drop-shadow(0 10px 15px rgba(212,175,55,0.4)); }
             }
-            .hero-card {
-                background: rgba(20, 23, 30, 0.4);
-                backdrop-filter: blur(25px);
-                -webkit-backdrop-filter: blur(25px);
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                border-radius: 24px;
-                padding: 60px 30px 40px 30px;
-                text-align: center;
-                position: relative;
-                overflow: hidden;
-                box-shadow: 0 30px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
-                margin-bottom: 25px;
-            }
             .hero-card::before {
                 content: '';
                 position: absolute;
@@ -427,7 +433,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                 background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.6), transparent);
             }
             .hero-desc {
-                color: #94a3b8;
+                color: #a0aec0;
                 font-size: 15px;
                 line-height: 1.7;
                 max-width: 480px;
@@ -471,7 +477,7 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
         
         with st.container(border=True):
             st.markdown("<h3>✦ Lewin Boutique</h3>", unsafe_allow_html=True)
-            st.markdown("<p style='color: #94a3b8; font-size: 12px;'>Ingrese sus credenciales de acceso.</p>", unsafe_allow_html=True)
+            st.markdown("<p style='color: #a0aec0; font-size: 12px;'>Ingrese sus credenciales de acceso.</p>", unsafe_allow_html=True)
             
             usuario_input = st.text_input("Email Address / Usuario", placeholder="Ingrese su usuario")
             clave_input = st.text_input("Password / Contraseña", type="password", placeholder="Ingrese su contraseña")
@@ -516,7 +522,7 @@ else:
     )
 
     st.sidebar.markdown(
-        "<p style='font-size:10px; color:#64748b; text-transform:uppercase; letter-spacing:1.5px; font-weight:700; margin: 12px 0 6px 4px;'>Menú Principal</p>",
+        "<p style='font-size:10px; color:#a0aec0; text-transform:uppercase; letter-spacing:1.5px; font-weight:700; margin: 12px 0 6px 4px;'>Menú Principal</p>",
         unsafe_allow_html=True,
     )
 
@@ -537,7 +543,7 @@ else:
         st.rerun()
 
     st.sidebar.markdown(
-        "<hr style='margin: 25px 0 15px 0; border-color: rgba(255,255,255,0.06);'>",
+        "<hr style='margin: 25px 0 15px 0; border-color: rgba(255,255,255,0.08);'>",
         unsafe_allow_html=True,
     )
 
@@ -728,33 +734,33 @@ else:
                     col_actual = cols_tarjetas[idx % 3]
                     
                     is_alerta = int(row["cantidad"]) <= int(row["alerta"])
-                    borde_color = "#ff3b3b" if is_alerta else "rgba(255, 255, 255, 0.08)"
+                    borde_color = "#ff3b3b" if is_alerta else "rgba(255, 255, 255, 0.12)"
                     badge_stock = f"<span style='color: #ff3b3b; font-weight: 700;'>Stock Bajo ({row['cantidad']})</span>" if is_alerta else f"<span style='color: #22c55e; font-weight: 700;'>Stock: {row['cantidad']}</span>"
 
                     with col_actual:
                         st.markdown(
                             f"""
                             <div style="
-                                background: rgba(20, 23, 30, 0.75);
+                                background: rgba(26, 34, 48, 0.65);
                                 backdrop-filter: blur(20px);
                                 border: 1px solid {borde_color};
                                 padding: 18px;
                                 border-radius: 14px;
                                 margin-bottom: 16px;
-                                box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+                                box-shadow: 0 10px 25px rgba(0,0,0,0.3);
                             ">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                                     <span style="background: rgba(212, 175, 55, 0.15); color: #d4af37; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">ID: {row['ID']}</span>
-                                    <span style="font-size: 12px; color: #94a3b8;">{row['Categoria']}</span>
+                                    <span style="font-size: 12px; color: #a0aec0;">{row['Categoria']}</span>
                                 </div>
                                 <div style="font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 8px;">{row['Producto']}</div>
                                 <div style="font-size: 13px; color: #cbd5e1; display: flex; gap: 12px; margin-bottom: 12px;">
                                     <span>📏 Talla: <b>{row['talla']}</b></span>
                                     <span>🎨 Color: <b>{row['color']}</b></span>
                                 </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; font-size: 13px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; font-size: 13px;">
                                     {badge_stock}
-                                    <span style="font-size: 11px; color: #64748b;">Alerta mín: {row['alerta']}</span>
+                                    <span style="font-size: 11px; color: #a0aec0;">Alerta mín: {row['alerta']}</span>
                                 </div>
                             </div>
                             """,
