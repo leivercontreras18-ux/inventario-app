@@ -439,6 +439,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         }
         .hero-nav-links {
             display: flex;
+            align-items: center;
             gap: 25px;
             font-size: 12px;
             text-transform: uppercase;
@@ -500,6 +501,17 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                         <span>Categorías</span>
                         <span>Blog</span>
                         <span>Contacto</span>
+        """,
+        unsafe_allow_html=True,
+    )
+    
+    # Botón INICIO colocado en la barra superior (alineado con las opciones de navegación)
+    if st.button("INICIO", key="btn_inicio_superior"):
+        st.session_state.etapa = "login"
+        st.rerun()
+
+    st.markdown(
+        """
                     </div>
                 </div>
                 <div class="hero-subtitle-tag">Headphones & Boutique Wireless</div>
@@ -514,16 +526,10 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                     <span class="feature-pill">📋 Portapapeles Inteligente</span>
                 </div>
             </div>
-            <div class="hero-inner" style="max-width: 380px;">
+        </div>
         """,
         unsafe_allow_html=True,
     )
-    
-    if st.button("INICIO", use_container_width=True):
-        st.session_state.etapa = "login"
-        st.rerun()
-
-    st.markdown("</div></div>", unsafe_allow_html=True)
     st.stop()
 
 # --- 2. FLUJO DE LOGIN ---
