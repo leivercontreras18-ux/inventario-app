@@ -170,16 +170,16 @@ def eliminar_prenda(id_prenda):
         cargar_datos_completos.clear()
         return True
 
-# --- ESTILOS NÍTIDOS UI (AZUL ACERO / NOCTURNO Y DORADO) ---
+# --- ESTILOS NÍTIDOS UI (AZUL ACERO Y CELESTE) ---
 st.markdown(
     """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500;600&display=swap');
 
-/* Fondo General: Azul Acero y Medianoche Profundo con destellos dorados */
+/* Fondo General: Azul Acero y Medianoche con destellos celestes */
 .stApp { 
-    background: radial-gradient(circle at 20% 20%, rgba(212, 175, 55, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(53, 92, 125, 0.12) 0%, transparent 40%),
+    background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(53, 92, 125, 0.15) 0%, transparent 40%),
                 linear-gradient(135deg, #050811 0%, #0a1124 50%, #03050a 100%);
     background-attachment: fixed;
     color: #f8fafc !important; 
@@ -195,7 +195,7 @@ header[data-testid="stHeader"] { background: transparent !important; }
 section[data-testid="stSidebar"] { 
     width: 240px !important;
     background: rgba(8, 13, 26, 0.95) !important; 
-    border-right: 1px solid rgba(212, 175, 55, 0.25); 
+    border-right: 1px solid rgba(56, 189, 248, 0.25); 
     backdrop-filter: blur(25px); 
 }
 section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
@@ -204,24 +204,24 @@ section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
 div[data-baseweb="input"], div[data-baseweb="select"] > div {
     background-color: rgba(13, 20, 38, 0.9) !important;
     border-radius: 8px !important;
-    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
     color: #ffffff !important;
 }
 div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-within {
-    border-color: #d4af37 !important;
-    box-shadow: 0 0 8px rgba(212, 175, 55, 0.3) !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.3) !important;
 }
 div[data-baseweb="input"] input {
     color: #ffffff !important;
     font-size: 13px !important;
 }
 
-/* Efecto 3D Puerta para TODOS los botones (Tono Dorado) */
+/* Efecto 3D Puerta para TODOS los botones (Tono Celeste) */
 div.stButton > button, div[data-testid="stFormSubmitButton"] > button {
     background: #111a30 !important;
     color: #f8fafc !important;
     border-radius: 8px !important;
-    border: 1px solid rgba(212, 175, 55, 0.35) !important;
+    border: 1px solid rgba(56, 189, 248, 0.35) !important;
     font-weight: 600 !important;
     padding: 12px 20px !important;
     position: relative;
@@ -240,7 +240,7 @@ div.stButton > button::before, div[data-testid="stFormSubmitButton"] > button::b
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%);
+    background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
     transform-origin: left center;
     transform: rotateY(0deg);
     transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
@@ -249,8 +249,8 @@ div.stButton > button::before, div[data-testid="stFormSubmitButton"] > button::b
 }
 
 div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
-    border-color: #d4af37 !important;
-    box-shadow: inset 20px 0 30px rgba(212, 175, 55, 0.15), 0 0 20px rgba(212, 175, 55, 0.4) !important;
+    border-color: #38bdf8 !important;
+    box-shadow: inset 20px 0 30px rgba(56, 189, 248, 0.15), 0 0 20px rgba(56, 189, 248, 0.4) !important;
     color: #ffffff !important;
 }
 
@@ -261,7 +261,7 @@ div.stButton > button:hover::before, div[data-testid="stFormSubmitButton"] > but
 
 div.stButton > button:active, div[data-testid="stFormSubmitButton"] > button:active {
     transform: translateZ(-30px) scale(0.95) !important;
-    box-shadow: 0 0 5px rgba(212, 175, 55, 0.6) !important;
+    box-shadow: 0 0 5px rgba(56, 189, 248, 0.6) !important;
 }
 
 /* Tarjeta de Bienvenida Glassmorphism en Azul Acero */
@@ -269,7 +269,7 @@ div.stButton > button:active, div[data-testid="stFormSubmitButton"] > button:act
     background: rgba(11, 17, 33, 0.85) !important;
     backdrop-filter: blur(30px) !important;
     -webkit-backdrop-filter: blur(30px) !important;
-    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
     border-radius: 24px;
     padding: 60px 30px 40px 30px;
     text-align: center;
@@ -283,7 +283,7 @@ div.stButton > button:active, div[data-testid="stFormSubmitButton"] > button:act
 div[data-testid="stForm"] {
     background: rgba(11, 17, 33, 0.85) !important;
     backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(212, 175, 55, 0.25) !important;
+    border: 1px solid rgba(56, 189, 248, 0.25) !important;
     border-radius: 16px !important;
     padding: 25px !important;
     box-shadow: 0 15px 35px rgba(0,0,0,0.4) !important;
@@ -299,26 +299,26 @@ div[data-testid="stForm"] {
 .metric-card {
     background: rgba(11, 17, 33, 0.85); 
     backdrop-filter: blur(20px); 
-    border: 1px solid rgba(212, 175, 55, 0.25);
+    border: 1px solid rgba(56, 189, 248, 0.25);
     padding: 20px; border-radius: 16px; text-align: left;
     box-shadow: 0 15px 35px rgba(0,0,0,0.4);
     height: 100%;
 }
-.metric-value { font-size: 32px; font-weight: 800; color: #d4af37 !important; margin-top: 8px; }
+.metric-value { font-size: 32px; font-weight: 800; color: #38bdf8 !important; margin-top: 8px; }
 .metric-label { font-size: 11px; color: #a6b8d4 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
 
 .user-profile { 
     background: rgba(255, 255, 255, 0.04); 
     padding: 14px 16px; border-radius: 14px; 
-    border: 1px solid rgba(212, 175, 55, 0.3); margin-bottom: 20px;
+    border: 1px solid rgba(56, 189, 248, 0.3); margin-bottom: 20px;
     display: flex; align-items: center; gap: 12px;
 }
 .user-avatar {
-    width: 36px; height: 36px; background: #d4af37; color: #0d121e;
+    width: 36px; height: 36px; background: #38bdf8; color: #0d121e;
     font-weight: 800; border-radius: 50%; display: flex; align-items: center;
-    justify-content: center; font-size: 15px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+    justify-content: center; font-size: 15px; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
 }
-.user-info-title { font-size: 9px; color: #d4af37; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+.user-info-title { font-size: 9px; color: #38bdf8; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
 .user-info-name { font-size: 14px; font-weight: 600; color: #ffffff; }
 </style>
 """,
@@ -383,16 +383,16 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             """
             <style>
             @keyframes levitar {
-                0% { transform: translateY(0px); filter: drop-shadow(0 10px 15px rgba(212,175,55,0.4)); }
-                50% { transform: translateY(-12px); filter: drop-shadow(0 20px 25px rgba(212,175,55,0.7)); }
-                100% { transform: translateY(0px); filter: drop-shadow(0 10px 15px rgba(212,175,55,0.4)); }
+                0% { transform: translateY(0px); filter: drop-shadow(0 10px 15px rgba(56,189,248,0.4)); }
+                50% { transform: translateY(-12px); filter: drop-shadow(0 20px 25px rgba(56,189,248,0.7)); }
+                100% { transform: translateY(0px); filter: drop-shadow(0 10px 15px rgba(56,189,248,0.4)); }
             }
             .hero-card::before {
                 content: '';
                 position: absolute;
                 top: -50%; left: -50%;
                 width: 200%; height: 200%;
-                background: radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.08) 0%, transparent 55%);
+                background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.08) 0%, transparent 55%);
                 pointer-events: none;
                 z-index: 0;
             }
@@ -417,7 +417,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             }
             .hero-subtitle {
                 font-size: 13px;
-                color: #d4af37;
+                color: #38bdf8;
                 text-transform: uppercase;
                 letter-spacing: 5px;
                 font-weight: 700;
@@ -431,7 +431,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                 content: '';
                 height: 1px;
                 width: 50px;
-                background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.6), transparent);
+                background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.6), transparent);
             }
             .hero-desc {
                 color: #a6b8d4;
@@ -614,7 +614,7 @@ else:
                 f"""
 <div class="metric-card">
     <div class="metric-label">Alertas de Stock Bajo</div>
-    <div class="metric-value" style="color: {'#d4af37' if total_alertas > 0 else '#d4af37'} !important;">{total_alertas}</div>
+    <div class="metric-value" style="color: {'#38bdf8' if total_alertas > 0 else '#38bdf8'} !important;">{total_alertas}</div>
 </div>
 """,
                 unsafe_allow_html=True,
@@ -735,8 +735,8 @@ else:
                     col_actual = cols_tarjetas[idx % 3]
                     
                     is_alerta = int(row["cantidad"]) <= int(row["alerta"])
-                    borde_color = "#d4af37" if is_alerta else "rgba(212, 175, 55, 0.25)"
-                    badge_stock = f"<span style='color: #d4af37; font-weight: 700;'>Stock Bajo ({row['cantidad']})</span>" if is_alerta else f"<span style='color: #22c55e; font-weight: 700;'>Stock: {row['cantidad']}</span>"
+                    borde_color = "#38bdf8" if is_alerta else "rgba(56, 189, 248, 0.25)"
+                    badge_stock = f"<span style='color: #38bdf8; font-weight: 700;'>Stock Bajo ({row['cantidad']})</span>" if is_alerta else f"<span style='color: #22c55e; font-weight: 700;'>Stock: {row['cantidad']}</span>"
 
                     with col_actual:
                         st.markdown(
@@ -751,7 +751,7 @@ else:
                                 box-shadow: 0 10px 25px rgba(0,0,0,0.3);
                             ">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                    <span style="background: rgba(212, 175, 55, 0.15); color: #d4af37; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">ID: {row['ID']}</span>
+                                    <span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">ID: {row['ID']}</span>
                                     <span style="font-size: 12px; color: #a6b8d4;">{row['Categoria']}</span>
                                 </div>
                                 <div style="font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 8px;">{row['Producto']}</div>
