@@ -130,10 +130,11 @@ def cargar_configuracion_db():
 def agregar_configuracion_db(tipo, valor):
     if supabase:
         try:
+            # Insertar solo tipo y valor; Supabase autogenera el ID de identidad
             supabase.table("configuracion").insert({"tipo": tipo, "valor": valor}).execute()
             return True
         except Exception as e:
-            st.error(f"Error de Supabase al guardar: {e}")
+            st.error(f"Error al agregar en BD: {e}")
             return False
     return True
 
@@ -143,7 +144,7 @@ def eliminar_configuracion_db(tipo, valor):
             supabase.table("configuracion").delete().eq("tipo", tipo).eq("valor", valor).execute()
             return True
         except Exception as e:
-            st.error(f"Error de Supabase al borrar: {e}")
+            st.error(f"Error al eliminar en BD: {e}")
             return False
     return True
 
@@ -266,10 +267,8 @@ if "form_version" not in st.session_state:
 # Cargar configuraciones desde Supabase
 cats_db, tallas_db, colores_db = cargar_configuracion_db()
 
-# Inicializar listas Maestras siempre sincronizadas
-st.session_state.categorias_maestras = cats_db if cats_db else [
-    "Vestidos", "Blusas", "Pantalones", "Jeans", "Chaquetas", "Calzado", "Accesorios"
-]
+# Inicializar listas Maestras
+st.session_state.categorias_maestras = cats_db if cats_db else ["Vestidos", "Blusas", "Pantalones", "Jeans", "Chaquetas", "Calzado", "Accesorios"]
 st.session_state.tallas_maestras = tallas_db if tallas_db else ["XS", "S", "M", "L", "XL", "Única"]
 st.session_state.colores_maestros = colores_db if colores_db else ["Negro", "Blanco", "Beige", "Rojo", "Azul", "Rosa", "Verde"]
 
