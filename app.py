@@ -470,7 +470,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             font-weight: 600;
             letter-spacing: 0.5px;
         }
-        /* Estilo para que el botón de inicio luzca exactamente como los enlaces de navegación */
+        /* Estilo limpio para el botón de inicio */
         div[data-testid="stHorizontalBlock"] button {
             background: transparent !important;
             border: none !important;
@@ -486,7 +486,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             height: auto !important;
             display: inline-flex !important;
             align-items: center !important;
-            justify-content: flex-end !important;
+            justify-content: flex-start !important;
             width: auto !important;
         }
         div[data-testid="stHorizontalBlock"] button:hover {
@@ -504,8 +504,8 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         unsafe_allow_html=True,
     )
     
-    # Barra superior con columnas de Streamlit para alinear el botón "INICIO" junto a las opciones de navegación
-    col_top1, col_top2 = st.columns([1, 2])
+    # Barra superior limpia manteniendo el estilo original y situando el botón de INICIO exactamente al lado de Tienda
+    col_top1, col_top2 = st.columns([3, 2])
     with col_top1:
         st.markdown(
             """
@@ -517,19 +517,13 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             unsafe_allow_html=True,
         )
     with col_top2:
-        nav_cols = st.columns(5)
+        nav_cols = st.columns([1, 1], gap="small")
         with nav_cols[0]:
+            st.markdown("<div style='font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: #b899a6; font-weight: 600; padding-top: 6px; text-align: right;'>Tienda</div>", unsafe_allow_html=True)
+        with nav_cols[1]:
             if st.button("INICIO", key="btn_inicio_nav"):
                 st.session_state.etapa = "login"
                 st.rerun()
-        with nav_cols[1]:
-            st.markdown("<div style='font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: #b899a6; font-weight: 600; padding-top: 4px; text-align: right;'>Tienda</div>", unsafe_allow_html=True)
-        with nav_cols[2]:
-            st.markdown("<div style='font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: #b899a6; font-weight: 600; padding-top: 4px; text-align: right;'>Categorías</div>", unsafe_allow_html=True)
-        with nav_cols[3]:
-            st.markdown("<div style='font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: #b899a6; font-weight: 600; padding-top: 4px; text-align: right;'>Blog</div>", unsafe_allow_html=True)
-        with nav_cols[4]:
-            st.markdown("<div style='font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: #b899a6; font-weight: 600; padding-top: 4px; text-align: right;'>Contacto</div>", unsafe_allow_html=True)
 
     st.markdown(
         """
