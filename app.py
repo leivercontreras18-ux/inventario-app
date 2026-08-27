@@ -662,7 +662,7 @@ else:
                 st.markdown("<div class='section-title'>📂 Categorías</div>", unsafe_allow_html=True)
                 st.markdown("<p style='font-size:12px; color:#94a3b8;'>Añade o elimina categorías.</p>", unsafe_allow_html=True)
                 
-                for cat in st.session_state.categorias_maestras:
+                for cat in list(st.session_state.categorias_maestras):
                     c_col1, c_col2 = st.columns([3, 1])
                     c_col1.markdown(f"- {cat}")
                     if c_col2.button("❌", key=f"del_cat_{cat}"):
@@ -675,7 +675,7 @@ else:
                             st.error("Debe existir al menos una.")
 
                 st.markdown("<br>", unsafe_allow_html=True)
-                with st.form("form_nueva_cat"):
+                with st.form(f"form_nueva_cat_{st.session_state.get('cat_ver', 0)}", clear_on_submit=True):
                     nueva_cat_input = st.text_input("Nueva Categoría", placeholder="Ej: Faldas")
                     if st.form_submit_button("Agregar Categoría"):
                         clean_cat = nueva_cat_input.strip().capitalize()
@@ -683,6 +683,7 @@ else:
                             if agregar_configuracion_db("categoria", clean_cat):
                                 st.session_state.categorias_maestras.append(clean_cat)
                                 st.success(f"¡Categoría '{clean_cat}' agregada!")
+                                st.session_state.cat_ver = st.session_state.get('cat_ver', 0) + 1
                                 st.rerun()
                         else:
                             st.warning("Escribe un nombre válido o no repetido.")
@@ -693,7 +694,7 @@ else:
                 st.markdown("<div class='section-title'>📏 Tallas</div>", unsafe_allow_html=True)
                 st.markdown("<p style='font-size:12px; color:#94a3b8;'>Añade o elimina tallas.</p>", unsafe_allow_html=True)
                 
-                for t in st.session_state.tallas_maestras:
+                for t in list(st.session_state.tallas_maestras):
                     t_col1, t_col2 = st.columns([3, 1])
                     t_col1.markdown(f"- {t}")
                     if t_col2.button("❌", key=f"del_talla_{t}"):
@@ -706,7 +707,7 @@ else:
                             st.error("Debe existir al menos una.")
 
                 st.markdown("<br>", unsafe_allow_html=True)
-                with st.form("form_nueva_talla"):
+                with st.form(f"form_nueva_talla_{st.session_state.get('talla_ver', 0)}", clear_on_submit=True):
                     nueva_talla_input = st.text_input("Nueva Talla", placeholder="Ej: 30, XXL")
                     if st.form_submit_button("Agregar Talla"):
                         clean_talla = nueva_talla_input.strip().upper()
@@ -714,6 +715,7 @@ else:
                             if agregar_configuracion_db("talla", clean_talla):
                                 st.session_state.tallas_maestras.append(clean_talla)
                                 st.success(f"¡Talla '{clean_talla}' agregada!")
+                                st.session_state.talla_ver = st.session_state.get('talla_ver', 0) + 1
                                 st.rerun()
                         else:
                             st.warning("Escribe una talla válida o no repetida.")
@@ -724,7 +726,7 @@ else:
                 st.markdown("<div class='section-title'>🎨 Colores</div>", unsafe_allow_html=True)
                 st.markdown("<p style='font-size:12px; color:#94a3b8;'>Añade o elimina colores.</p>", unsafe_allow_html=True)
                 
-                for col_item in st.session_state.colores_maestros:
+                for col_item in list(st.session_state.colores_maestros):
                     col_c1, col_c2 = st.columns([3, 1])
                     col_c1.markdown(f"- {col_item}")
                     if col_c2.button("❌", key=f"del_color_{col_item}"):
@@ -737,7 +739,7 @@ else:
                             st.error("Debe existir al menos uno.")
 
                 st.markdown("<br>", unsafe_allow_html=True)
-                with st.form("form_nuevo_color"):
+                with st.form(f"form_nuevo_color_{st.session_state.get('color_ver', 0)}", clear_on_submit=True):
                     nuevo_color_input = st.text_input("Nuevo Color", placeholder="Ej: Dorado, Vinotinto")
                     if st.form_submit_button("Agregar Color"):
                         clean_color = nuevo_color_input.strip().capitalize()
@@ -745,6 +747,7 @@ else:
                             if agregar_configuracion_db("color", clean_color):
                                 st.session_state.colores_maestros.append(clean_color)
                                 st.success(f"¡Color '{clean_color}' agregado!")
+                                st.session_state.color_ver = st.session_state.get('color_ver', 0) + 1
                                 st.rerun()
                         else:
                             st.warning("Escribe un color válido o no repetido.")
