@@ -401,10 +401,10 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             }
             .hero-title {
                 font-family: 'Cinzel', serif;
-                font-size: 52px;
+                font-size: 44px;
                 font-weight: 800;
                 color: #ffffff;
-                letter-spacing: 6px;
+                letter-spacing: 5px;
                 margin-bottom: 12px;
                 text-shadow: 0 0 40px rgba(255,255,255,0.2);
             }
@@ -439,7 +439,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             <div class="hero-card">
                 <div class="hero-content">
                     <div class="hero-icon">👕</div>
-                    <h1 class="hero-title">LEWIN</h1>
+                    <h1 class="hero-title">LEWIN BOUTIQUE</h1>
                     <p class="hero-subtitle">Boutique & Inventory Control</p>
                     <p class="hero-desc">
                         Sistema exclusivo de Lewin Boutique
