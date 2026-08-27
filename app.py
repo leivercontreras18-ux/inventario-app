@@ -500,10 +500,60 @@ else:
         st.markdown("<br>", unsafe_allow_html=True)
 
         if not df.empty:
+            # --- AJUSTE RÁPIDO DE STOCK (+1 / -1) ---
             st.markdown(
                 """
-<div class="section-title">📋 Filtros y Búsqueda de Inventario</div>
-<div class="section-subtitle">Filtra por categoría o busca un producto en específico de forma inmediata.</div>
+<div class="section-title">⚡ Ajuste Rápido de Stock</div>
+<div class="section-subtitle">Modifica existencias de manera inmediata seleccionando la prenda.</div>
+""",
+                unsafe_allow_html=True,
+            )
+            col_q1, col_q2, col_q3 = st.columns([2, 1, 1])
+            with col_q1:
+                ids_rapidos = df["ID"].astype(str).tolist()
+                id_rapido = st.selectbox("Seleccionar Prenda", ids_rapidos, key="select_ajuste_rapido")
+            with col_q2:
+                st.markdown("<div style='height: 24px;'></div>", unsafe_allow_html=True)
+                if st.button("➖ Quitar 1 (-1)", use_container_width=True, key="btn_minus_1"):
+                    if id_rapido:
+                        fila_actual = df[df["ID"].astype(str) == str(id_rapido)].iloc[0]
+                        nueva_cant = max(0, int(fila_actual["cantidad"]) - 1)
+                        datos_act = {
+                            "ID": str(fila_actual["ID"]),
+                            "Producto": str(fila_actual["Producto"]),
+                            "Categoria": str(fila_actual["Categoria"]),
+                            "talla": str(fila_actual["talla"]),
+                            "color": str(fila_actual["color"]),
+                            "cantidad": nueva_cant,
+                            "alerta": int(fila_actual["alerta"])
+                        }
+                        if actualizar_prenda(id_rapido, datos_act):
+                            st.success(f"Stock actualizado a {nueva_cant}")
+                            st.rerun()
+            with col_q3:
+                st.markdown("<div style='height: 24px;'></div>", unsafe_allow_html=True)
+                if st.button("➕ Añadir 1 (+1)", use_container_width=True, key="btn_plus_1"):
+                    if id_rapido:
+                        fila_actual = df[df["ID"].astype(str) == str(id_rapido)].iloc[0]
+                        nueva_cant = int(fila_actual["cantidad"]) + 1
+                        datos_act = {
+                            "ID": str(fila_actual["ID"]),
+                            "Producto": str(fila_actual["Producto"]),
+                            "Categoria": str(fila_actual["Categoria"]),
+                            "talla": str(fila_actual["talla"]),
+                            "color": str(fila_actual["color"]),
+                            "cantidad": nueva_cant,
+                            "alerta": int(fila_actual["alerta"])
+                        }
+                        if actualizar_prenda(id_rapido, datos_act):
+                            st.success(f"Stock actualizado a {nueva_cant}")
+                            st.rerun()
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown(
+                """
+<div class="section-title">📋 Filtros, Búsqueda y Paginación</div>
+<div class="section-subtitle">Filtra por categoría o busca un producto en específico.</div>
 """,
                 unsafe_allow_html=True,
             )
@@ -527,8 +577,46 @@ else:
                 df_filtrado = df_filtrado[df_filtrado["Categoria"] == filtro_categoria]
 
             st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown(f"<div class='section-title'>Resultados de la Búsqueda ({len(df_filtrado)} registros)</div>", unsafe_allow_html=True)
-            st.dataframe(df_filtrado, use_container_width=True)
+            
+            # --- PAGINACIÓN Y EXPORTACIÓN CSV ---
+            total_registros = len(df_filtrado)
+            if total_registros > 0:
+                items_por_pagina = 10
+                total_paginas = max(1, (total_registros - 1) // items_por_pagina + 1)
+                
+                col_p1, col_p2 = st.columns([2, 2])
+                with col_p1:
+                    pagina_sel = st.selectbox("📄 Página", range(1, total_paginas + 1), key="paginacion_tabla") if total_paginas > 1 else 1
+                
+                inicio = (pagina_sel - 1) * items_por_pagina
+                fin = min(inicio + items_por_pagina, total_registros)
+                df_paginado = df_filtrado.iloc[inicio:fin]
+                
+                csv_data = df_filtrado.to_csv(index=False).encode('utf-8')
+                with col_p2:
+                    st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+                    st.download_button(
+                        label="📥 Exportar Inventario a CSV",
+                        data=csv_data,
+                        file_name="inventario_lewin.csv",
+                        mime="text/csv",
+                        use_container_width=True
+                    )
+
+                st.markdown(f"<div class='section-title'>Resultados (Mostrando {inicio+1} - {fin} de {total_registros} registros)</div>", unsafe_allow_html=True)
+                
+                # --- ALERTAS VISUALES EN LA TABLA ---
+                def destacar_alertas(row):
+                    try:
+                        if int(row["cantidad"]) <= int(row["alerta"]):
+                            return ['background-color: rgba(255, 59, 59, 0.15); color: #ff3b3b; font-weight: 600'] * len(row)
+                    except:
+                        pass
+                    return [''] * len(row)
+
+                st.dataframe(df_paginado.style.apply(destacar_alertas, axis=1), use_container_width=True)
+            else:
+                st.info("No se encontraron registros con los filtros seleccionados.")
         else:
             st.info("No hay prendas registradas todavía en el sistema.")
 
