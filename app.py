@@ -170,16 +170,16 @@ def eliminar_prenda(id_prenda):
         cargar_datos_completos.clear()
         return True
 
-# --- ESTILOS NÍTIDOS UI CON FONDO MEJORADO Y GLASSMORPHISM ---
+# --- ESTILOS NÍTIDOS UI CON TONO DORADO Y GLASSMORPHISM ---
 st.markdown(
     """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500;600&display=swap');
 
-/* Fondo General con Gradiente Elegante y Luces de Neón Tenues */
+/* Fondo General con Gradiente Elegante y Luces Doradas Tenues */
 .stApp { 
-    background: radial-gradient(circle at 20% 20%, rgba(212, 175, 55, 0.06) 0%, transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(255, 59, 59, 0.05) 0%, transparent 40%),
+    background: radial-gradient(circle at 20% 20%, rgba(212, 175, 55, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(184, 134, 11, 0.05) 0%, transparent 40%),
                 linear-gradient(135deg, #0f141d 0%, #141a24 50%, #1a2230 100%);
     background-attachment: fixed;
     color: #f8fafc !important; 
@@ -195,7 +195,7 @@ header[data-testid="stHeader"] { background: transparent !important; }
 section[data-testid="stSidebar"] { 
     width: 240px !important;
     background: rgba(15, 20, 29, 0.85) !important; 
-    border-right: 1px solid rgba(255, 255, 255, 0.1); 
+    border-right: 1px solid rgba(212, 175, 55, 0.2); 
     backdrop-filter: blur(25px); 
 }
 section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
@@ -204,23 +204,24 @@ section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
 div[data-baseweb="input"], div[data-baseweb="select"] > div {
     background-color: rgba(25, 33, 47, 0.8) !important;
     border-radius: 8px !important;
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border: 1px solid rgba(212, 175, 55, 0.25) !important;
     color: #ffffff !important;
 }
 div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-within {
-    border-color: #ff3b3b !important;
+    border-color: #d4af37 !important;
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.3) !important;
 }
 div[data-baseweb="input"] input {
     color: #ffffff !important;
     font-size: 13px !important;
 }
 
-/* Efecto 3D Puerta para TODOS los botones */
+/* Efecto 3D Puerta para TODOS los botones (Tono Dorado) */
 div.stButton > button, div[data-testid="stFormSubmitButton"] > button {
     background: #18202c !important;
-    color: #ffffff !important;
+    color: #f8fafc !important;
     border-radius: 8px !important;
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
     font-weight: 600 !important;
     padding: 12px 20px !important;
     position: relative;
@@ -239,7 +240,7 @@ div.stButton > button::before, div[data-testid="stFormSubmitButton"] > button::b
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: #ff3b3b;
+    background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%);
     transform-origin: left center;
     transform: rotateY(0deg);
     transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
@@ -248,8 +249,8 @@ div.stButton > button::before, div[data-testid="stFormSubmitButton"] > button::b
 }
 
 div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
-    border-color: #ff3b3b !important;
-    box-shadow: inset 20px 0 30px rgba(255, 59, 59, 0.1), 0 0 20px rgba(255, 59, 59, 0.4) !important;
+    border-color: #d4af37 !important;
+    box-shadow: inset 20px 0 30px rgba(212, 175, 55, 0.15), 0 0 20px rgba(212, 175, 55, 0.4) !important;
     color: #ffffff !important;
 }
 
@@ -260,7 +261,7 @@ div.stButton > button:hover::before, div[data-testid="stFormSubmitButton"] > but
 
 div.stButton > button:active, div[data-testid="stFormSubmitButton"] > button:active {
     transform: translateZ(-30px) scale(0.95) !important;
-    box-shadow: 0 0 5px rgba(255, 59, 59, 0.6) !important;
+    box-shadow: 0 0 5px rgba(212, 175, 55, 0.6) !important;
 }
 
 /* Tarjeta de Bienvenida Glassmorphism */
@@ -268,7 +269,7 @@ div.stButton > button:active, div[data-testid="stFormSubmitButton"] > button:act
     background: rgba(26, 34, 48, 0.65) !important;
     backdrop-filter: blur(30px) !important;
     -webkit-backdrop-filter: blur(30px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(212, 175, 55, 0.25) !important;
     border-radius: 24px;
     padding: 60px 30px 40px 30px;
     text-align: center;
@@ -282,7 +283,7 @@ div.stButton > button:active, div[data-testid="stFormSubmitButton"] > button:act
 div[data-testid="stForm"] {
     background: rgba(26, 34, 48, 0.65) !important;
     backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border: 1px solid rgba(212, 175, 55, 0.2) !important;
     border-radius: 16px !important;
     padding: 25px !important;
     box-shadow: 0 15px 35px rgba(0,0,0,0.4) !important;
@@ -298,7 +299,7 @@ div[data-testid="stForm"] {
 .metric-card {
     background: rgba(26, 34, 48, 0.65); 
     backdrop-filter: blur(20px); 
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(212, 175, 55, 0.2);
     padding: 20px; border-radius: 16px; text-align: left;
     box-shadow: 0 15px 35px rgba(0,0,0,0.4);
     height: 100%;
@@ -613,7 +614,7 @@ else:
                 f"""
 <div class="metric-card">
     <div class="metric-label">Alertas de Stock Bajo</div>
-    <div class="metric-value" style="color: {'#ff3b3b' if total_alertas > 0 else '#d4af37'} !important;">{total_alertas}</div>
+    <div class="metric-value" style="color: {'#d4af37' if total_alertas > 0 else '#d4af37'} !important;">{total_alertas}</div>
 </div>
 """,
                 unsafe_allow_html=True,
@@ -734,8 +735,8 @@ else:
                     col_actual = cols_tarjetas[idx % 3]
                     
                     is_alerta = int(row["cantidad"]) <= int(row["alerta"])
-                    borde_color = "#ff3b3b" if is_alerta else "rgba(255, 255, 255, 0.12)"
-                    badge_stock = f"<span style='color: #ff3b3b; font-weight: 700;'>Stock Bajo ({row['cantidad']})</span>" if is_alerta else f"<span style='color: #22c55e; font-weight: 700;'>Stock: {row['cantidad']}</span>"
+                    borde_color = "#d4af37" if is_alerta else "rgba(212, 175, 55, 0.2)"
+                    badge_stock = f"<span style='color: #d4af37; font-weight: 700;'>Stock Bajo ({row['cantidad']})</span>" if is_alerta else f"<span style='color: #22c55e; font-weight: 700;'>Stock: {row['cantidad']}</span>"
 
                     with col_actual:
                         st.markdown(
@@ -936,7 +937,7 @@ else:
             """
 <div class="page-header">
     <div class="page-title">⚙️ Configuración del Sistema</div>
-    <div class="page-subtitle">Gestiona y personaliza las opciones maestras de categorías, tallas y colores. Haz clic en guardar al terminar.</div>
+    <div class="page-subtitle">Gestiona y personaliza las opciones maestras de categorías, tallas y colores. Haz clic em guardar al terminar.</div>
 </div>
 """,
             unsafe_allow_html=True,
