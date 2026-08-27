@@ -85,15 +85,14 @@ def guardar_configuracion_completa(cats, tallas, colores):
                 ("colores", json.dumps(colores))
             ]
             for tipo_val, valor_val in configs:
-                res = supabase.table("configuracion").select("*").eq("tipo", tipo_val).execute()
-                if res.data and len(res.data) > 0:
-                    row_id = res.data[0].get("id")
-                    if row_id is not None:
-                        supabase.table("configuracion").update({"valor": valor_val}).eq("id", row_id).execute()
-                    else:
-                        supabase.table("configuracion").update({"valor": valor_val}).eq("tipo", tipo_val).execute()
-                else:
-                    supabase.table("configuracion").insert({"tipo": tipo_val, "valor": valor_val}).execute()
+                # Borramos cualquier registro anterior de este tipo para evitar duplicados
+                supabase.table("configuracion").delete().eq("tipo", tipo_val).execute()
+                
+                # Insertamos el nuevo valor actualizado
+                supabase.table("configuracion").insert({
+                    "tipo": tipo_val, 
+                    "valor": valor_val
+                }).execute()
 
             return True
         except Exception as e:
