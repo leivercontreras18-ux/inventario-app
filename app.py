@@ -578,7 +578,7 @@ else:
 
             st.markdown("<br>", unsafe_allow_html=True)
             
-            # --- PAGINACIÓN Y EXPORTACIÓN CSV ---
+            # --- PAGINACIÓN Y EXPORTACIÓN CSV (CORREGIDO PARA EXCEL) ---
             total_registros = len(df_filtrado)
             if total_registros > 0:
                 items_por_pagina = 10
@@ -592,7 +592,8 @@ else:
                 fin = min(inicio + items_por_pagina, total_registros)
                 df_paginado = df_filtrado.iloc[inicio:fin]
                 
-                csv_data = df_filtrado.to_csv(index=False).encode('utf-8')
+                # Usamos sep=';' y utf-8-sig para que Excel abra las columnas separadas automáticamente
+                csv_data = df_filtrado.to_csv(index=False, sep=';').encode('utf-8-sig')
                 with col_p2:
                     st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
                     st.download_button(
