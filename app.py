@@ -170,17 +170,17 @@ def eliminar_prenda(id_prenda):
         cargar_datos_completos.clear()
         return True
 
-# --- ESTILOS NÍTIDOS UI CON TONO DORADO Y GLASSMORPHISM ---
+# --- ESTILOS NÍTIDOS UI (AZUL ACERO / NOCTURNO Y DORADO) ---
 st.markdown(
     """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500;600&display=swap');
 
-/* Fondo General con Gradiente Elegante y Luces Doradas Tenues */
+/* Fondo General: Azul Acero y Medianoche Profundo con destellos dorados */
 .stApp { 
     background: radial-gradient(circle at 20% 20%, rgba(212, 175, 55, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(184, 134, 11, 0.05) 0%, transparent 40%),
-                linear-gradient(135deg, #0f141d 0%, #141a24 50%, #1a2230 100%);
+                radial-gradient(circle at 80% 80%, rgba(53, 92, 125, 0.12) 0%, transparent 40%),
+                linear-gradient(135deg, #050811 0%, #0a1124 50%, #03050a 100%);
     background-attachment: fixed;
     color: #f8fafc !important; 
 }
@@ -194,17 +194,17 @@ header[data-testid="stHeader"] { background: transparent !important; }
 
 section[data-testid="stSidebar"] { 
     width: 240px !important;
-    background: rgba(15, 20, 29, 0.85) !important; 
-    border-right: 1px solid rgba(212, 175, 55, 0.2); 
+    background: rgba(8, 13, 26, 0.95) !important; 
+    border-right: 1px solid rgba(212, 175, 55, 0.25); 
     backdrop-filter: blur(25px); 
 }
 section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
 
 /* Inputs estándar de Streamlit */
 div[data-baseweb="input"], div[data-baseweb="select"] > div {
-    background-color: rgba(25, 33, 47, 0.8) !important;
+    background-color: rgba(13, 20, 38, 0.9) !important;
     border-radius: 8px !important;
-    border: 1px solid rgba(212, 175, 55, 0.25) !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
     color: #ffffff !important;
 }
 div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-within {
@@ -218,17 +218,17 @@ div[data-baseweb="input"] input {
 
 /* Efecto 3D Puerta para TODOS los botones (Tono Dorado) */
 div.stButton > button, div[data-testid="stFormSubmitButton"] > button {
-    background: #18202c !important;
+    background: #111a30 !important;
     color: #f8fafc !important;
     border-radius: 8px !important;
-    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    border: 1px solid rgba(212, 175, 55, 0.35) !important;
     font-weight: 600 !important;
     padding: 12px 20px !important;
     position: relative;
     overflow: hidden;
     transform-style: preserve-3d;
     transition: all 0.4s ease !important;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4) !important;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -264,26 +264,26 @@ div.stButton > button:active, div[data-testid="stFormSubmitButton"] > button:act
     box-shadow: 0 0 5px rgba(212, 175, 55, 0.6) !important;
 }
 
-/* Tarjeta de Bienvenida Glassmorphism */
+/* Tarjeta de Bienvenida Glassmorphism en Azul Acero */
 .hero-card {
-    background: rgba(26, 34, 48, 0.65) !important;
+    background: rgba(11, 17, 33, 0.85) !important;
     backdrop-filter: blur(30px) !important;
     -webkit-backdrop-filter: blur(30px) !important;
-    border: 1px solid rgba(212, 175, 55, 0.25) !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
     border-radius: 24px;
     padding: 60px 30px 40px 30px;
     text-align: center;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15) !important;
     margin-bottom: 25px;
 }
 
-/* Formularios Glassmorphism */
+/* Formularios Glassmorphism en Azul Acero */
 div[data-testid="stForm"] {
-    background: rgba(26, 34, 48, 0.65) !important;
+    background: rgba(11, 17, 33, 0.85) !important;
     backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(212, 175, 55, 0.2) !important;
+    border: 1px solid rgba(212, 175, 55, 0.25) !important;
     border-radius: 16px !important;
     padding: 25px !important;
     box-shadow: 0 15px 35px rgba(0,0,0,0.4) !important;
@@ -291,24 +291,24 @@ div[data-testid="stForm"] {
 
 .page-header { margin-bottom: 25px; padding-bottom: 10px; }
 .page-title { font-size: 32px; font-weight: 700; color: #ffffff !important; letter-spacing: 0.5px; }
-.page-subtitle { font-size: 14px; color: #a0aec0 !important; margin-top: 4px; }
+.page-subtitle { font-size: 14px; color: #a6b8d4 !important; margin-top: 4px; }
 
 .section-title { font-size: 18px; font-weight: 600; color: #ffffff; margin-bottom: 4px; }
-.section-subtitle { font-size: 12px; color: #a0aec0; margin-bottom: 15px; }
+.section-subtitle { font-size: 12px; color: #a6b8d4; margin-bottom: 15px; }
 
 .metric-card {
-    background: rgba(26, 34, 48, 0.65); 
+    background: rgba(11, 17, 33, 0.85); 
     backdrop-filter: blur(20px); 
-    border: 1px solid rgba(212, 175, 55, 0.2);
+    border: 1px solid rgba(212, 175, 55, 0.25);
     padding: 20px; border-radius: 16px; text-align: left;
     box-shadow: 0 15px 35px rgba(0,0,0,0.4);
     height: 100%;
 }
 .metric-value { font-size: 32px; font-weight: 800; color: #d4af37 !important; margin-top: 8px; }
-.metric-label { font-size: 11px; color: #a0aec0 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+.metric-label { font-size: 11px; color: #a6b8d4 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
 
 .user-profile { 
-    background: rgba(255, 255, 255, 0.05); 
+    background: rgba(255, 255, 255, 0.04); 
     padding: 14px 16px; border-radius: 14px; 
     border: 1px solid rgba(212, 175, 55, 0.3); margin-bottom: 20px;
     display: flex; align-items: center; gap: 12px;
@@ -434,7 +434,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                 background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.6), transparent);
             }
             .hero-desc {
-                color: #a0aec0;
+                color: #a6b8d4;
                 font-size: 15px;
                 line-height: 1.7;
                 max-width: 480px;
@@ -478,7 +478,7 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
         
         with st.container(border=True):
             st.markdown("<h3>✦ Lewin Boutique</h3>", unsafe_allow_html=True)
-            st.markdown("<p style='color: #a0aec0; font-size: 12px;'>Ingrese sus credenciales de acceso.</p>", unsafe_allow_html=True)
+            st.markdown("<p style='color: #a6b8d4; font-size: 12px;'>Ingrese sus credenciales de acceso.</p>", unsafe_allow_html=True)
             
             usuario_input = st.text_input("Email Address / Usuario", placeholder="Ingrese su usuario")
             clave_input = st.text_input("Password / Contraseña", type="password", placeholder="Ingrese su contraseña")
@@ -523,7 +523,7 @@ else:
     )
 
     st.sidebar.markdown(
-        "<p style='font-size:10px; color:#a0aec0; text-transform:uppercase; letter-spacing:1.5px; font-weight:700; margin: 12px 0 6px 4px;'>Menú Principal</p>",
+        "<p style='font-size:10px; color:#a6b8d4; text-transform:uppercase; letter-spacing:1.5px; font-weight:700; margin: 12px 0 6px 4px;'>Menú Principal</p>",
         unsafe_allow_html=True,
     )
 
@@ -735,14 +735,14 @@ else:
                     col_actual = cols_tarjetas[idx % 3]
                     
                     is_alerta = int(row["cantidad"]) <= int(row["alerta"])
-                    borde_color = "#d4af37" if is_alerta else "rgba(212, 175, 55, 0.2)"
+                    borde_color = "#d4af37" if is_alerta else "rgba(212, 175, 55, 0.25)"
                     badge_stock = f"<span style='color: #d4af37; font-weight: 700;'>Stock Bajo ({row['cantidad']})</span>" if is_alerta else f"<span style='color: #22c55e; font-weight: 700;'>Stock: {row['cantidad']}</span>"
 
                     with col_actual:
                         st.markdown(
                             f"""
                             <div style="
-                                background: rgba(26, 34, 48, 0.65);
+                                background: rgba(11, 17, 33, 0.85);
                                 backdrop-filter: blur(20px);
                                 border: 1px solid {borde_color};
                                 padding: 18px;
@@ -752,7 +752,7 @@ else:
                             ">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                                     <span style="background: rgba(212, 175, 55, 0.15); color: #d4af37; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">ID: {row['ID']}</span>
-                                    <span style="font-size: 12px; color: #a0aec0;">{row['Categoria']}</span>
+                                    <span style="font-size: 12px; color: #a6b8d4;">{row['Categoria']}</span>
                                 </div>
                                 <div style="font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 8px;">{row['Producto']}</div>
                                 <div style="font-size: 13px; color: #cbd5e1; display: flex; gap: 12px; margin-bottom: 12px;">
@@ -761,7 +761,7 @@ else:
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; font-size: 13px;">
                                     {badge_stock}
-                                    <span style="font-size: 11px; color: #a0aec0;">Alerta mín: {row['alerta']}</span>
+                                    <span style="font-size: 11px; color: #a6b8d4;">Alerta mín: {row['alerta']}</span>
                                 </div>
                             </div>
                             """,
