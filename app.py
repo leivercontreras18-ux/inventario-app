@@ -662,7 +662,6 @@ else:
         )
 
         with st.form(f"form_ropa_{st.session_state.form_version}", clear_on_submit=True):
-            # Bloque 1: Identificación principal
             col1, col2 = st.columns(2)
             with col1:
                 sku = st.text_input("ID", placeholder="Ej: A1")
@@ -671,7 +670,6 @@ else:
 
             st.markdown("---")
             
-            # Bloque 2: Características de la prenda
             col3, col4, col5 = st.columns(3)
             with col3:
                 categoria = st.selectbox("Categoria", st.session_state.categorias_maestras)
@@ -682,7 +680,6 @@ else:
 
             st.markdown("---")
 
-            # Bloque 3: Stock y Alertas
             col6, col7 = st.columns(2)
             with col6:
                 cantidad = st.number_input("cantidad", min_value=0, step=1)
@@ -753,39 +750,44 @@ else:
             if id_seleccionado:
                 fila_data = df[df["ID"].astype(str) == str(id_seleccionado)].iloc[0]
 
+                st.markdown("<br>", unsafe_allow_html=True)
                 with st.form("form_editar"):
-                    nuevo_id = st.text_input("ID", value=str(fila_data["ID"]))
-                    nuevo_nombre = st.text_input("Producto", value=str(fila_data["Producto"]))
-                    
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        nuevo_id = st.text_input("ID", value=str(fila_data["ID"]))
+                    with col2:
+                        nuevo_nombre = st.text_input("Producto", value=str(fila_data["Producto"]))
+
+                    st.markdown("---")
+
+                    col3, col4, col5 = st.columns(3)
                     cat_actual = str(fila_data["Categoria"])
                     idx_cat = st.session_state.categorias_maestras.index(cat_actual) if cat_actual in st.session_state.categorias_maestras else 0
-                    nueva_categoria = st.selectbox("Categoria", st.session_state.categorias_maestras, index=idx_cat)
+                    with col3:
+                        nueva_categoria = st.selectbox("Categoria", st.session_state.categorias_maestras, index=idx_cat)
                     
                     talla_actual = str(fila_data["talla"])
                     idx_talla = st.session_state.tallas_maestras.index(talla_actual) if talla_actual in st.session_state.tallas_maestras else 0
-                    nueva_talla = st.selectbox("talla", st.session_state.tallas_maestras, index=idx_talla)
+                    with col4:
+                        nueva_talla = st.selectbox("talla", st.session_state.tallas_maestras, index=idx_talla)
                     
                     color_actual = str(fila_data["color"])
                     idx_color = st.session_state.colores_maestros.index(color_actual) if color_actual in st.session_state.colores_maestros else 0
-                    nuevo_color = st.selectbox("color", st.session_state.colores_maestros, index=idx_color)
-                    
-                    nueva_cantidad = st.number_input(
-                        "cantidad", min_value=0, value=int(fila_data["cantidad"]), step=1
-                    )
-                    nueva_alerta = st.number_input(
-                        "alerta de stock",
-                        min_value=0,
-                        value=int(fila_data["alerta"]),
-                        step=1,
-                    )
+                    with col5:
+                        nuevo_color = st.selectbox("color", st.session_state.colores_maestros, index=idx_color)
 
+                    st.markdown("---")
+
+                    col6, col7 = st.columns(2)
+                    with col6:
+                        nueva_cantidad = st.number_input("cantidad", min_value=0, value=int(fila_data["cantidad"]), step=1)
+                    with col7:
+                        nueva_alerta = st.number_input("alerta de stock", min_value=0, value=int(fila_data["alerta"]), step=1)
+
+                    st.markdown("<br>", unsafe_allow_html=True)
                     col_btn1, col_btn2 = st.columns(2)
-                    actualizar = col_btn1.form_submit_button(
-                        "💾 Guardar Cambios", use_container_width=True
-                    )
-                    eliminar = col_btn2.form_submit_button(
-                        "🗑️ Eliminar Prenda", use_container_width=True
-                    )
+                    actualizar = col_btn1.form_submit_button("💾 Guardar Cambios", use_container_width=True)
+                    eliminar = col_btn2.form_submit_button("🗑️ Eliminar Prenda", use_container_width=True)
 
                     if actualizar:
                         datos_mod = {
