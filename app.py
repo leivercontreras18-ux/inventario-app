@@ -46,8 +46,8 @@ def cargar_datos_completos():
             res_cfg = supabase.table("configuracion").select("*").execute()
             if res_cfg.data:
                 for row in res_cfg.data:
-                    clave = str(row.get("id") or row.get("clave") or row.get("key", "")).strip().lower()
-                    valor = row.get("valor") or row.get("value") or row.get("producto")
+                    tipo = str(row.get("tipo", "")).strip().lower()
+                    valor = row.get("valor")
                     
                     if valor is not None:
                         if isinstance(valor, str):
@@ -58,11 +58,11 @@ def cargar_datos_completos():
                         else:
                             parsed_val = valor
 
-                        if "cat" in clave:
+                        if "cat" in tipo:
                             cats = parsed_val
-                        elif "tall" in clave:
+                        elif "tall" in tipo:
                             tallas = parsed_val
-                        elif "col" in clave:
+                        elif "col" in tipo:
                             colores = parsed_val
                             
             return df, cats, tallas, colores
@@ -84,44 +84,20 @@ def guardar_configuracion_completa(cats, tallas, colores):
                 ("tallas", json.dumps(tallas)),
                 ("colores", json.dumps(colores))
             ]
-            for clave, valor in configs:
-                guardado_exitoso = False
-                errores = []
-                
-                # Intentos con diferentes esquemas y on_conflict
-                for esquema, col_confl in [
-                    ({"id": clave, "valor": valor}, "id"),
-                    ({"clave": clave, "valor": valor}, "clave"),
-                    ({"id": clave, "value": valor}, "id"),
-                    ({"clave": clave, "value": valor}, "clave")
-                ]:
-                    try:
-                        supabase.table("configuracion").upsert(esquema, on_conflict=col_confl).execute()
-                        guardado_exitoso = True
-                        break
-                    except Exception as err:
-                        errores.append(str(err))
-
-                if not guardado_exitoso:
-                    # Intento alternativo limpiando e insertando directamente
-                    try:
-                        try:
-                            supabase.table("configuracion").delete().eq("id", clave).execute()
-                        except:
-                            try:
-                                supabase.table("configuracion").delete().eq("clave", clave).execute()
-                            except:
-                                pass
-                        
-                        supabase.table("configuracion").insert({"id": clave, "valor": valor}).execute()
-                        guardado_exitoso = True
-                    except Exception as err2:
-                        st.error(f"Error al guardar '{clave}' en Supabase. Detalles: {errores} / {err2}")
-                        return False
+            for tipo_val, valor_val in configs:
+                res = supabase.table("configuracion").select("*").eq("tipo", tipo_val).execute()
+                if res.data and len(res.data) > 0:
+                    row_id = res.data[0].get("id")
+                    if row_id is not None:
+                        supabase.table("configuracion").update({"valor": valor_val}).eq("id", row_id).execute()
+                    else:
+                        supabase.table("configuracion").update({"valor": valor_val}).eq("tipo", tipo_val).execute()
+                else:
+                    supabase.table("configuracion").insert({"tipo": tipo_val, "valor": valor_val}).execute()
 
             return True
         except Exception as e:
-            st.error(f"Error general al guardar configuración: {e}")
+            st.error(f"Error al guardar configuración en Supabase: {e}")
             return False
     else:
         st.session_state.cats_local = cats
