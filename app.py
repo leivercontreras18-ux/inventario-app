@@ -138,7 +138,7 @@ def actualizar_prenda(id_prenda, datos_actualizados):
                 "cantidad": int(datos_actualizados["cantidad"]),
                 "alerta": int(datos_actualizados["alerta"]),
             }
-            supabase.table("inventario").eq("id", id_prenda).update(datos_db).execute()
+            supabase.table("inventario").update(datos_db).match({"id": id_prenda}).execute()
             st.cache_data.clear()
             return True
         except Exception as e:
@@ -155,7 +155,7 @@ def actualizar_prenda(id_prenda, datos_actualizados):
 def eliminar_prenda(id_prenda):
     if supabase:
         try:
-            supabase.table("inventario").delete().eq("id", id_prenda).execute()
+            supabase.table("inventario").delete().match({"id": id_prenda}).execute()
             st.cache_data.clear()
             return True
         except Exception as e:
