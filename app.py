@@ -94,7 +94,8 @@ def guardar_configuracion_completa(cats, tallas, colores):
                 contenido, 
                 branch="main"
             )
-        st.cache_data.clear()
+        cargar_config_github.clear()
+        cargar_datos_completos.clear()
         return True
     except Exception as e:
         st.error(f"Error al guardar configuración en GitHub: {e}")
@@ -113,7 +114,7 @@ def guardar_prenda(nueva_prenda):
                 "alerta": int(nueva_prenda["alerta"]),
             }
             supabase.table("inventario").insert(datos_db).execute()
-            st.cache_data.clear()
+            cargar_datos_completos.clear()
             return True
         except Exception as e:
             st.error(f"Error al guardar en la nube: {e}")
@@ -123,7 +124,7 @@ def guardar_prenda(nueva_prenda):
         st.session_state.inventario_local = pd.concat(
             [st.session_state.inventario_local, nuevo_df], ignore_index=True
         )
-        st.cache_data.clear()
+        cargar_datos_completos.clear()
         return True
 
 def actualizar_prenda(id_prenda, datos_actualizados):
@@ -139,7 +140,7 @@ def actualizar_prenda(id_prenda, datos_actualizados):
                 "alerta": int(datos_actualizados["alerta"]),
             }
             supabase.table("inventario").update(datos_db).match({"id": id_prenda}).execute()
-            st.cache_data.clear()
+            cargar_datos_completos.clear()
             return True
         except Exception as e:
             st.error(f"Error al actualizar: {e}")
@@ -149,14 +150,14 @@ def actualizar_prenda(id_prenda, datos_actualizados):
         idx = df[df["ID"].astype(str) == str(id_prenda)].index[0]
         for col, val in datos_actualizados.items():
             df.loc[idx, col] = val
-        st.cache_data.clear()
+        cargar_datos_completos.clear()
         return True
 
 def eliminar_prenda(id_prenda):
     if supabase:
         try:
             supabase.table("inventario").delete().match({"id": id_prenda}).execute()
-            st.cache_data.clear()
+            cargar_datos_completos.clear()
             return True
         except Exception as e:
             st.error(f"Error al eliminar: {e}")
@@ -166,7 +167,7 @@ def eliminar_prenda(id_prenda):
         st.session_state.inventario_local = df[
             df["ID"].astype(str) != str(id_prenda)
         ].reset_index(drop=True)
-        st.cache_data.clear()
+        cargar_datos_completos.clear()
         return True
 
 # --- ESTILOS NÍTIDOS UI ---
@@ -578,7 +579,7 @@ else:
 
             st.markdown("<br>", unsafe_allow_html=True)
             
-            # --- PAGINACIÓN Y EXPORTACIÓN CSV (CORREGIDO PARA EXCEL) ---
+            # --- PAGINACIÓN Y EXPORTACIÓN CSV ---
             total_registros = len(df_filtrado)
             if total_registros > 0:
                 items_por_pagina = 10
@@ -592,7 +593,6 @@ else:
                 fin = min(inicio + items_por_pagina, total_registros)
                 df_paginado = df_filtrado.iloc[inicio:fin]
                 
-                # Usamos sep=';' y utf-8-sig para que Excel abra las columnas separadas automáticamente
                 csv_data = df_filtrado.to_csv(index=False, sep=';').encode('utf-8-sig')
                 with col_p2:
                     st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
