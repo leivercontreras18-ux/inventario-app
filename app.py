@@ -395,10 +395,37 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             -webkit-backdrop-filter: blur(40px);
             border: 1px solid rgba(219, 39, 119, 0.35);
             border-radius: 32px;
-            padding: 40px 60px;
+            padding: 50px 70px;
+            min-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255,255,255,0.08);
             margin: 0 auto;
             max-width: 1450px;
+        }
+        .full-hero-wrapper::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 50% 40%, rgba(219, 39, 119, 0.12) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .hero-inner {
+            position: relative;
+            z-index: 1;
+        }
+        .hero-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+            border-bottom: 1px solid rgba(219, 39, 119, 0.2);
+            padding-bottom: 20px;
         }
         .hero-brand {
             font-family: 'Cinzel', serif;
@@ -410,9 +437,19 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             align-items: center;
             gap: 10px;
         }
+        .hero-nav-links {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #b899a6;
+            font-weight: 600;
+        }
         .hero-title {
             font-family: 'Cinzel', serif;
-            font-size: 48px;
+            font-size: 52px;
             font-weight: 800;
             color: #f9f6f8;
             letter-spacing: 2px;
@@ -425,20 +462,20 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             text-transform: uppercase;
             letter-spacing: 3px;
             font-weight: 700;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         .hero-desc {
             color: #b899a6;
             font-size: 15px;
             line-height: 1.6;
             max-width: 650px;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
         }
         .feature-pills-container {
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
-            margin-bottom: 10px;
+            margin-bottom: 40px;
         }
         .feature-pill {
             background: rgba(219, 39, 119, 0.1);
@@ -450,73 +487,45 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             font-weight: 600;
             letter-spacing: 0.5px;
         }
-        div[data-testid="stHorizontalBlock"] button {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            color: #b899a6 !important;
-            font-size: 12px !important;
-            text-transform: uppercase !important;
-            letter-spacing: 1.5px !important;
-            font-weight: 600 !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            min-height: unset !important;
-            height: auto !important;
-            display: inline-flex !important;
-            align-items: center !important;
-            justify-content: flex-start !important;
-            width: auto !important;
-        }
-        div[data-testid="stHorizontalBlock"] button:hover {
-            color: #f472b6 !important;
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            transform: none !important;
-        }
         </style>
         
         <div class="full-hero-wrapper">
+            <div class="hero-inner">
+                <div class="hero-topbar">
+                    <div class="hero-brand">
+                        <span style="width: 10px; height: 10px; background: #f472b6; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px #f472b6;"></span>
+                        PLAYING / MARKET
+                    </div>
+                    <div class="hero-nav-links">
+                        <span>Tienda</span>
+                        <span>Categorías</span>
+                        <span>Blog</span>
+                        <span>Contacto</span>
         """,
         unsafe_allow_html=True,
     )
     
-    # Barra superior dentro del mismo cuadro contenedor
-    col_top1, col_top2 = st.columns([3, 2])
-    with col_top1:
-        st.markdown(
-            """
-            <div class="hero-brand">
-                <span style="width: 10px; height: 10px; background: #f472b6; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px #f472b6;"></span>
-                PLAYING / MARKET
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-    with col_top2:
-        nav_cols = st.columns([1, 1], gap="small")
-        with nav_cols[0]:
-            st.markdown("<div style='font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: #b899a6; font-weight: 600; padding-top: 6px; text-align: right;'>Tienda</div>", unsafe_allow_html=True)
-        with nav_cols[1]:
-            if st.button("INICIO", key="btn_inicio_nav"):
-                st.session_state.etapa = "login"
-                st.rerun()
+    # Botón INICIO colocado en la barra superior (alineado con las opciones de navegación)
+    if st.button("INICIO", key="btn_inicio_superior"):
+        st.session_state.etapa = "login"
+        st.rerun()
 
     st.markdown(
         """
-        <div style="border-bottom: 1px solid rgba(219, 39, 119, 0.2); margin: 20px 0 30px 0;"></div>
-        <div class="hero-subtitle-tag">Headphones & Boutique Wireless</div>
-        <h1 class="hero-title">Lewin Boutique<br>Control Center</h1>
-        <p class="hero-desc">
-            Mejores efectos de inventario y una experiencia de gestión auditiva y visual inigualable. Diseñado con interfaz minimalista de lujo en pantalla negra y oro rosa para cubrir toda la pantalla con absoluta elegancia.
-        </p>
-        <div class="feature-pills-container">
-            <span class="feature-pill">✨ Cuadrícula Grid Chic</span>
-            <span class="feature-pill">⚡ Ajuste Rápido (+1/-1)</span>
-            <span class="feature-pill">📂 Supabase & GitHub Sync</span>
-            <span class="feature-pill">📋 Portapapeles Inteligente</span>
-        </div>
+                    </div>
+                </div>
+                <div class="hero-subtitle-tag">Headphones & Boutique Wireless</div>
+                <h1 class="hero-title">Lewin Boutique<br>Control Center</h1>
+                <p class="hero-desc">
+                    Mejores efectos de inventario y una experiencia de gestión auditiva y visual inigualable. Diseñado con interfaz minimalista de lujo en pantalla negra y oro rosa para cubrir toda la pantalla con absoluta elegancia.
+                </p>
+                <div class="feature-pills-container">
+                    <span class="feature-pill">✨ Cuadrícula Grid Chic</span>
+                    <span class="feature-pill">⚡ Ajuste Rápido (+1/-1)</span>
+                    <span class="feature-pill">📂 Supabase & GitHub Sync</span>
+                    <span class="feature-pill">📋 Portapapeles Inteligente</span>
+                </div>
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
