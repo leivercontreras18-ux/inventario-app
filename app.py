@@ -2,6 +2,7 @@ import json
 from github import Github
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 from supabase import create_client
 
 st.set_page_config(
@@ -170,6 +171,47 @@ def eliminar_prenda(id_prenda):
         cargar_datos_completos.clear()
         return True
 
+# --- COMPONENTE DE COPIAR AL PORTAPAPELES ---
+def render_copy_button(text_to_copy: str, label: str = "Copiar Código"):
+    component_code = f"""
+    <div style="display: inline-block; width: 100%;">
+        <button id="copy-btn" onclick="copyText()" style="
+            background: rgba(16, 185, 129, 0.12);
+            color: #10B981;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            transition: all 0.2s ease;
+        ">
+            📋 {label}
+        </button>
+        <div id="feedback" style="text-align: center; font-size: 11px; color: #10B981; opacity: 0; transition: opacity 0.3s; margin-top: 4px;">¡Copiado con éxito!</div>
+    </div>
+    
+    <script>
+    function copyText() {{
+        navigator.clipboard.writeText(`{text_to_copy}`).then(function() {{
+            var feedback = document.getElementById('feedback');
+            feedback.style.opacity = '1';
+            setTimeout(function() {{
+                feedback.style.opacity = '0';
+            }}, 1500);
+        }}).catch(function(err) {{
+            console.error('Error al copiar: ', err);
+        }});
+    }}
+    </script>
+    """
+    components.html(component_code, height=65)
+
 # --- ESTILOS NÍTIDOS UI (TEMA ESMERALDA / VERDE SOFISTICADO) ---
 st.markdown(
     """
@@ -265,7 +307,7 @@ div.stButton > button:active, div[data-testid="stFormSubmitButton"] > button:act
     box-shadow: 0 0 5px rgba(16, 185, 129, 0.6) !important;
 }
 
-/* Tarjeta de Bienvenida Glassmorphism Refinada (Estilo Referencia Minimalista) */
+/* Tarjeta de Bienvenida Glassmorphism Refinada */
 .hero-card {
     background: linear-gradient(145deg, rgba(13, 20, 38, 0.9) 0%, rgba(7, 11, 22, 0.95) 100%) !important;
     backdrop-filter: blur(40px) !important;
@@ -375,7 +417,7 @@ if not st.session_state.autenticado and "recuerdame_user" in query_params:
         st.session_state.autenticado = True
         st.session_state.usuario_actual = saved_user
 
-# --- 1. PANTALLA DE BIENVENIDA (DISEÑO PORTADA REFINADO ESTILO REFERENCIA) ---
+# --- 1. PANTALLA DE BIENVENIDA (PORTADA IDÉNTICA A LA REFERENCIA) ---
 if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
     st.markdown("<br><br>", unsafe_allow_html=True)
     _, col_centro, _ = st.columns([1, 1.9, 1])
@@ -734,7 +776,7 @@ else:
                 st.markdown(f"<div class='section-title'>Resultados (Mostrando {inicio+1} - {fin} de {total_registros} registros)</div>", unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
 
-                # --- DISEÑO DE TARJETAS GRID (3 COLUMNAS) ---
+                # --- DISEÑO DE TARJETAS GRID (3 COLUMNAS) CON BOTÓN DE COPIAR INTEGRADO ---
                 cols_tarjetas = st.columns(3)
                 for idx, (_, row) in enumerate(df_paginado.iterrows()):
                     col_actual = cols_tarjetas[idx % 3]
@@ -752,7 +794,7 @@ else:
                                 border: 1px solid {borde_color};
                                 padding: 18px;
                                 border-radius: 14px;
-                                margin-bottom: 16px;
+                                margin-bottom: 8px;
                                 box-shadow: 0 10px 25px rgba(0,0,0,0.3);
                             ">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -764,7 +806,7 @@ else:
                                     <span>📏 Talla: <b>{row['talla']}</b></span>
                                     <span>🎨 Color: <b>{row['color']}</b></span>
                                 </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; font-size: 13px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; font-size: 13px; margin-bottom: 12px;">
                                     {badge_stock}
                                     <span style="font-size: 11px; color: #a6b8d4;">Alerta mín: {row['alerta']}</span>
                                 </div>
@@ -772,6 +814,11 @@ else:
                             """,
                             unsafe_allow_html=True
                         )
+                        
+                        # Texto estructurado listo para copiar (para notas rápidas, pedidos o inventario)
+                        detalles_texto = f"ID: {row['ID']} - {row['Producto']} ({row['Categoria']}) - Talla: {row['talla']} - Color: {row['color']} - Stock: {row['cantidad']}"
+                        render_copy_button(detalles_texto, label=f"Copiar Detalles de {row['ID']}")
+                        st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
             else:
                 st.info("No se encontraron registros con los filtros seleccionados.")
         else:
