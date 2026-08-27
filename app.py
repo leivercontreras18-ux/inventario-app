@@ -170,7 +170,7 @@ def eliminar_prenda(id_prenda):
         cargar_datos_completos.clear()
         return True
 
-# --- ESTILOS NÍTIDOS UI ---
+# --- ESTILOS NÍTIDOS UI CON ANIMACIÓN 3D Y FORMULARIOS GLASSMORPHISM ---
 st.markdown(
     """
 <style>
@@ -196,13 +196,14 @@ section[data-testid="stSidebar"] {
 }
 section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
 
-div[data-baseweb="input"] {
+/* Inputs estándar de Streamlit */
+div[data-baseweb="input"], div[data-baseweb="select"] > div {
     background-color: #151821 !important;
     border-radius: 8px !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     color: #ffffff !important;
 }
-div[data-baseweb="input"]:focus-within {
+div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-within {
     border-color: #ff3b3b !important;
 }
 div[data-baseweb="input"] input {
@@ -210,19 +211,62 @@ div[data-baseweb="input"] input {
     font-size: 13px !important;
 }
 
-div.stButton > button {
-    background: #ff3b3b !important;
+/* Efecto 3D Puerta para TODOS los botones */
+div.stButton > button, div[data-testid="stFormSubmitButton"] > button {
+    background: #151821 !important;
     color: #ffffff !important;
     border-radius: 8px !important;
-    border: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
     font-weight: 600 !important;
-    padding: 10px 20px !important;
-    box-shadow: 0 4px 15px rgba(255, 59, 59, 0.3) !important;
-    transition: all 0.3s ease !important;
+    padding: 12px 20px !important;
+    position: relative;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    transition: all 0.4s ease !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+    width: 100% !important;
 }
-div.stButton > button:hover {
-    background: #e03131 !important;
-    transform: translateY(-1px) !important;
+
+div.stButton > button::before, div[data-testid="stFormSubmitButton"] > button::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #ff3b3b;
+    transform-origin: left center;
+    transform: rotateY(0deg);
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+    z-index: -1;
+    border-radius: 7px;
+}
+
+div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
+    border-color: #ff3b3b !important;
+    box-shadow: inset 20px 0 30px rgba(255, 59, 59, 0.1), 0 0 20px rgba(255, 59, 59, 0.4) !important;
+    color: #ffffff !important;
+}
+
+div.stButton > button:hover::before, div[data-testid="stFormSubmitButton"] > button:hover::before {
+    transform: rotateY(72deg);
+    opacity: 0.95; 
+}
+
+div.stButton > button:active, div[data-testid="stFormSubmitButton"] > button:active {
+    transform: translateZ(-30px) scale(0.95) !important;
+    box-shadow: 0 0 5px rgba(255, 59, 59, 0.6) !important;
+}
+
+/* Estilización avanzada para los Formularios (Pantalla de Registrar y Modificar) */
+div[data-testid="stForm"] {
+    background: rgba(20, 23, 30, 0.75) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 16px !important;
+    padding: 25px !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5) !important;
 }
 
 .page-header { margin-bottom: 25px; padding-bottom: 10px; }
@@ -315,7 +359,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
     col_vacia, col_btn = st.columns([5, 1])
     with col_btn:
         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
-        if st.button("Login ➔", use_container_width=True):
+        if st.button("Login ➔ 🚪", use_container_width=True):
             st.session_state.etapa = "login"
             st.rerun()
 
@@ -337,7 +381,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         )
         _, col_boton_centro, _ = st.columns([1, 1.2, 1])
         with col_boton_centro:
-            if st.button("Acceder al Sistema", use_container_width=True):
+            if st.button("Acceder al Sistema 🚪🚶", use_container_width=True):
                 st.session_state.etapa = "login"
                 st.rerun()
 
@@ -362,7 +406,7 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
             clave_input = st.text_input("Password / Contraseña", type="password", placeholder="Ingrese su contraseña")
             remember_checked = st.checkbox("Remember me")
             
-            if st.button("Log in", use_container_width=True):
+            if st.button("Log in 🚪🚶", use_container_width=True):
                 user_clean = usuario_input.strip().lower()
                 pass_clean = clave_input.strip()
                 
