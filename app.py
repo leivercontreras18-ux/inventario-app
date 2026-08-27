@@ -9,6 +9,15 @@ st.set_page_config(
     page_title="Lewin // Inventario Boutique", page_icon="👕", layout="wide"
 )
 
+# --- CAPTURA DE NAVEGACIÓN URL ---
+query_params = st.query_params
+view_param = query_params.get("view", None)
+if view_param == "landing":
+    st.session_state.etapa = "bienvenida"
+    st.session_state.autenticado = False
+elif view_param == "login" and not st.session_state.autenticado:
+    st.session_state.etapa = "login"
+
 # --- CONEXIÓN A BASE DE DATOS SUPABASE ---
 @st.cache_resource
 def obtener_conexion_supabase():
@@ -326,6 +335,18 @@ div[data-testid="stForm"] {
 }
 .user-info-title { font-size: 9px; color: #f472b6; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
 .user-info-name { font-size: 14px; font-weight: 600; color: #f9f6f8; }
+
+/* Navbar de Enlaces Superiores */
+.nav-menu a {
+    color: #ffffff;
+    text-decoration: none;
+    margin-left: 2rem;
+    font-size: 0.9rem;
+    transition: color 0.3s;
+}
+.nav-menu a:hover {
+    color: #ff69b4;
+}
 </style>
 """,
     unsafe_allow_html=True,
@@ -373,7 +394,6 @@ if "edit_tallas" not in st.session_state:
 if "edit_colores" not in st.session_state:
     st.session_state.edit_colores = list(st.session_state.colores_maestros)
 
-query_params = st.query_params
 if not st.session_state.autenticado and "recuerdame_user" in query_params:
     saved_user = query_params["recuerdame_user"]
     if saved_user in USUARIOS:
@@ -443,8 +463,15 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            color: #b899a6;
             font-weight: 600;
+        }
+        .hero-nav-links a {
+            color: #b899a6;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .hero-nav-links a:hover {
+            color: #ff69b4;
         }
         .hero-title {
             font-family: 'Cinzel', serif;
@@ -496,11 +523,11 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                         PLAYING / MARKET
                     </div>
                     <div class="hero-nav-links">
-                        <span>Inicio</span>
-                        <span>Tienda</span>
-                        <span>Categorías</span>
-                        <span>Blog</span>
-                        <span>Contacto</span>
+                        <a href="?view=landing" target="_self">INICIO</a>
+                        <a href="?view=login" target="_self">TIENDA</a>
+                        <a href="?view=landing" target="_self">CATEGORÍAS</a>
+                        <a href="?view=landing" target="_self">BLOG</a>
+                        <a href="?view=landing" target="_self">CONTACTO</a>
                     </div>
                 </div>
                 <div class="hero-subtitle-tag">Headphones & Boutique Wireless</div>
