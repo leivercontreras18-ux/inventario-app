@@ -1,3 +1,4 @@
+from github import Github
 import json
 import pandas as pd
 import streamlit as st
@@ -19,7 +20,7 @@ def obtener_conexion_supabase():
 
 supabase = obtener_conexion_supabase()
 
-# --- CARGAR INVENTARIO Y CONFIGURACIÓN DESDE TABLAS SEPARADAS ---
+# --- CARGAR INVENTARIO (SUPABASE) Y CONFIGURACIÓN (GITHUB) ---
 def cargar_datos_completos():
     cats_default = ["Vestidos", "Blusas", "Pantalones", "Jeans", "Chaquetas", "Calzado", "Accesorios"]
     tallas_default = ["XS", "S", "M", "L", "XL", "Única"]
@@ -28,9 +29,9 @@ def cargar_datos_completos():
     df = pd.DataFrame(columns=["ID", "Producto", "Categoria", "talla", "color", "cantidad", "alerta"])
     cats, tallas, colores = cats_default, tallas_default, colores_default
 
+    # 1. Cargar Inventario desde Supabase
     if supabase:
         try:
-            # 1. Cargar Inventario
             res_inv = supabase.table("inventario").select("*").execute()
             if res_inv.data:
                 df = pd.DataFrame(res_inv.data)
@@ -41,65 +42,56 @@ def cargar_datos_completos():
                         "categoria": "Categoria",
                     }
                 )
-            
-            # 2. Cargar Configuración desde la tabla 'configuracion'
-            res_cfg = supabase.table("configuracion").select("*").execute()
-            if res_cfg.data:
-                for row in res_cfg.data:
-                    tipo = str(row.get("tipo", "")).strip().lower()
-                    valor = row.get("valor")
-                    
-                    if valor is not None:
-                        if isinstance(valor, str):
-                            try:
-                                parsed_val = json.loads(valor)
-                            except:
-                                parsed_val = [v.strip() for v in valor.split(",")]
-                        else:
-                            parsed_val = valor
-
-                        if "cat" in tipo:
-                            cats = parsed_val
-                        elif "tall" in tipo:
-                            tallas = parsed_val
-                        elif "col" in tipo:
-                            colores = parsed_val
-                            
-            return df, cats, tallas, colores
         except Exception as e:
-            st.warning(f"Aviso al cargar datos de la nube: {e}")
+            st.warning(f"Aviso al cargar inventario de la nube: {e}")
 
-    # Modo local si no hay Supabase
-    df_local = st.session_state.get(
-        "inventario_local",
-        pd.DataFrame(columns=["ID", "Producto", "Categoria", "talla", "color", "cantidad", "alerta"])
-    )
-    return df_local, st.session_state.get("cats_local", cats_default), st.session_state.get("tallas_local", tallas_default), st.session_state.get("colores_local", colores_default)
+    # 2. Cargar Configuración desde GitHub (config.json)
+    try:
+        g = Github(st.secrets["GITHUB_TOKEN"])
+        repo = g.get_repo("leivercontreras18-ux/inventario-app")
+        file_content = repo.get_contents("config.json", ref="main")
+        config_data = json.loads(file_content.decoded_content.decode("utf-8"))
+        
+        cats = config_data.get("categorias", cats_default)
+        tallas = config_data.get("tallas", tallas_default)
+        colores = config_data.get("colores", colores_default)
+    except Exception:
+        pass  # Si no existe aún el archivo config.json, usa los valores por defecto
+
+    return df, cats, tallas, colores
 
 def guardar_configuracion_completa(cats, tallas, colores):
-    if supabase:
+    try:
+        g = Github(st.secrets["GITHUB_TOKEN"])
+        repo = g.get_repo("leivercontreras18-ux/inventario-app")
+        
+        config_data = {
+            "categorias": cats,
+            "tallas": tallas,
+            "colores": colores
+        }
+        contenido = json.dumps(config_data, indent=4, ensure_ascii=False)
+        
         try:
-            configs = [
-                ("categorias", json.dumps(cats)),
-                ("tallas", json.dumps(tallas)),
-                ("colores", json.dumps(colores))
-            ]
-            for tipo_val, valor_val in configs:
-                # Usamos upsert para evitar errores de ID y actualizar directamente por 'tipo'
-                supabase.table("configuracion").upsert(
-                    {"tipo": tipo_val, "valor": valor_val},
-                    on_conflict="tipo"
-                ).execute()
-
-            return True
-        except Exception as e:
-            st.error(f"Error al guardar configuración en Supabase: {e}")
-            return False
-    else:
-        st.session_state.cats_local = cats
-        st.session_state.tallas_local = tallas
-        st.session_state.colores_local = colores
+            file = repo.get_contents("config.json", ref="main")
+            repo.update_file(
+                file.path, 
+                "Actualización automática de configuración de inventario", 
+                contenido, 
+                file.sha, 
+                branch="main"
+            )
+        except Exception:
+            repo.create_file(
+                "config.json", 
+                "Creación inicial de configuración de inventario", 
+                contenido, 
+                branch="main"
+            )
         return True
+    except Exception as e:
+        st.error(f"Error al guardar configuración en GitHub: {e}")
+        return False
 
 def guardar_prenda(nueva_prenda):
     if supabase:
@@ -279,7 +271,7 @@ if "inventario_local" not in st.session_state:
 if "form_version" not in st.session_state:
     st.session_state.form_version = 0
 
-# Cargar datos e inicializar listas maestras desde Supabase
+# Cargar datos e inicializar listas maestras
 df, cats_init, tallas_init, colores_init = cargar_datos_completos()
 
 if "categorias_maestras" not in st.session_state:
@@ -755,7 +747,7 @@ else:
         st.markdown("<br>", unsafe_allow_html=True)
         _, col_save_master, _ = st.columns([1, 2, 1])
         with col_save_master:
-            if st.button("💾 Guardar toda la configuración en la Nube", use_container_width=True):
+            if st.button("💾 Guardar configuración en GitHub", use_container_width=True):
                 exito = guardar_configuracion_completa(
                     st.session_state.edit_cats, 
                     st.session_state.edit_tallas, 
@@ -765,5 +757,5 @@ else:
                     st.session_state.categorias_maestras = list(st.session_state.edit_cats)
                     st.session_state.tallas_maestras = list(st.session_state.edit_tallas)
                     st.session_state.colores_maestros = list(st.session_state.edit_colores)
-                    st.success("¡Configuración guardada exitosamente en la base de datos!")
+                    st.success("¡Configuración guardada en GitHub exitosamente!")
                     st.rerun()
