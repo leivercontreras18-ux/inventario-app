@@ -284,9 +284,12 @@ if "form_version" not in st.session_state:
 # Cargar datos e inicializar listas maestras desde Supabase
 df, cats_init, tallas_init, colores_init = cargar_datos_completos()
 
-st.session_state.categorias_maestras = cats_init
-st.session_state.tallas_maestras = tallas_init
-st.session_state.colores_maestros = colores_init
+if "categorias_maestras" not in st.session_state:
+    st.session_state.categorias_maestras = cats_init
+if "tallas_maestras" not in st.session_state:
+    st.session_state.tallas_maestras = tallas_init
+if "colores_maestros" not in st.session_state:
+    st.session_state.colores_maestros = colores_init
 
 query_params = st.query_params
 if not st.session_state.autenticado and "recuerdame_user" in query_params:
@@ -660,97 +663,108 @@ else:
             """
 <div class="page-header">
     <div class="page-title">⚙️ Configuración del Sistema</div>
-    <div class="page-subtitle">Gestiona y personaliza las opciones maestras de categorías, tallas y colores.</div>
+    <div class="page-subtitle">Gestiona y personaliza las opciones maestras de categorías, tallas y colores. Haz clic en guardar al terminar.</div>
 </div>
 """,
             unsafe_allow_html=True,
         )
 
+        # Estados de edición temporal para la configuración
+        if "edit_cats" not in st.session_state:
+            st.session_state.edit_cats = list(st.session_state.categorias_maestras)
+        if "edit_tallas" not in st.session_state:
+            st.session_state.edit_tallas = list(st.session_state.tallas_maestras)
+        if "edit_colores" not in st.session_state:
+            st.session_state.edit_colores = list(st.session_state.colores_maestros)
+
         col_cfg1, col_cfg2, col_cfg3 = st.columns(3)
 
-        # GESTIÓN DE CATEGORÍAS
+        # CATEGORÍAS
         with col_cfg1:
             with st.container(border=True):
                 st.markdown("<div class='section-title'>📂 Categorías</div>", unsafe_allow_html=True)
-                st.markdown("<p style='font-size:12px; color:#94a3b8;'>Añade o elimina categorías.</p>", unsafe_allow_html=True)
                 
-                for cat in list(st.session_state.categorias_maestras):
+                for cat in list(st.session_state.edit_cats):
                     c_col1, c_col2 = st.columns([3, 1])
                     c_col1.markdown(f"- {cat}")
                     if c_col2.button("❌", key=f"del_cat_{cat}"):
-                        if len(st.session_state.categorias_maestras) > 1:
-                            st.session_state.categorias_maestras.remove(cat)
-                            guardar_configuracion_completa(st.session_state.categorias_maestras, st.session_state.tallas_maestras, st.session_state.colores_maestros)
+                        if len(st.session_state.edit_cats) > 1:
+                            st.session_state.edit_cats.remove(cat)
                             st.rerun()
                         else:
                             st.error("Debe existir al menos una.")
 
                 st.markdown("<br>", unsafe_allow_html=True)
-                with st.form("form_nueva_cat", clear_on_submit=True):
-                    nueva_cat_input = st.text_input("Nueva Categoría", placeholder="Ej: Faldas")
-                    if st.form_submit_button("Agregar Categoría"):
-                        clean_cat = nueva_cat_input.strip().capitalize()
-                        if clean_cat and clean_cat not in st.session_state.categorias_maestras:
-                            st.session_state.categorias_maestras.append(clean_cat)
-                            guardar_configuracion_completa(st.session_state.categorias_maestras, st.session_state.tallas_maestras, st.session_state.colores_maestros)
-                            st.rerun()
-                        else:
-                            st.warning("Escribe un nombre válido o no repetido.")
+                nueva_cat_input = st.text_input("Nueva Categoría", placeholder="Ej: Faldas", key="input_nueva_cat")
+                if st.button("➕ Agregar Categoría", key="btn_add_cat"):
+                    clean_cat = nueva_cat_input.strip().capitalize()
+                    if clean_cat and clean_cat not in st.session_state.edit_cats:
+                        st.session_state.edit_cats.append(clean_cat)
+                        st.rerun()
+                    else:
+                        st.warning("Nombre inválido o ya existente.")
 
-        # GESTIÓN DE TALLAS
+        # TALLAS
         with col_cfg2:
             with st.container(border=True):
                 st.markdown("<div class='section-title'>📏 Tallas</div>", unsafe_allow_html=True)
-                st.markdown("<p style='font-size:12px; color:#94a3b8;'>Añade o elimina tallas.</p>", unsafe_allow_html=True)
                 
-                for t in list(st.session_state.tallas_maestras):
+                for t in list(st.session_state.edit_tallas):
                     t_col1, t_col2 = st.columns([3, 1])
                     t_col1.markdown(f"- {t}")
                     if t_col2.button("❌", key=f"del_talla_{t}"):
-                        if len(st.session_state.tallas_maestras) > 1:
-                            st.session_state.tallas_maestras.remove(t)
-                            guardar_configuracion_completa(st.session_state.categorias_maestras, st.session_state.tallas_maestras, st.session_state.colores_maestros)
+                        if len(st.session_state.edit_tallas) > 1:
+                            st.session_state.edit_tallas.remove(t)
                             st.rerun()
                         else:
                             st.error("Debe existir al menos una.")
 
                 st.markdown("<br>", unsafe_allow_html=True)
-                with st.form("form_nueva_talla", clear_on_submit=True):
-                    nueva_talla_input = st.text_input("Nueva Talla", placeholder="Ej: 30, XXL")
-                    if st.form_submit_button("Agregar Talla"):
-                        clean_talla = nueva_talla_input.strip().upper()
-                        if clean_talla and clean_talla not in st.session_state.tallas_maestras:
-                            st.session_state.tallas_maestras.append(clean_talla)
-                            guardar_configuracion_completa(st.session_state.categorias_maestras, st.session_state.tallas_maestras, st.session_state.colores_maestros)
-                            st.rerun()
-                        else:
-                            st.warning("Escribe una talla válida o no repetida.")
+                nueva_talla_input = st.text_input("Nueva Talla", placeholder="Ej: 30, XXL", key="input_nueva_talla")
+                if st.button("➕ Agregar Talla", key="btn_add_talla"):
+                    clean_talla = nueva_talla_input.strip().upper()
+                    if clean_talla and clean_talla not in st.session_state.edit_tallas:
+                        st.session_state.edit_tallas.append(clean_talla)
+                        st.rerun()
+                    else:
+                        st.warning("Talla inválida o ya existente.")
 
-        # GESTIÓN DE COLORES
+        # COLORES
         with col_cfg3:
             with st.container(border=True):
                 st.markdown("<div class='section-title'>🎨 Colores</div>", unsafe_allow_html=True)
-                st.markdown("<p style='font-size:12px; color:#94a3b8;'>Añade o elimina colores.</p>", unsafe_allow_html=True)
                 
-                for col_item in list(st.session_state.colores_maestros):
+                for col_item in list(st.session_state.edit_colores):
                     col_c1, col_c2 = st.columns([3, 1])
                     col_c1.markdown(f"- {col_item}")
                     if col_c2.button("❌", key=f"del_color_{col_item}"):
-                        if len(st.session_state.colores_maestros) > 1:
-                            st.session_state.colores_maestros.remove(col_item)
-                            guardar_configuracion_completa(st.session_state.categorias_maestras, st.session_state.tallas_maestras, st.session_state.colores_maestros)
+                        if len(st.session_state.edit_colores) > 1:
+                            st.session_state.edit_colores.remove(col_item)
                             st.rerun()
                         else:
                             st.error("Debe existir al menos uno.")
 
                 st.markdown("<br>", unsafe_allow_html=True)
-                with st.form("form_nuevo_color", clear_on_submit=True):
-                    nuevo_color_input = st.text_input("Nuevo Color", placeholder="Ej: Dorado, Vinotinto")
-                    if st.form_submit_button("Agregar Color"):
-                        clean_color = nuevo_color_input.strip().capitalize()
-                        if clean_color and clean_color not in st.session_state.colores_maestros:
-                            st.session_state.colores_maestros.append(clean_color)
-                            guardar_configuracion_completa(st.session_state.categorias_maestras, st.session_state.tallas_maestras, st.session_state.colores_maestros)
-                            st.rerun()
-                        else:
-                            st.warning("Escribe un color válido o no repetido.")
+                nuevo_color_input = st.text_input("Nuevo Color", placeholder="Ej: Dorado", key="input_nuevo_color")
+                if st.button("➕ Agregar Color", key="btn_add_color"):
+                    clean_color = nuevo_color_input.strip().capitalize()
+                    if clean_color and clean_color not in st.session_state.edit_colores:
+                        st.session_state.edit_colores.append(clean_color)
+                        st.rerun()
+                    else:
+                        st.warning("Color inválido o ya existente.")
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        _, col_save_master, _ = st.columns([1, 2, 1])
+        with col_save_master:
+            if st.button("💾 Guardar toda la configuración en la Nube", use_container_width=True):
+                exito = guardar_configuracion_completa(
+                    st.session_state.edit_cats, 
+                    st.session_state.edit_tallas, 
+                    st.session_state.edit_colores
+                )
+                if exito:
+                    st.session_state.categorias_maestras = list(st.session_state.edit_cats)
+                    st.session_state.tallas_maestras = list(st.session_state.edit_tallas)
+                    st.session_state.colores_maestros = list(st.session_state.edit_colores)
+                    st.success("¡Configuración guardada exitosamente en la base de datos!")
