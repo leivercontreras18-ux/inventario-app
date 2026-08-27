@@ -135,7 +135,7 @@ def agregar_configuracion_db(tipo, valor):
         except Exception as e:
             st.error(f"Error de Supabase al guardar: {e}")
             return False
-    return False
+    return True
 
 def eliminar_configuracion_db(tipo, valor):
     if supabase:
@@ -145,7 +145,7 @@ def eliminar_configuracion_db(tipo, valor):
         except Exception as e:
             st.error(f"Error de Supabase al borrar: {e}")
             return False
-    return False
+    return True
 
 # --- ESTILOS NÍTIDOS UI ---
 st.markdown(
@@ -263,17 +263,15 @@ if "inventario_local" not in st.session_state:
 if "form_version" not in st.session_state:
     st.session_state.form_version = 0
 
-# Cargar configuraciones maestras desde Supabase o usar respaldo por defecto
+# Cargar configuraciones desde Supabase
 cats_db, tallas_db, colores_db = cargar_configuracion_db()
 
-if "categorias_maestras" not in st.session_state:
-    st.session_state.categorias_maestras = cats_db if cats_db else [
-        "Vestidos", "Blusas", "Pantalones", "Jeans", "Chaquetas", "Calzado", "Accesorios"
-    ]
-if "tallas_maestras" not in st.session_state:
-    st.session_state.tallas_maestras = tallas_db if tallas_db else ["XS", "S", "M", "L", "XL", "Única"]
-if "colores_maestros" not in st.session_state:
-    st.session_state.colores_maestros = colores_db if colores_db else ["Negro", "Blanco", "Beige", "Rojo", "Azul", "Rosa", "Verde"]
+# Inicializar listas Maestras siempre sincronizadas
+st.session_state.categorias_maestras = cats_db if cats_db else [
+    "Vestidos", "Blusas", "Pantalones", "Jeans", "Chaquetas", "Calzado", "Accesorios"
+]
+st.session_state.tallas_maestras = tallas_db if tallas_db else ["XS", "S", "M", "L", "XL", "Única"]
+st.session_state.colores_maestros = colores_db if colores_db else ["Negro", "Blanco", "Beige", "Rojo", "Azul", "Rosa", "Verde"]
 
 query_params = st.query_params
 if not st.session_state.autenticado and "recuerdame_user" in query_params:
@@ -669,21 +667,18 @@ else:
                         if len(st.session_state.categorias_maestras) > 1:
                             if eliminar_configuracion_db("categoria", cat):
                                 st.session_state.categorias_maestras.remove(cat)
-                                st.success(f"Categoría '{cat}' eliminada.")
                                 st.rerun()
                         else:
                             st.error("Debe existir al menos una.")
 
                 st.markdown("<br>", unsafe_allow_html=True)
-                with st.form(f"form_nueva_cat_{st.session_state.get('cat_ver', 0)}", clear_on_submit=True):
+                with st.form("form_nueva_cat", clear_on_submit=True):
                     nueva_cat_input = st.text_input("Nueva Categoría", placeholder="Ej: Faldas")
                     if st.form_submit_button("Agregar Categoría"):
                         clean_cat = nueva_cat_input.strip().capitalize()
                         if clean_cat and clean_cat not in st.session_state.categorias_maestras:
                             if agregar_configuracion_db("categoria", clean_cat):
                                 st.session_state.categorias_maestras.append(clean_cat)
-                                st.success(f"¡Categoría '{clean_cat}' agregada!")
-                                st.session_state.cat_ver = st.session_state.get('cat_ver', 0) + 1
                                 st.rerun()
                         else:
                             st.warning("Escribe un nombre válido o no repetido.")
@@ -701,21 +696,18 @@ else:
                         if len(st.session_state.tallas_maestras) > 1:
                             if eliminar_configuracion_db("talla", t):
                                 st.session_state.tallas_maestras.remove(t)
-                                st.success(f"Talla '{t}' eliminada.")
                                 st.rerun()
                         else:
                             st.error("Debe existir al menos una.")
 
                 st.markdown("<br>", unsafe_allow_html=True)
-                with st.form(f"form_nueva_talla_{st.session_state.get('talla_ver', 0)}", clear_on_submit=True):
+                with st.form("form_nueva_talla", clear_on_submit=True):
                     nueva_talla_input = st.text_input("Nueva Talla", placeholder="Ej: 30, XXL")
                     if st.form_submit_button("Agregar Talla"):
                         clean_talla = nueva_talla_input.strip().upper()
                         if clean_talla and clean_talla not in st.session_state.tallas_maestras:
                             if agregar_configuracion_db("talla", clean_talla):
                                 st.session_state.tallas_maestras.append(clean_talla)
-                                st.success(f"¡Talla '{clean_talla}' agregada!")
-                                st.session_state.talla_ver = st.session_state.get('talla_ver', 0) + 1
                                 st.rerun()
                         else:
                             st.warning("Escribe una talla válida o no repetida.")
@@ -733,21 +725,18 @@ else:
                         if len(st.session_state.colores_maestros) > 1:
                             if eliminar_configuracion_db("color", col_item):
                                 st.session_state.colores_maestros.remove(col_item)
-                                st.success(f"Color '{col_item}' eliminado.")
                                 st.rerun()
                         else:
                             st.error("Debe existir al menos uno.")
 
                 st.markdown("<br>", unsafe_allow_html=True)
-                with st.form(f"form_nuevo_color_{st.session_state.get('color_ver', 0)}", clear_on_submit=True):
+                with st.form("form_nuevo_color", clear_on_submit=True):
                     nuevo_color_input = st.text_input("Nuevo Color", placeholder="Ej: Dorado, Vinotinto")
                     if st.form_submit_button("Agregar Color"):
                         clean_color = nuevo_color_input.strip().capitalize()
                         if clean_color and clean_color not in st.session_state.colores_maestros:
                             if agregar_configuracion_db("color", clean_color):
                                 st.session_state.colores_maestros.append(clean_color)
-                                st.success(f"¡Color '{clean_color}' agregado!")
-                                st.session_state.color_ver = st.session_state.get('color_ver', 0) + 1
                                 st.rerun()
                         else:
                             st.warning("Escribe un color válido o no repetido.")
