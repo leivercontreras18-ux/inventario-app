@@ -1,3 +1,4 @@
+import json
 import pandas as pd
 import streamlit as st
 from supabase import create_client
@@ -18,23 +19,48 @@ def obtener_conexion_supabase():
 
 supabase = obtener_conexion_supabase()
 
-def cargar_inventario():
+# --- CARGAR INVENTARIO Y CONFIGURACIÓN PERSISTENTE ---
+def cargar_datos_completos():
+    cats_default = ["Vestidos", "Blusas", "Pantalones", "Jeans", "Chaquetas", "Calzado", "Accesorios"]
+    tallas_default = ["XS", "S", "M", "L", "XL", "Única"]
+    colores_default = ["Negro", "Blanco", "Beige", "Rojo", "Azul", "Rosa", "Verde"]
+    
+    df = pd.DataFrame(columns=["ID", "Producto", "Categoria", "talla", "color", "cantidad", "alerta"])
+    cats, tallas, colores = cats_default, tallas_default, colores_default
+
     if supabase:
         try:
             res = supabase.table("inventario").select("*").execute()
-            df = pd.DataFrame(res.data)
-            if not df.empty:
-                df = df.rename(
-                    columns={
-                        "id": "ID",
-                        "producto": "Producto",
-                        "categoria": "Categoria",
-                    }
-                )
-            return df
+            if res.data:
+                df_full = pd.DataFrame(res.data)
+                
+                # Extraer configuración guardada
+                fila_config = df_full[df_full["id"].astype(str) == "__CONFIG__"]
+                if not fila_config.empty:
+                    try:
+                        config_data = json.loads(fila_config.iloc[0]["producto"])
+                        cats = config_data.get("categorias", cats_default)
+                        tallas = config_data.get("tallas", tallas_default)
+                        colores = config_data.get("colores", colores_default)
+                    except:
+                        pass
+                
+                # Filtrar el inventario real (excluyendo la fila de config)
+                df = df_full[df_full["id"].astype(str) != "__CONFIG__"]
+                if not df.empty:
+                    df = df.rename(
+                        columns={
+                            "id": "ID",
+                            "producto": "Producto",
+                            "categoria": "Categoria",
+                        }
+                    )
+            return df, cats, tallas, colores
         except Exception:
             pass
-    return st.session_state.get(
+
+    # Modo local si no hay Supabase
+    df_local = st.session_state.get(
         "inventario_local",
         pd.DataFrame(
             columns=[
@@ -48,6 +74,38 @@ def cargar_inventario():
             ]
         ),
     )
+    return df_local, st.session_state.get("cats_local", cats_default), st.session_state.get("tallas_local", tallas_default), st.session_state.get("colores_local", colores_default)
+
+def guardar_configuracion_completa(cats, tallas, colores):
+    config_payload = json.dumps({"categorias": cats, "tallas": tallas, "colores": colores})
+    if supabase:
+        try:
+            res = supabase.table("inventario").select("*").eq("id", "__CONFIG__").execute()
+            if res.data:
+                supabase.table("inventario").update({
+                    "producto": config_payload,
+                    "categoria": "CONFIG",
+                    "talla": "-",
+                    "color": "-",
+                    "cantidad": 0,
+                    "alerta": 0
+                }).eq("id", "__CONFIG__").execute()
+            else:
+                supabase.table("inventario").insert({
+                    "id": "__CONFIG__",
+                    "producto": config_payload,
+                    "categoria": "CONFIG",
+                    "talla": "-",
+                    "color": "-",
+                    "cantidad": 0,
+                    "alerta": 0
+                }).execute()
+        except Exception as e:
+            st.error(f"Error al guardar configuración: {e}")
+    else:
+        st.session_state.cats_local = cats
+        st.session_state.tallas_local = tallas
+        st.session_state.colores_local = colores
 
 def guardar_prenda(nueva_prenda):
     if supabase:
@@ -111,41 +169,6 @@ def eliminar_prenda(id_prenda):
             df["ID"].astype(str) != str(id_prenda)
         ].reset_index(drop=True)
         return True
-
-# --- FUNCIONES DE CONFIGURACIÓN DB ---
-def cargar_configuracion_db():
-    if supabase:
-        try:
-            res = supabase.table("configuracion").select("*").execute()
-            if res.data:
-                df = pd.DataFrame(res.data)
-                cats = df[df["tipo"] == "categoria"]["valor"].tolist() if "tipo" in df.columns else []
-                tallas = df[df["tipo"] == "talla"]["valor"].tolist() if "tipo" in df.columns else []
-                colores = df[df["tipo"] == "color"]["valor"].tolist() if "tipo" in df.columns else []
-                return cats, tallas, colores
-        except Exception:
-            pass
-    return [], [], []
-
-def agregar_configuracion_db(tipo, valor):
-    if supabase:
-        try:
-            supabase.table("configuracion").insert({"tipo": tipo, "valor": valor}).execute()
-            return True
-        except Exception as e:
-            st.error(f"Error al agregar en BD: {e}")
-            return False
-    return True
-
-def eliminar_configuracion_db(tipo, valor):
-    if supabase:
-        try:
-            supabase.table("configuracion").delete().eq("tipo", tipo).eq("valor", valor).execute()
-            return True
-        except Exception as e:
-            st.error(f"Error al eliminar en BD: {e}")
-            return False
-    return True
 
 # --- ESTILOS NÍTIDOS UI ---
 st.markdown(
@@ -262,12 +285,15 @@ if "inventario_local" not in st.session_state:
 if "form_version" not in st.session_state:
     st.session_state.form_version = 0
 
-# Inicialización segura de listas maestras desde Supabase
+# Cargar datos e inicializar listas maestras
+df, cats_init, tallas_init, colores_init = cargar_datos_completos()
+
 if "categorias_maestras" not in st.session_state:
-    cats_db, tallas_db, colores_db = cargar_configuracion_db()
-    st.session_state.categorias_maestras = cats_db if cats_db else ["Vestidos", "Blusas", "Pantalones", "Jeans", "Chaquetas", "Calzado", "Accesorios"]
-    st.session_state.tallas_maestras = tallas_db if tallas_db else ["XS", "S", "M", "L", "XL", "Única"]
-    st.session_state.colores_maestros = colores_db if colores_db else ["Negro", "Blanco", "Beige", "Rojo", "Azul", "Rosa", "Verde"]
+    st.session_state.categorias_maestras = cats_init
+if "tallas_maestras" not in st.session_state:
+    st.session_state.tallas_maestras = tallas_init
+if "colores_maestros" not in st.session_state:
+    st.session_state.colores_maestros = colores_init
 
 query_params = st.query_params
 if not st.session_state.autenticado and "recuerdame_user" in query_params:
@@ -400,7 +426,6 @@ else:
             del st.query_params["recuerdame_user"]
         st.rerun()
 
-    df = cargar_inventario()
     menu = st.session_state.get("menu_activo", "existencias")
 
     if menu == "existencias":
@@ -661,9 +686,9 @@ else:
                     c_col1.markdown(f"- {cat}")
                     if c_col2.button("❌", key=f"del_cat_{cat}"):
                         if len(st.session_state.categorias_maestras) > 1:
-                            if eliminar_configuracion_db("categoria", cat):
-                                st.session_state.categorias_maestras.remove(cat)
-                                st.rerun()
+                            st.session_state.categorias_maestras.remove(cat)
+                            guardar_configuracion_completa(st.session_state.categorias_maestras, st.session_state.tallas_maestras, st.session_state.colores_maestros)
+                            st.rerun()
                         else:
                             st.error("Debe existir al menos una.")
 
@@ -673,9 +698,9 @@ else:
                     if st.form_submit_button("Agregar Categoría"):
                         clean_cat = nueva_cat_input.strip().capitalize()
                         if clean_cat and clean_cat not in st.session_state.categorias_maestras:
-                            if agregar_configuracion_db("categoria", clean_cat):
-                                st.session_state.categorias_maestras.append(clean_cat)
-                                st.rerun()
+                            st.session_state.categorias_maestras.append(clean_cat)
+                            guardar_configuracion_completa(st.session_state.categorias_maestras, st.session_state.tallas_maestras, st.session_state.colores_maestros)
+                            st.rerun()
                         else:
                             st.warning("Escribe un nombre válido o no repetido.")
 
@@ -690,9 +715,9 @@ else:
                     t_col1.markdown(f"- {t}")
                     if t_col2.button("❌", key=f"del_talla_{t}"):
                         if len(st.session_state.tallas_maestras) > 1:
-                            if eliminar_configuracion_db("talla", t):
-                                st.session_state.tallas_maestras.remove(t)
-                                st.rerun()
+                            st.session_state.tallas_maestras.remove(t)
+                            guardar_configuracion_completa(st.session_state.categorias_maestras, st.session_state.tallas_maestras, st.session_state.colores_maestros)
+                            st.rerun()
                         else:
                             st.error("Debe existir al menos una.")
 
@@ -702,9 +727,9 @@ else:
                     if st.form_submit_button("Agregar Talla"):
                         clean_talla = nueva_talla_input.strip().upper()
                         if clean_talla and clean_talla not in st.session_state.tallas_maestras:
-                            if agregar_configuracion_db("talla", clean_talla):
-                                st.session_state.tallas_maestras.append(clean_talla)
-                                st.rerun()
+                            st.session_state.tallas_maestras.append(clean_talla)
+                            guardar_configuracion_completa(st.session_state.categorias_maestras, st.session_state.tallas_maestras, st.session_state.colores_maestros)
+                            st.rerun()
                         else:
                             st.warning("Escribe una talla válida o no repetida.")
 
@@ -719,9 +744,9 @@ else:
                     col_c1.markdown(f"- {col_item}")
                     if col_c2.button("❌", key=f"del_color_{col_item}"):
                         if len(st.session_state.colores_maestros) > 1:
-                            if eliminar_configuracion_db("color", col_item):
-                                st.session_state.colores_maestros.remove(col_item)
-                                st.rerun()
+                            st.session_state.colores_maestros.remove(col_item)
+                            guardar_configuracion_completa(st.session_state.categorias_maestras, st.session_state.tallas_maestras, st.session_state.colores_maestros)
+                            st.rerun()
                         else:
                             st.error("Debe existir al menos uno.")
 
@@ -731,8 +756,8 @@ else:
                     if st.form_submit_button("Agregar Color"):
                         clean_color = nuevo_color_input.strip().capitalize()
                         if clean_color and clean_color not in st.session_state.colores_maestros:
-                            if agregar_configuracion_db("color", clean_color):
-                                st.session_state.colores_maestros.append(clean_color)
-                                st.rerun()
+                            st.session_state.colores_maestros.append(clean_color)
+                            guardar_configuracion_completa(st.session_state.categorias_maestras, st.session_state.tallas_maestras, st.session_state.colores_maestros)
+                            st.rerun()
                         else:
                             st.warning("Escribe un color válido o no repetido.")
