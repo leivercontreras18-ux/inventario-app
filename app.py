@@ -49,7 +49,7 @@ def cargar_datos_completos():
                     clave = str(row.get("id") or row.get("clave") or row.get("key", "")).strip().lower()
                     valor = row.get("valor") or row.get("value") or row.get("producto")
                     
-                    if valor:
+                    if valor is not None:
                         if isinstance(valor, str):
                             try:
                                 parsed_val = json.loads(valor)
@@ -86,22 +86,39 @@ def guardar_configuracion_completa(cats, tallas, colores):
             ]
             for clave, valor in configs:
                 guardado_exitoso = False
-                esquemas = [
-                    {"id": clave, "valor": valor},
-                    {"clave": clave, "valor": valor},
-                    {"id": clave, "value": valor},
-                    {"clave": clave, "value": valor}
-                ]
-                for datos in esquemas:
+                errores = []
+                
+                # Intentos con diferentes esquemas y on_conflict
+                for esquema, col_confl in [
+                    ({"id": clave, "valor": valor}, "id"),
+                    ({"clave": clave, "valor": valor}, "clave"),
+                    ({"id": clave, "value": valor}, "id"),
+                    ({"clave": clave, "value": valor}, "clave")
+                ]:
                     try:
-                        supabase.table("configuracion").upsert(datos).execute()
+                        supabase.table("configuracion").upsert(esquema, on_conflict=col_confl).execute()
                         guardado_exitoso = True
                         break
-                    except Exception:
-                        continue
+                    except Exception as err:
+                        errores.append(str(err))
+
                 if not guardado_exitoso:
-                    st.error(f"No se pudo guardar '{clave}' en Supabase. Revisa los nombres de las columnas en tu tabla.")
-                    return False
+                    # Intento alternativo limpiando e insertando directamente
+                    try:
+                        try:
+                            supabase.table("configuracion").delete().eq("id", clave).execute()
+                        except:
+                            try:
+                                supabase.table("configuracion").delete().eq("clave", clave).execute()
+                            except:
+                                pass
+                        
+                        supabase.table("configuracion").insert({"id": clave, "valor": valor}).execute()
+                        guardado_exitoso = True
+                    except Exception as err2:
+                        st.error(f"Error al guardar '{clave}' en Supabase. Detalles: {errores} / {err2}")
+                        return False
+
             return True
         except Exception as e:
             st.error(f"Error general al guardar configuración: {e}")
