@@ -216,12 +216,12 @@ def render_copy_button(text_to_copy: str, label: str = "Copiar Código"):
 st.markdown(
     """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500;600;700&display=swap');
 
 /* Fondo General: Estética Minimalista Pinterest / Rosa Pastel */
 .stApp { 
-    background: radial-gradient(circle at 20% 20%, rgba(244, 114, 182, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 40%),
+    background: radial-gradient(circle at 20% 20%, rgba(244, 114, 182, 0.18) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.12) 0%, transparent 40%),
                 linear-gradient(135deg, #fff5f7 0%, #fde8ed 50%, #fce7ec 100%);
     background-attachment: fixed;
     color: #3b202b !important; 
@@ -287,16 +287,16 @@ div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hove
 
 /* Tarjeta de Bienvenida Glassmorphism Pinterest */
 .hero-card {
-    background: rgba(255, 255, 255, 0.85) !important;
+    background: rgba(255, 255, 255, 0.9) !important;
     backdrop-filter: blur(40px) !important;
     -webkit-backdrop-filter: blur(40px) !important;
-    border: 1px solid rgba(236, 72, 153, 0.25) !important;
+    border: 1px solid rgba(236, 72, 153, 0.3) !important;
     border-radius: 32px;
-    padding: 50px 40px 40px 40px;
+    padding: 40px 35px 35px 35px;
     text-align: center;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 30px 60px rgba(236, 72, 153, 0.12), inset 0 1px 0 rgba(255,255,255,0.8) !important;
+    box-shadow: 0 30px 60px rgba(236, 72, 153, 0.15), inset 0 1px 0 rgba(255,255,255,0.9) !important;
     margin-bottom: 20px;
 }
 
@@ -395,10 +395,10 @@ if not st.session_state.autenticado and "recuerdame_user" in query_params:
         st.session_state.autenticado = True
         st.session_state.usuario_actual = saved_user
 
-# --- 1. PANTALLA DE BIENVENIDA (PORTADA ESTILO PINTEREST CHIC / ROSA) ---
+# --- 1. PANTALLA DE BIENVENIDA (PORTADA ESTILO PINTEREST CHIC / ROSA CON OPCIONES AVANZADAS) ---
 if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
     st.markdown("<br><br>", unsafe_allow_html=True)
-    _, col_centro, _ = st.columns([1, 1.9, 1])
+    _, col_centro, _ = st.columns([0.6, 2.2, 0.6])
     with col_centro:
         st.markdown(
             """
@@ -422,31 +422,31 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                 z-index: 1;
             }
             .hero-icon {
-                font-size: 64px;
+                font-size: 56px;
                 display: inline-block;
-                margin-bottom: 16px;
+                margin-bottom: 12px;
                 animation: levitar 4s ease-in-out infinite;
                 background: rgba(236, 72, 153, 0.1);
-                padding: 16px 20px;
-                border-radius: 24px;
+                padding: 14px 18px;
+                border-radius: 20px;
                 border: 1px solid rgba(236, 72, 153, 0.2);
             }
             .hero-title {
                 font-family: 'Cinzel', serif;
-                font-size: 40px;
+                font-size: 36px;
                 font-weight: 800;
                 color: #3b202b;
-                letter-spacing: 4px;
-                margin-bottom: 10px;
+                letter-spacing: 3px;
+                margin-bottom: 8px;
                 text-shadow: 0 2px 10px rgba(236,72,153,0.1);
             }
             .hero-subtitle {
                 font-size: 11px;
                 color: #db2777;
                 text-transform: uppercase;
-                letter-spacing: 4px;
+                letter-spacing: 3px;
                 font-weight: 700;
-                margin-bottom: 24px;
+                margin-bottom: 20px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -455,16 +455,33 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             .hero-subtitle::before, .hero-subtitle::after {
                 content: '';
                 height: 1px;
-                width: 40px;
+                width: 35px;
                 background: linear-gradient(90deg, transparent, rgba(236, 72, 153, 0.5), transparent);
             }
             .hero-desc {
                 color: #8e6b7b;
-                font-size: 14px;
-                line-height: 1.6;
-                max-width: 420px;
-                margin: 0 auto;
+                font-size: 13px;
+                line-height: 1.5;
+                max-width: 450px;
+                margin: 0 auto 20px auto;
                 font-weight: 400;
+            }
+            .feature-pills-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                justify-content: center;
+                margin-bottom: 24px;
+            }
+            .feature-pill {
+                background: rgba(236, 72, 153, 0.08);
+                border: 1px solid rgba(236, 72, 153, 0.25);
+                color: #db2777;
+                padding: 6px 14px;
+                border-radius: 20px;
+                font-size: 11px;
+                font-weight: 600;
+                letter-spacing: 0.5px;
             }
             </style>
             
@@ -474,8 +491,14 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                     <h1 class="hero-title">LEWIN BOUTIQUE</h1>
                     <p class="hero-subtitle">Boutique & Inventory Control</p>
                     <p class="hero-desc">
-                        Sistema exclusivo de Lewin Boutique
+                        Plataforma inteligente de control de stock inspirada en diseño minimalista aesthetic chic.
                     </p>
+                    <div class="feature-pills-container">
+                        <span class="feature-pill">✨ Catálogo en Cuadrícula</span>
+                        <span class="feature-pill">⚡ Ajuste Rápido (+1/-1)</span>
+                        <span class="feature-pill">📂 Sincronización GitHub & Supabase</span>
+                        <span class="feature-pill">📋 Copiar Detalles al Portapapeles</span>
+                    </div>
                 </div>
             </div>
             """,
