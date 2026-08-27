@@ -46,6 +46,66 @@ def cargar_datos_completos():
             res_cfg = supabase.table("configuracion").select("*").execute()
             if res_cfg.data:
                 for row in res_cfg.data:
+                    tipo = str(row.get("tipo", "")).strip().lower()
+                    valor = row.get("valor")
+                    
+                    if valor is not None:
+                        if isinstance(valor, str):
+                            try:
+                                parsed_val = json.loads(valor)
+                            except:
+                                parsed_val = [v.strip() for v in valor.split(",")]
+                        else:
+                            parsed_val = valor
+
+                        if "cat" in tipo:
+                            cats = parsed_val
+                        elif "tall" in tipo:
+                            tallas = parsed_val
+                        elif "col" in tipo:
+                            colores = parsed_val
+                            
+            return df, cats, tallas, colores
+        except Exception as e:
+            st.warning(f"Aviso al cargar datos de la nube: {e}")
+
+    # Modo local si no hay Supabase
+    df_local = st.session_state.get(
+        "inventario_local",
+        pd.DataFrame(columns=["ID", "Producto", "Categoria", "talla", "color", "cantidad", "alerta"])
+    )
+    return df_local, st.session_state.get("cats_local", cats_default), st.session_state.get("tallas_local", tallas_default), st.session_state.get("colores_local", colores_default)
+
+def guardar_configuracion_completa(cats, tallas, colores):
+    if supabase:
+        try:
+            configs = [
+                ("categorias", json.dumps(cats)),
+                ("tallas", json.dumps(tallas)),
+                ("colores", json.dumps(colores))
+            ]
+            for tipo_val, valor_val in configs:
+                # Buscar si ya existe el registro para este tipo
+                res = supabase.table("configuracion").select("id").eq("tipo", tipo_val).execute()
+                if res.data and len(res.data) > 0:
+                    row_id = res.data[0]["id"]
+                    supabase.table("configuracion").update({"valor": valor_val}).eq("id", row_id).execute()
+                else:
+                    supabase.table("configuracion").insert({"tipo": tipo_val, "valor": valor_val}).execute()
+
+            return True
+        except Exception as e:
+            st.error(f"Error al guardar configuración en Supabase: {e}")
+            return False
+    else:
+        st.session_state.cats_local = cats
+        st.session_state.tallas_local = tallas
+        st.session_state.colores_local = colores
+        return True
+            # 2. Cargar Configuración desde la tabla 'configuracion'
+            res_cfg = supabase.table("configuracion").select("*").execute()
+            if res_cfg.data:
+                for row in res_cfg.data:
                     clave = str(row.get("id") or row.get("clave") or row.get("key", "")).strip().lower()
                     valor = row.get("valor") or row.get("value") or row.get("producto")
                     
