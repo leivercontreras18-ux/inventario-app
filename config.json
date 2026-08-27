@@ -1,11 +1,14 @@
 {
     "categorias": [
-        "Short con licra"
+        "Short con licra",
+        "Faldas"
     ],
     "tallas": [
-        "UNICA"
+        "UNICA",
+        "L"
     ],
     "colores": [
-        "Azul con rojo"
+        "Azul con rojo",
+        "Rosado"
     ]
 }
