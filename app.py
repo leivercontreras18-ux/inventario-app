@@ -32,7 +32,7 @@ def cargar_config_github():
     except Exception:
         return None
 
-# --- CARGAR INVENTARIO (SUPABASE) Y CONFIGURACIÓN (GITHUB) CON CACHÉ ---
+# --- CARGAR INVENTARIO (SUPABASE) Y CONFIGURACIÓN (GITHUB) CON CACHÉ OPTIMIZADO ---
 @st.cache_data(ttl=30)
 def cargar_datos_completos():
     cats_default = ["Vestidos", "Blusas", "Pantalones", "Jeans", "Chaquetas", "Calzado", "Accesorios"]
@@ -42,6 +42,7 @@ def cargar_datos_completos():
     df = pd.DataFrame(columns=["ID", "Producto", "Categoria", "talla", "color", "cantidad", "alerta"])
     cats, tallas, colores = cats_default, tallas_default, colores_default
 
+    # 1. Cargar Inventario desde Supabase
     if supabase:
         try:
             res_inv = supabase.table("inventario").select("*").execute()
@@ -57,6 +58,7 @@ def cargar_datos_completos():
         except Exception as e:
             st.warning(f"Aviso al cargar inventario de la nube: {e}")
 
+    # 2. Cargar Configuración desde GitHub
     config_data = cargar_config_github()
     if config_data:
         cats = config_data.get("categorias", cats_default)
@@ -69,18 +71,35 @@ def guardar_configuracion_completa(cats, tallas, colores):
     try:
         g = Github(st.secrets["GITHUB_TOKEN"])
         repo = g.get_repo("leivercontreras18-ux/inventario-app")
-        config_data = {"categorias": cats, "tallas": tallas, "colores": colores}
+        
+        config_data = {
+            "categorias": cats,
+            "tallas": tallas,
+            "colores": colores
+        }
         contenido = json.dumps(config_data, indent=4, ensure_ascii=False)
+        
         try:
             file = repo.get_contents("config.json", ref="main")
-            repo.update_file(file.path, "Actualización automática", contenido, file.sha, branch="main")
+            repo.update_file(
+                file.path, 
+                "Actualización automática de configuración de inventario", 
+                contenido, 
+                file.sha, 
+                branch="main"
+            )
         except Exception:
-            repo.create_file("config.json", "Creación inicial", contenido, branch="main")
+            repo.create_file(
+                "config.json", 
+                "Creación inicial de configuración de inventario", 
+                contenido, 
+                branch="main"
+            )
         cargar_config_github.clear()
         cargar_datos_completos.clear()
         return True
     except Exception as e:
-        st.error(f"Error al guardar en GitHub: {e}")
+        st.error(f"Error al guardar configuración en GitHub: {e}")
         return False
 
 def guardar_prenda(nueva_prenda):
@@ -103,9 +122,52 @@ def guardar_prenda(nueva_prenda):
             return False
     else:
         nuevo_df = pd.DataFrame([nueva_prenda])
-        if "inventario_local" not in st.session_state:
-            st.session_state.inventario_local = pd.DataFrame(columns=["ID", "Producto", "Categoria", "talla", "color", "cantidad", "alerta"])
-        st.session_state.inventario_local = pd.concat([st.session_state.inventario_local, nuevo_df], ignore_index=True)
+        st.session_state.inventario_local = pd.concat(
+            [st.session_state.inventario_local, nuevo_df], ignore_index=True
+        )
+        cargar_datos_completos.clear()
+        return True
+
+def actualizar_prenda(id_prenda, datos_actualizados):
+    if supabase:
+        try:
+            datos_db = {
+                "id": str(datos_actualizados["ID"]),
+                "producto": str(datos_actualizados["Producto"]),
+                "categoria": str(datos_actualizados["Categoria"]),
+                "talla": str(datos_actualizados["talla"]),
+                "color": str(datos_actualizados["color"]),
+                "cantidad": int(datos_actualizados["cantidad"]),
+                "alerta": int(datos_actualizados["alerta"]),
+            }
+            supabase.table("inventario").update(datos_db).match({"id": id_prenda}).execute()
+            cargar_datos_completos.clear()
+            return True
+        except Exception as e:
+            st.error(f"Error al actualizar: {e}")
+            return False
+    else:
+        df = st.session_state.inventario_local
+        idx = df[df["ID"].astype(str) == str(id_prenda)].index[0]
+        for col, val in datos_actualizados.items():
+            df.loc[idx, col] = val
+        cargar_datos_completos.clear()
+        return True
+
+def eliminar_prenda(id_prenda):
+    if supabase:
+        try:
+            supabase.table("inventario").delete().match({"id": id_prenda}).execute()
+            cargar_datos_completos.clear()
+            return True
+        except Exception as e:
+            st.error(f"Error al eliminar: {e}")
+            return False
+    else:
+        df = st.session_state.inventario_local
+        st.session_state.inventario_local = df[
+            df["ID"].astype(str) != str(id_prenda)
+        ].reset_index(drop=True)
         cargar_datos_completos.clear()
         return True
 
@@ -133,6 +195,7 @@ def render_copy_button(text_to_copy: str, label: str = "Copiar Código"):
         </button>
         <div id="feedback" style="text-align: center; font-size: 11px; color: #f472b6; opacity: 0; transition: opacity 0.3s; margin-top: 4px;">¡Copiado con éxito!</div>
     </div>
+    
     <script>
     function copyText() {{
         navigator.clipboard.writeText(`{text_to_copy}`).then(function() {{
@@ -149,82 +212,890 @@ def render_copy_button(text_to_copy: str, label: str = "Copiar Código"):
     """
     components.html(component_code, height=65)
 
-# --- PORTADA PREMIUM INTERACTIVA (HTML / CSS) ---
-def render_portada_premium():
-    html_portada = """
-    <div style="
-        background: radial-gradient(circle at 75% 50%, #1e1b24 0%, #0c0a12 60%, #030206 100%);
-        color: #ffffff;
-        font-family: 'Montserrat', sans-serif;
-        padding: 40px 6%;
-        border-radius: 16px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.8);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        min-height: 520px;
-        box-sizing: border-box;
-    ">
-        <!-- Encabezado Portada -->
-        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-            <div style="font-weight: 700; letter-spacing: 2px; font-size: 1.1rem; font-family: 'Cinzel', serif;">LEWIN <span style="font-weight:300; color:#a0a0ab;">/ BOUTIQUE</span></div>
-            <div style="display: flex; gap: 25px; font-size: 0.75rem; letter-spacing: 1.5px; text-transform: uppercase;">
-                <span style="cursor:pointer; color:#f472b6;">Inicio</span>
-                <span style="cursor:pointer; color:#a0a0ab;">Colecciones</span>
-                <span style="cursor:pointer; color:#a0a0ab;">Editorial</span>
-            </div>
-        </div>
-
-        <!-- Bloque Central -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; gap: 20px;">
-            <!-- Textos -->
-            <div style="max-width: 45%; z-index: 2;">
-                <h1 style="font-size: 3.2rem; font-weight: 700; line-height: 1.1; margin-bottom: 15px; font-family: 'Cinzel', serif; letter-spacing: -1px;">
-                    Minimal<br>Garments
-                </h1>
-                <p style="color: #a0a0ab; font-size: 0.9rem; line-height: 1.6; margin-bottom: 25px;">
-                    Texturas seleccionadas y cortes contemporáneos urbanos. Eleva el valor visual de tu marca gestionando colecciones exclusivas desde tu ecosistema premium.
-                </p>
-                <a href="#inventario-seccion" style="
-                    display: inline-block;
-                    background-color: #db2777;
-                    color: #ffffff;
-                    text-decoration: none;
-                    padding: 12px 30px;
-                    font-size: 0.8rem;
-                    text-transform: uppercase;
-                    letter-spacing: 2px;
-                    font-weight: 600;
-                    border-radius: 4px;
-                    box-shadow: 0 4px 15px rgba(219, 39, 119, 0.4);
-                ">Ver Inventario</a>
-            </div>
-            
-            <!-- Imagen Flotante de Ropa con Reflejo -->
-            <div style="width: 50%; display: flex; justify-content: center; align-items: center; position: relative;">
-                <img src="https://unsplash.com" 
-                     alt="Prenda Principal" 
-                     style="
-                        max-width: 75%; 
-                        height: auto; 
-                        filter: drop-shadow(0px 15px 30px rgba(0,0,0,0.9));
-                        -webkit-box-reflect: below -15px linear-gradient(transparent 65%, rgba(255,255,255,0.15));
-                     ">
-            </div>
-        </div>
-
-        <!-- Indicador de Destacados Inferiores -->
-        <div style="margin-top: 40px; display: flex; flex-direction: column; gap: 8px;">
-            <span style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: #666;">Modelos Destacados</span>
-            <div style="display: flex; gap: 40px;">
-                <div style="font-size: 0.8rem;"><b style="color: #db2777;">$85.00</b> <span style="color: #a0a0ab; margin-left: 5px;">Gris Oxford</span></div>
-                <div style="font-size: 0.8rem;"><b style="color: #db2777;">$95.00</b> <span style="color: #a0a0ab; margin-left: 5px;">Negro Mate</span></div>
-            </div>
-        </div>
-    </div>
+# --- ESTILOS NÍTIDOS UI (TEMA PINTEREST DARK LUXURY / PANTALLA NEGRA & ORO ROSA) ---
+st.markdown(
     """
-    components.html(html_portada, height=560, scrolling=False)
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Montserrat:wght@300;400;500;600;700&display=swap');
 
-# --- RENDERIZADO DE LA INTERFAZ EN STREAMLIT ---
+/* Fondo General: Estética Pantalla Negra / Dark Luxury Pinterest */
+.stApp { 
+    background: radial-gradient(circle at 20% 20%, rgba(219, 39, 119, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.08) 0%, transparent 40%),
+                linear-gradient(135deg, #0c0b0e 0%, #141117 50%, #100f13 100%);
+    background-attachment: fixed;
+    color: #f9f6f8 !important; 
+    font-family: 'Montserrat', sans-serif !important;
+}
 
-# 1. Portada Desplegable al inicio de la Web
+header[data-testid="stHeader"] { background: transparent !important; }
+
+.block-container {
+    max-width: 100% !important;
+    padding: 2rem !important;
+}
+
+section[data-testid="stSidebar"] { 
+    width: 240px !important;
+    background: rgba(16, 15, 19, 0.95) !important; 
+    border-right: 1px solid rgba(219, 39, 119, 0.25); 
+    backdrop-filter: blur(25px); 
+}
+section[data-testid="stSidebar"] * { color: #f9f6f8 !important; }
+
+/* Inputs estándar de Streamlit en modo oscuro */
+div[data-baseweb="input"], div[data-baseweb="select"] > div {
+    background-color: rgba(24, 22, 28, 0.9) !important;
+    border-radius: 8px !important;
+    border: 1px solid rgba(219, 39, 119, 0.3) !important;
+    color: #f9f6f8 !important;
+}
+div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-within {
+    border-color: #f472b6 !important;
+    box-shadow: 0 0 10px rgba(219, 39, 119, 0.3) !important;
+}
+div[data-baseweb="input"] input {
+    color: #f9f6f8 !important;
+    font-size: 13px !important;
+}
+
+/* Botones con Estética Pinterest Dark / Rosa Oro */
+div.stButton > button, div[data-testid="stFormSubmitButton"] > button {
+    background: rgba(24, 22, 28, 0.9) !important;
+    color: #f9f6f8 !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(219, 39, 119, 0.35) !important;
+    font-weight: 600 !important;
+    padding: 12px 20px !important;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100% !important;
+}
+
+div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
+    background: linear-gradient(135deg, #db2777 0%, #f472b6 100%) !important;
+    border-color: #f472b6 !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 25px rgba(219, 39, 119, 0.4) !important;
+    transform: translateY(-2px);
+}
+
+/* Formularios Glassmorphism Dark */
+div[data-testid="stForm"] {
+    background: rgba(18, 16, 22, 0.85) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(219, 39, 119, 0.25) !important;
+    border-radius: 20px !important;
+    padding: 25px !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5) !important;
+}
+
+.page-header { margin-bottom: 25px; padding-bottom: 10px; }
+.page-title { font-size: 32px; font-weight: 700; color: #f9f6f8 !important; letter-spacing: 0.5px; }
+.page-subtitle { font-size: 14px; color: #b899a6 !important; margin-top: 4px; }
+
+.section-title { font-size: 18px; font-weight: 600; color: #f9f6f8; margin-bottom: 4px; }
+.section-subtitle { font-size: 12px; color: #b899a6; margin-bottom: 15px; }
+
+.metric-card {
+    background: rgba(18, 16, 22, 0.9); 
+    backdrop-filter: blur(20px); 
+    border: 1px solid rgba(219, 39, 119, 0.25);
+    padding: 20px; border-radius: 18px; text-align: left;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    height: 100%;
+}
+.metric-value { font-size: 32px; font-weight: 800; color: #f472b6 !important; margin-top: 8px; }
+.metric-label { font-size: 11px; color: #b899a6 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+
+.user-profile { 
+    background: rgba(219, 39, 119, 0.1); 
+    padding: 14px 16px; border-radius: 14px; 
+    border: 1px solid rgba(219, 39, 119, 0.3); margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+}
+.user-avatar {
+    width: 36px; height: 36px; background: linear-gradient(135deg, #db2777 0%, #f472b6 100%); color: #ffffff;
+    font-weight: 800; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 15px; box-shadow: 0 0 15px rgba(219, 39, 119, 0.5);
+}
+.user-info-title { font-size: 9px; color: #f472b6; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+.user-info-name { font-size: 14px; font-weight: 600; color: #f9f6f8; }
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
+# --- ESTADOS DE SESIÓN ---
+USUARIOS = {"leiver": "natsudraghonil", "winderly": "coromoto"}
+
+if "autenticado" not in st.session_state:
+    st.session_state.autenticado = False
+if "usuario_actual" not in st.session_state:
+    st.session_state.usuario_actual = ""
+if "etapa" not in st.session_state:
+    st.session_state.etapa = "bienvenida"
+if "inventario_local" not in st.session_state:
+    st.session_state.inventario_local = pd.DataFrame(
+        columns=[
+            "ID",
+            "Producto",
+            "Categoria",
+            "talla",
+            "color",
+            "cantidad",
+            "alerta",
+        ]
+    )
+if "form_version" not in st.session_state:
+    st.session_state.form_version = 0
+
+# Cargar datos e inicializar listas maestras
+df, cats_init, tallas_init, colores_init = cargar_datos_completos()
+
+if "categorias_maestras" not in st.session_state:
+    st.session_state.categorias_maestras = cats_init
+if "tallas_maestras" not in st.session_state:
+    st.session_state.tallas_maestras = tallas_init
+if "colores_maestros" not in st.session_state:
+    st.session_state.colores_maestros = colores_init
+
+# Sincronizar estados de edición de configuración
+if "edit_cats" not in st.session_state:
+    st.session_state.edit_cats = list(st.session_state.categorias_maestras)
+if "edit_tallas" not in st.session_state:
+    st.session_state.edit_tallas = list(st.session_state.tallas_maestras)
+if "edit_colores" not in st.session_state:
+    st.session_state.edit_colores = list(st.session_state.colores_maestros)
+
+query_params = st.query_params
+if not st.session_state.autenticado and "recuerdame_user" in query_params:
+    saved_user = query_params["recuerdame_user"]
+    if saved_user in USUARIOS:
+        st.session_state.autenticado = True
+        st.session_state.usuario_actual = saved_user
+
+# --- 1. PANTALLA DE BIENVENIDA (PORTADA ESTILO PINTEREST DARK LUXURY A TAMAÑO COMPLETO) ---
+if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
+    st.markdown(
+        """
+        <style>
+        .block-container {
+            padding: 1.5rem 2rem !important;
+            max-width: 100% !important;
+        }
+        .full-hero-wrapper {
+            background: rgba(18, 16, 22, 0.95);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(219, 39, 119, 0.35);
+            border-radius: 32px;
+            padding: 50px 70px;
+            min-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255,255,255,0.08);
+            margin: 0 auto;
+            max-width: 1450px;
+        }
+        .full-hero-wrapper::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 50% 40%, rgba(219, 39, 119, 0.12) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .hero-inner {
+            position: relative;
+            z-index: 1;
+        }
+        .hero-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+            border-bottom: 1px solid rgba(219, 39, 119, 0.2);
+            padding-bottom: 20px;
+        }
+        .hero-brand {
+            font-family: 'Cinzel', serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: #f9f6f8;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .hero-nav-links {
+            display: flex;
+            gap: 25px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #b899a6;
+            font-weight: 600;
+        }
+        .hero-title {
+            font-family: 'Cinzel', serif;
+            font-size: 52px;
+            font-weight: 800;
+            color: #f9f6f8;
+            letter-spacing: 2px;
+            line-height: 1.1;
+            margin-bottom: 16px;
+        }
+        .hero-subtitle-tag {
+            font-size: 12px;
+            color: #f472b6;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        .hero-desc {
+            color: #b899a6;
+            font-size: 15px;
+            line-height: 1.6;
+            max-width: 650px;
+            margin-bottom: 35px;
+        }
+        .feature-pills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+        .feature-pill {
+            background: rgba(219, 39, 119, 0.1);
+            border: 1px solid rgba(219, 39, 119, 0.3);
+            color: #f472b6;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        </style>
+        
+        <div class="full-hero-wrapper">
+            <div class="hero-inner">
+                <div class="hero-topbar">
+                    <div class="hero-brand">
+                        <span style="width: 10px; height: 10px; background: #f472b6; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px #f472b6;"></span>
+                        PLAYING / MARKET
+                    </div>
+                    <div class="hero-nav-links">
+                        <span>Inicio</span>
+                        <span>Tienda</span>
+                        <span>Categorías</span>
+                        <span>Blog</span>
+                        <span>Contacto</span>
+                    </div>
+                </div>
+                <div class="hero-subtitle-tag">Headphones & Boutique Wireless</div>
+                <h1 class="hero-title">Lewin Boutique<br>Control Center</h1>
+                <p class="hero-desc">
+                    Mejores efectos de inventario y una experiencia de gestión auditiva y visual inigualable. Diseñado con interfaz minimalista de lujo en pantalla negra y oro rosa para cubrir toda la pantalla con absoluta elegancia.
+                </p>
+                <div class="feature-pills-container">
+                    <span class="feature-pill">✨ Cuadrícula Grid Chic</span>
+                    <span class="feature-pill">⚡ Ajuste Rápido (+1/-1)</span>
+                    <span class="feature-pill">📂 Supabase & GitHub Sync</span>
+                    <span class="feature-pill">📋 Portapapeles Inteligente</span>
+                </div>
+            </div>
+            <div class="hero-inner" style="max-width: 380px;">
+        """,
+        unsafe_allow_html=True,
+    )
+    
+    if st.button("IR A LA TIENDA 🚪🚶", use_container_width=True):
+        st.session_state.etapa = "login"
+        st.rerun()
+
+    st.markdown("</div></div>", unsafe_allow_html=True)
+    st.stop()
+
+# --- 2. FLUJO DE LOGIN ---
+elif not st.session_state.autenticado and st.session_state.etapa == "login":
+    if st.button("← Volver a la portada"):
+        st.session_state.etapa = "bienvenida"
+        st.rerun()
+
+    _, col_centro, _ = st.columns([1, 1.4, 1])
+    
+    with col_centro:
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        with st.container(border=True):
+            st.markdown("<h3>✦ Lewin Boutique Access</h3>", unsafe_allow_html=True)
+            st.markdown("<p style='color: #b899a6; font-size: 12px;'>Ingrese sus credenciales en el sistema.</p>", unsafe_allow_html=True)
+            
+            usuario_input = st.text_input("Email Address / Usuario", placeholder="Ingrese su usuario")
+            clave_input = st.text_input("Password / Contraseña", type="password", placeholder="Ingrese su contraseña")
+            remember_checked = st.checkbox("Remember me")
+            
+            if st.button("Log in 🚪🚶", use_container_width=True):
+                user_clean = usuario_input.strip().lower()
+                pass_clean = clave_input.strip()
+                
+                if user_clean in USUARIOS and USUARIOS[user_clean] == pass_clean:
+                    st.session_state.autenticado = True
+                    st.session_state.usuario_actual = user_clean
+                    
+                    if remember_checked:
+                        st.query_params["recuerdame_user"] = user_clean
+                    else:
+                        if "recuerdame_user" in st.query_params:
+                            del st.query_params["recuerdame_user"]
+                            
+                    st.rerun()
+                else:
+                    st.error("⚠️ Usuario o contraseña incorrectos.")
+                    
+    st.stop()
+
+# --- 3. PANEL PRINCIPAL ---
+else:
+    usuario_formateado = st.session_state.usuario_actual.capitalize()
+    inicial_usuario = usuario_formateado[0]
+
+    st.sidebar.markdown(
+        f"""
+<div class="user-profile">
+    <div class="user-avatar">{inicial_usuario}</div>
+    <div>
+        <div class="user-info-title">● Sesión Activa</div>
+        <div class="user-info-name">{usuario_formateado}</div>
+    </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    st.sidebar.markdown(
+        "<p style='font-size:10px; color:#b899a6; text-transform:uppercase; letter-spacing:1.5px; font-weight:700; margin: 12px 0 6px 4px;'>Menú Principal</p>",
+        unsafe_allow_html=True,
+    )
+
+    if st.sidebar.button("📊 Existencias", use_container_width=True):
+        st.session_state.menu_activo = "existencias"
+        st.rerun()
+
+    if st.sidebar.button("➕ Registrar Prenda", use_container_width=True):
+        st.session_state.menu_activo = "registrar"
+        st.rerun()
+
+    if st.sidebar.button("✏️ Editar / Borrar", use_container_width=True):
+        st.session_state.menu_activo = "modificar"
+        st.rerun()
+
+    if st.sidebar.button("⚙️ Configuración", use_container_width=True):
+        st.session_state.menu_activo = "configuracion"
+        st.rerun()
+
+    st.sidebar.markdown(
+        "<hr style='margin: 25px 0 15px 0; border-color: rgba(219,39,119,0.2);'>",
+        unsafe_allow_html=True,
+    )
+
+    if st.sidebar.button("🚪 Cerrar Sesión", use_container_width=True):
+        st.session_state.autenticado = False
+        st.session_state.usuario_actual = ""
+        st.session_state.etapa = "bienvenida"
+        if "recuerdame_user" in st.query_params:
+            del st.query_params["recuerdame_user"]
+        st.rerun()
+
+    menu = st.session_state.get("menu_activo", "existencias")
+
+    if menu == "existencias":
+        st.markdown(
+            """
+<div class="page-header">
+    <div class="page-title">Panel Principal // Lewin Boutique</div>
+    <div class="page-subtitle">Control general de stock y monitoreo en tiempo real (Dark Luxury).</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        total_prendas = len(df) if not df.empty else 0
+        stock_total = (
+            int(df["cantidad"].sum())
+            if not df.empty and "cantidad" in df.columns
+            else 0
+        )
+        
+        total_alertas = 0
+        if not df.empty and "cantidad" in df.columns and "alerta" in df.columns:
+            total_alertas = int(df[df["cantidad"] <= df["alerta"]].shape[0])
+
+        st.markdown(
+            """
+<div class="section-title">Visión General del Inventario</div>
+<div class="section-subtitle">Resumen general de métricas y existencias.</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown(
+                f"""
+<div class="metric-card">
+    <div class="metric-label">Total de Prendas / Modelos</div>
+    <div class="metric-value">{total_prendas}</div>
+</div>
+""",
+                unsafe_allow_html=True,
+            )
+        with col2:
+            st.markdown(
+                f"""
+<div class="metric-card">
+    <div class="metric-label">Stock Total Acumulado</div>
+    <div class="metric-value">{stock_total}</div>
+</div>
+""",
+                unsafe_allow_html=True,
+            )
+        with col3:
+            st.markdown(
+                f"""
+<div class="metric-card">
+    <div class="metric-label">Alertas de Stock Bajo</div>
+    <div class="metric-value" style="color: {'#f472b6' if total_alertas > 0 else '#f472b6'} !important;">{total_alertas}</div>
+</div>
+""",
+                unsafe_allow_html=True,
+            )
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        if not df.empty:
+            # --- AJUSTE RÁPIDO DE STOCK (+1 / -1) ---
+            st.markdown(
+                """
+<div class="section-title">⚡ Ajuste Rápido de Stock</div>
+<div class="section-subtitle">Modifica existencias de manera inmediata seleccionando la prenda.</div>
+""",
+                unsafe_allow_html=True,
+            )
+            col_q1, col_q2, col_q3 = st.columns([2, 1, 1])
+            with col_q1:
+                ids_rapidos = df["ID"].astype(str).tolist()
+                id_rapido = st.selectbox("Seleccionar Prenda", ids_rapidos, key="select_ajuste_rapido")
+            with col_q2:
+                st.markdown("<div style='height: 24px;'></div>", unsafe_allow_html=True)
+                if st.button("➖ Quitar 1 (-1)", use_container_width=True, key="btn_minus_1"):
+                    if id_rapido:
+                        fila_actual = df[df["ID"].astype(str) == str(id_rapido)].iloc[0]
+                        nueva_cant = max(0, int(fila_actual["cantidad"]) - 1)
+                        datos_act = {
+                            "ID": str(fila_actual["ID"]),
+                            "Producto": str(fila_actual["Producto"]),
+                            "Categoria": str(fila_actual["Categoria"]),
+                            "talla": str(fila_actual["talla"]),
+                            "color": str(fila_actual["color"]),
+                            "cantidad": nueva_cant,
+                            "alerta": int(fila_actual["alerta"])
+                        }
+                        if actualizar_prenda(id_rapido, datos_act):
+                            st.success(f"Stock actualizado a {nueva_cant}")
+                            st.rerun()
+            with col_q3:
+                st.markdown("<div style='height: 24px;'></div>", unsafe_allow_html=True)
+                if st.button("➕ Añadir 1 (+1)", use_container_width=True, key="btn_plus_1"):
+                    if id_rapido:
+                        fila_actual = df[df["ID"].astype(str) == str(id_rapido)].iloc[0]
+                        nueva_cant = int(fila_actual["cantidad"]) + 1
+                        datos_act = {
+                            "ID": str(fila_actual["ID"]),
+                            "Producto": str(fila_actual["Producto"]),
+                            "Categoria": str(fila_actual["Categoria"]),
+                            "talla": str(fila_actual["talla"]),
+                            "color": str(fila_actual["color"]),
+                            "cantidad": nueva_cant,
+                            "alerta": int(fila_actual["alerta"])
+                        }
+                        if actualizar_prenda(id_rapido, datos_act):
+                            st.success(f"Stock actualizado a {nueva_cant}")
+                            st.rerun()
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown(
+                """
+<div class="section-title">📋 Artículos Destacados // Filtros & Búsqueda</div>
+<div class="section-subtitle">Filtra por categoría o busca un producto en específico.</div>
+""",
+                unsafe_allow_html=True,
+            )
+
+            col_f1, col_f2 = st.columns([1.5, 1])
+            with col_f1:
+                busqueda = st.text_input("🔍 Buscar por nombre o ID", placeholder="Escribe el nombre de la prenda o su ID...")
+            with col_f2:
+                categorias_disponibles = ["Todas"] + list(df["Categoria"].dropna().unique())
+                filtro_categoria = st.selectbox("📂 Filtrar por Categoría", categorias_disponibles)
+
+            df_filtrado = df.copy()
+            if busqueda.strip():
+                query = busqueda.strip().lower()
+                df_filtrado = df_filtrado[
+                    df_filtrado["ID"].astype(str).str.lower().str.contains(query) | 
+                    df_filtrado["Producto"].astype(str).str.lower().str.contains(query)
+                ]
+            
+            if filtro_categoria != "Todas":
+                df_filtrado = df_filtrado[df_filtrado["Categoria"] == filtro_categoria]
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            # --- PAGINACIÓN Y EXPORTACIÓN CSV ---
+            total_registros = len(df_filtrado)
+            if total_registros > 0:
+                items_por_pagina = 9
+                total_paginas = max(1, (total_registros - 1) // items_por_pagina + 1)
+                
+                col_p1, col_p2 = st.columns([2, 2])
+                with col_p1:
+                    pagina_sel = st.selectbox("📄 Página", range(1, total_paginas + 1), key="paginacion_tabla") if total_paginas > 1 else 1
+                
+                inicio = (pagina_sel - 1) * items_por_pagina
+                fin = min(inicio + items_por_pagina, total_registros)
+                df_paginado = df_filtrado.iloc[inicio:fin]
+                
+                csv_data = df_filtrado.to_csv(index=False, sep=';').encode('utf-8-sig')
+                with col_p2:
+                    st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+                    st.download_button(
+                        label="📥 Exportar Inventario a CSV",
+                        data=csv_data,
+                        file_name="inventario_lewin.csv",
+                        mime="text/csv",
+                        use_container_width=True
+                    )
+
+                st.markdown(f"<div class='section-title'>Resultados (Mostrando {inicio+1} - {fin} de {total_registros} registros)</div>", unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html=True)
+
+                # --- DISEÑO DE TARJETAS GRID (3 COLUMNAS) CON BOTÓN DE COPIAR INTEGRADO ---
+                cols_tarjetas = st.columns(3)
+                for idx, (_, row) in enumerate(df_paginado.iterrows()):
+                    col_actual = cols_tarjetas[idx % 3]
+                    
+                    is_alerta = int(row["cantidad"]) <= int(row["alerta"])
+                    borde_color = "#f472b6" if is_alerta else "rgba(219, 39, 119, 0.25)"
+                    badge_stock = f"<span style='color: #f472b6; font-weight: 700;'>Stock Bajo ({row['cantidad']})</span>" if is_alerta else f"<span style='color: #34d399; font-weight: 700;'>Stock: {row['cantidad']}</span>"
+
+                    with col_actual:
+                        st.markdown(
+                            f"""
+                            <div style="
+                                background: rgba(18, 16, 22, 0.9);
+                                backdrop-filter: blur(20px);
+                                border: 1px solid {borde_color};
+                                padding: 18px;
+                                border-radius: 16px;
+                                margin-bottom: 8px;
+                                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+                            ">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <span style="background: rgba(219, 39, 119, 0.15); color: #f472b6; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">ID: {row['ID']}</span>
+                                    <span style="font-size: 12px; color: #b899a6;">{row['Categoria']}</span>
+                                </div>
+                                <div style="font-size: 16px; font-weight: 700; color: #f9f6f8; margin-bottom: 8px;">{row['Producto']}</div>
+                                <div style="font-size: 13px; color: #d4b8cc; display: flex; gap: 12px; margin-bottom: 12px;">
+                                    <span>📏 Talla: <b>{row['talla']}</b></span>
+                                    <span>🎨 Color: <b>{row['color']}</b></span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(219, 39, 119, 0.2); padding-top: 10px; font-size: 13px; margin-bottom: 12px;">
+                                    {badge_stock}
+                                    <span style="font-size: 11px; color: #b899a6;">Alerta mín: {row['alerta']}</span>
+                                </div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+                        
+                        detalles_texto = f"ID: {row['ID']} - {row['Producto']} ({row['Categoria']}) - Talla: {row['talla']} - Color: {row['color']} - Stock: {row['cantidad']}"
+                        render_copy_button(detalles_texto, label=f"Copiar Detalles de {row['ID']}")
+                        st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
+            else:
+                st.info("No se encontraron registros con los filtros seleccionados.")
+        else:
+            st.info("No hay prendas registradas todavía en el sistema.")
+
+    elif menu == "registrar":
+        st.markdown(
+            """
+<div class="page-header">
+    <div class="page-title">✨ Registro de Nuevas Prendas</div>
+    <div class="page-subtitle">Añade nuevos artículos al catálogo de la boutique con distribución en cuadrícula.</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        with st.form(f"form_ropa_{st.session_state.form_version}", clear_on_submit=True):
+            st.subheader("📦 Información Básica")
+            col1, col2 = st.columns(2)
+            with col1:
+                sku = st.text_input("ID", placeholder="Ej: A1")
+            with col2:
+                nombre = st.text_input("Producto", placeholder="Ej: Short")
+
+            st.subheader("🏷️ Clasificación y Atributos")
+            col3, col4, col5 = st.columns(3)
+            with col3:
+                categoria = st.selectbox("Categoría", st.session_state.categorias_maestras)
+            with col4:
+                talla = st.selectbox("Talla", st.session_state.tallas_maestras)
+            with col5:
+                color = st.selectbox("Color", st.session_state.colores_maestros)
+
+            st.subheader("📊 Control de Stock y Alertas")
+            col6, col7 = st.columns(2)
+            with col6:
+                cantidad = st.number_input("Cantidad", min_value=0, value=0, step=1)
+            with col7:
+                alerta = st.number_input("Alerta de stock", min_value=0, value=0, step=1)
+
+            st.markdown("---")
+            if st.form_submit_button("💾 Guardar Prenda en el Sistema", use_container_width=True):
+                if sku.strip() == "":
+                    st.error("El campo ID es obligatorio.")
+                else:
+                    nueva_prenda = {
+                        "ID": sku.strip(),
+                        "Producto": nombre.strip(),
+                        "Categoria": categoria,
+                        "talla": talla,
+                        "color": color,
+                        "cantidad": cantidad,
+                        "alerta": alerta,
+                    }
+                    if guardar_prenda(nueva_prenda):
+                        st.success("¡Prenda guardada con éxito!")
+                        st.session_state.form_version += 1
+                        st.rerun()
+
+    elif menu == "modificar":
+        st.markdown(
+            """
+<div class="page-header">
+    <div class="page-title">Modificar o Eliminar Prenda</div>
+    <div class="page-subtitle">Busca o selecciona una prenda existente para actualizar sus datos o borrarla.</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        if not df.empty:
+            modo_seleccion = st.radio(
+                "¿Cómo deseas encontrar la prenda?", 
+                ["Seleccionar de la lista", "Buscar por ID / Nombre"], 
+                horizontal=True
+            )
+
+            id_seleccionado = None
+
+            if modo_seleccion == "Seleccionar de la lista":
+                lista_ids = df["ID"].astype(str).tolist()
+                id_seleccionado = st.selectbox("Seleccione el ID de la prenda", lista_ids)
+            else:
+                texto_busqueda = st.text_input("Escribe el ID o nombre del producto a buscar:", placeholder="Ej: A1 o Short...")
+                if texto_busqueda.strip():
+                    q = texto_busqueda.strip().lower()
+                    df_coincidencias = df[
+                        df["ID"].astype(str).str.lower().str.contains(q) | 
+                        df["Producto"].astype(str).str.lower().str.contains(q)
+                    ]
+                    if not df_coincidencias.empty:
+                        opciones_encontradas = df_coincidencias["ID"].astype(str).tolist()
+                        id_seleccionado = st.selectbox(
+                            f"Coincidencias encontradas ({len(opciones_encontradas)}):", 
+                            opciones_encontradas,
+                            format_func=lambda x: f"ID: {x} - {df_coincidencias[df_coincidencias['ID'].astype(str) == x]['Producto'].values[0]}"
+                        )
+                    else:
+                        st.warning("No se encontraron prendas con ese criterio.")
+
+            if id_seleccionado:
+                fila_data = df[df["ID"].astype(str) == str(id_seleccionado)].iloc[0]
+
+                st.markdown("<br>", unsafe_allow_html=True)
+                with st.form("form_editar"):
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        nuevo_id = st.text_input("ID", value=str(fila_data["ID"]))
+                    with col2:
+                        nuevo_nombre = st.text_input("Producto", value=str(fila_data["Producto"]))
+
+                    st.markdown("---")
+
+                    col3, col4, col5 = st.columns(3)
+                    cat_actual = str(fila_data["Categoria"])
+                    idx_cat = st.session_state.categorias_maestras.index(cat_actual) if cat_actual in st.session_state.categorias_maestras else 0
+                    with col3:
+                        nueva_categoria = st.selectbox("Categoria", st.session_state.categorias_maestras, index=idx_cat)
+                    
+                    talla_actual = str(fila_data["talla"])
+                    idx_talla = st.session_state.tallas_maestras.index(talla_actual) if talla_actual in st.session_state.tallas_maestras else 0
+                    with col4:
+                        nueva_talla = st.selectbox("talla", st.session_state.tallas_maestras, index=idx_talla)
+                    
+                    color_actual = str(fila_data["color"])
+                    idx_color = st.session_state.colores_maestros.index(color_actual) if color_actual in st.session_state.colores_maestros else 0
+                    with col5:
+                        nuevo_color = st.selectbox("color", st.session_state.colores_maestros, index=idx_color)
+
+                    st.markdown("---")
+
+                    col6, col7 = st.columns(2)
+                    with col6:
+                        nueva_cantidad = st.number_input("cantidad", min_value=0, value=int(fila_data["cantidad"]), step=1)
+                    with col7:
+                        nueva_alerta = st.number_input("alerta de stock", min_value=0, value=int(fila_data["alerta"]), step=1)
+
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    col_btn1, col_btn2 = st.columns(2)
+                    actualizar = col_btn1.form_submit_button("💾 Guardar Cambios", use_container_width=True)
+                    eliminar = col_btn2.form_submit_button("🗑️ Eliminar Prenda", use_container_width=True)
+
+                    if actualizar:
+                        datos_mod = {
+                            "ID": nuevo_id,
+                            "Producto": nuevo_nombre,
+                            "Categoria": nueva_categoria,
+                            "talla": nueva_talla,
+                            "color": nuevo_color,
+                            "cantidad": nueva_cantidad,
+                            "alerta": nueva_alerta,
+                        }
+                        if actualizar_prenda(id_seleccionado, datos_mod):
+                            st.success("¡Prenda actualizada correctamente!")
+                            st.rerun()
+
+                    if eliminar:
+                        if eliminar_prenda(id_seleccionado):
+                            st.success("¡Prenda eliminada del sistema!")
+                            st.rerun()
+        else:
+            st.info("No hay registros disponibles para modificar.")
+
+    elif menu == "configuracion":
+        st.markdown(
+            """
+<div class="page-header">
+    <div class="page-title">⚙️ Configuración del Sistema</div>
+    <div class="page-subtitle">Gestiona y personaliza las opciones maestras de categorías, tallas y colores. Haz clic en guardar al terminar.</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        col_cfg1, col_cfg2, col_cfg3 = st.columns(3)
+
+        # CATEGORÍAS
+        with col_cfg1:
+            with st.container(border=True):
+                st.markdown("<div class='section-title'>📂 Categorías</div>", unsafe_allow_html=True)
+                
+                for cat in list(st.session_state.edit_cats):
+                    c_col1, c_col2 = st.columns([3, 1])
+                    c_col1.markdown(f"- {cat}")
+                    if c_col2.button("❌", key=f"del_cat_{cat}"):
+                        if len(st.session_state.edit_cats) > 1:
+                            st.session_state.edit_cats.remove(cat)
+                            st.rerun()
+                        else:
+                            st.error("Debe existir al menos una.")
+
+                st.markdown("<br>", unsafe_allow_html=True)
+                nueva_cat_input = st.text_input("Nueva Categoría", placeholder="Ej: Faldas", key="input_nueva_cat")
+                if st.button("➕ Agregar Categoría", key="btn_add_cat"):
+                    clean_cat = nueva_cat_input.strip().capitalize()
+                    if clean_cat and clean_cat not in st.session_state.edit_cats:
+                        st.session_state.edit_cats.append(clean_cat)
+                        st.rerun()
+                    else:
+                        st.warning("Nombre inválido o ya existente.")
+
+        # TALLAS
+        with col_cfg2:
+            with st.container(border=True):
+                st.markdown("<div class='section-title'>📏 Tallas</div>", unsafe_allow_html=True)
+                
+                for t in list(st.session_state.edit_tallas):
+                    t_col1, t_col2 = st.columns([3, 1])
+                    t_col1.markdown(f"- {t}")
+                    if t_col2.button("❌", key=f"del_talla_{t}"):
+                        if len(st.session_state.edit_tallas) > 1:
+                            st.session_state.edit_tallas.remove(t)
+                            st.rerun()
+                        else:
+                            st.error("Debe existir al menos una.")
+
+                st.markdown("<br>", unsafe_allow_html=True)
+                nueva_talla_input = st.text_input("Nueva Talla", placeholder="Ej: 30, XXL", key="input_nueva_talla")
+                if st.button("➕ Agregar Talla", key="btn_add_talla"):
+                    clean_talla = nueva_talla_input.strip().upper()
+                    if clean_talla and clean_talla not in st.session_state.edit_tallas:
+                        st.session_state.edit_tallas.append(clean_talla)
+                        st.rerun()
+                    else:
+                        st.warning("Talla inválida o ya existente.")
+
+        # COLORES
+        with col_cfg3:
+            with st.container(border=True):
+                st.markdown("<div class='section-title'>🎨 Colores</div>", unsafe_allow_html=True)
+                
+                for col_item in list(st.session_state.edit_colores):
+                    col_c1, col_c2 = st.columns([3, 1])
+                    col_c1.markdown(f"- {col_item}")
+                    if col_c2.button("❌", key=f"del_color_{col_item}"):
+                        if len(st.session_state.edit_colores) > 1:
+                            st.session_state.edit_colores.remove(col_item)
+                            st.rerun()
+                        else:
+                            st.error("Debe existir al menos uno.")
+
+                st.markdown("<br>", unsafe_allow_html=True)
+                nuevo_color_input = st.text_input("Nuevo Color", placeholder="Ej: Dorado", key="input_nuevo_color")
+                if st.button("➕ Agregar Color", key="btn_add_color"):
+                    clean_color = nuevo_color_input.strip().capitalize()
+                    if clean_color and clean_color not in st.session_state.edit_colores:
+                        st.session_state.edit_colores.append(clean_color)
+                        st.rerun()
+                    else:
+                        st.warning("Color inválido o ya existente.")
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        _, col_save_master, _ = st.columns([1, 2, 1])
+        with col_save_master:
+            if st.button("💾 Guardar configuración en GitHub", use_container_width=True):
+                exito = guardar_configuracion_completa(
+                    st.session_state.edit_cats,
+                    st.session_state.edit_tallas,
+                    st.session_state.edit_colores
+                )
+                if exito:
+                    st.session_state.categorias_maestras = list(st.session_state.edit_cats)
+                    st.session_state.tallas_maestras = list(st.session_state.edit_tallas)
+                    st.session_state.colores_maestros = list(st.session_state.edit_colores)
+                    st.success("¡Configuración guardada en GitHub exitosamente!")
+                    st.rerun()
