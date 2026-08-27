@@ -85,14 +85,11 @@ def guardar_configuracion_completa(cats, tallas, colores):
                 ("colores", json.dumps(colores))
             ]
             for tipo_val, valor_val in configs:
-                # Borramos cualquier registro anterior de este tipo para evitar duplicados
-                supabase.table("configuracion").delete().eq("tipo", tipo_val).execute()
-                
-                # Insertamos el nuevo valor actualizado
-                supabase.table("configuracion").insert({
-                    "tipo": tipo_val, 
-                    "valor": valor_val
-                }).execute()
+                # Usamos upsert para evitar errores de ID y actualizar directamente por 'tipo'
+                supabase.table("configuracion").upsert(
+                    {"tipo": tipo_val, "valor": valor_val},
+                    on_conflict="tipo"
+                ).execute()
 
             return True
         except Exception as e:
@@ -769,3 +766,4 @@ else:
                     st.session_state.tallas_maestras = list(st.session_state.edit_tallas)
                     st.session_state.colores_maestros = list(st.session_state.edit_colores)
                     st.success("¡Configuración guardada exitosamente en la base de datos!")
+                    st.rerun()
