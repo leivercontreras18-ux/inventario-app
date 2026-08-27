@@ -356,14 +356,7 @@ if not st.session_state.autenticado and "recuerdame_user" in query_params:
 
 # --- 1. PANTALLA DE BIENVENIDA ---
 if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
-    col_vacia, col_btn = st.columns([5, 1])
-    with col_btn:
-        st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
-        if st.button("Login ➔ 🚪", use_container_width=True):
-            st.session_state.etapa = "login"
-            st.rerun()
-
-    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown("<br><br><br>", unsafe_allow_html=True)
     _, col_centro, _ = st.columns([1, 1.8, 1])
     with col_centro:
         st.markdown(
@@ -449,7 +442,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                     <h1 class="hero-title">LEWIN</h1>
                     <p class="hero-subtitle">Boutique & Inventory Control</p>
                     <p class="hero-desc">
-                        Sistema exclusivo de gestión de stock, monitoreo de existencias y control de colecciones en tiempo real.
+                        Sistema exclusivo de Lewin Boutique
                     </p>
                 </div>
             </div>
