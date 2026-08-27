@@ -285,21 +285,6 @@ div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hove
     transform: translateY(-2px);
 }
 
-/* Tarjeta de Bienvenida Glassmorphism Dark Pinterest (Igual referencia pantalla negra) */
-.hero-card {
-    background: rgba(18, 16, 22, 0.9) !important;
-    backdrop-filter: blur(40px) !important;
-    -webkit-backdrop-filter: blur(40px) !important;
-    border: 1px solid rgba(219, 39, 119, 0.35) !important;
-    border-radius: 32px;
-    padding: 45px 40px 40px 40px;
-    text-align: left;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.08) !important;
-    margin-bottom: 20px;
-}
-
 /* Formularios Glassmorphism Dark */
 div[data-testid="stForm"] {
     background: rgba(18, 16, 22, 0.85) !important;
@@ -395,139 +380,151 @@ if not st.session_state.autenticado and "recuerdame_user" in query_params:
         st.session_state.autenticado = True
         st.session_state.usuario_actual = saved_user
 
-# --- 1. PANTALLA DE BIENVENIDA (PORTADA ESTILO PINTEREST DARK LUXURY) ---
+# --- 1. PANTALLA DE BIENVENIDA (PORTADA ESTILO PINTEREST DARK LUXURY A TAMAÑO COMPLETO) ---
 if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    _, col_centro, _ = st.columns([0.5, 2.4, 0.5])
-    with col_centro:
-        st.markdown(
-            """
-            <style>
-            @keyframes levitar {
-                0% { transform: translateY(0px); filter: drop-shadow(0 10px 25px rgba(219,39,119,0.3)); }
-                50% { transform: translateY(-8px); filter: drop-shadow(0 20px 35px rgba(219,39,119,0.5)); }
-                100% { transform: translateY(0px); filter: drop-shadow(0 10px 25px rgba(219,39,119,0.3)); }
-            }
-            .hero-card::after {
-                content: '';
-                position: absolute;
-                top: -50%; left: -50%;
-                width: 200%; height: 200%;
-                background: radial-gradient(circle at 50% 40%, rgba(219, 39, 119, 0.1) 0%, transparent 60%);
-                pointer-events: none;
-                z-index: 0;
-            }
-            .hero-content {
-                position: relative;
-                z-index: 1;
-            }
-            .hero-topbar {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 25px;
-                border-bottom: 1px solid rgba(219, 39, 119, 0.2);
-                padding-bottom: 15px;
-            }
-            .hero-brand {
-                font-family: 'Cinzel', serif;
-                font-size: 14px;
-                font-weight: 700;
-                color: #f9f6f8;
-                letter-spacing: 2px;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-            .hero-nav-links {
-                display: flex;
-                gap: 15px;
-                font-size: 11px;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-                color: #b899a6;
-                font-weight: 600;
-            }
-            .hero-title {
-                font-family: 'Cinzel', serif;
-                font-size: 42px;
-                font-weight: 800;
-                color: #f9f6f8;
-                letter-spacing: 2px;
-                line-height: 1.1;
-                margin-bottom: 12px;
-            }
-            .hero-subtitle-tag {
-                font-size: 11px;
-                color: #f472b6;
-                text-transform: uppercase;
-                letter-spacing: 3px;
-                font-weight: 700;
-                margin-bottom: 16px;
-            }
-            .hero-desc {
-                color: #b899a6;
-                font-size: 13px;
-                line-height: 1.6;
-                max-width: 480px;
-                margin-bottom: 24px;
-            }
-            .feature-pills-container {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 8px;
-                margin-bottom: 28px;
-            }
-            .feature-pill {
-                background: rgba(219, 39, 119, 0.1);
-                border: 1px solid rgba(219, 39, 119, 0.3);
-                color: #f472b6;
-                padding: 6px 14px;
-                border-radius: 20px;
-                font-size: 11px;
-                font-weight: 600;
-                letter-spacing: 0.5px;
-            }
-            </style>
-            
-            <div class="hero-card">
-                <div class="hero-content">
-                    <div class="hero-topbar">
-                        <div class="hero-brand">
-                            <span style="width: 8px; height: 8px; background: #f472b6; border-radius: 50%; display: inline-block;"></span>
-                            PLAYING / MARKET
-                        </div>
-                        <div class="hero-nav-links">
-                            <span>Inicio</span>
-                            <span>Tienda</span>
-                            <span>Categorías</span>
-                            <span>Blog</span>
-                            <span>Contacto</span>
-                        </div>
+    st.markdown(
+        """
+        <style>
+        .block-container {
+            padding: 1.5rem 2rem !important;
+            max-width: 100% !important;
+        }
+        .full-hero-wrapper {
+            background: rgba(18, 16, 22, 0.95);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(219, 39, 119, 0.35);
+            border-radius: 32px;
+            padding: 50px 70px;
+            min-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255,255,255,0.08);
+            margin: 0 auto;
+            max-width: 1450px;
+        }
+        .full-hero-wrapper::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 50% 40%, rgba(219, 39, 119, 0.12) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .hero-inner {
+            position: relative;
+            z-index: 1;
+        }
+        .hero-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+            border-bottom: 1px solid rgba(219, 39, 119, 0.2);
+            padding-bottom: 20px;
+        }
+        .hero-brand {
+            font-family: 'Cinzel', serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: #f9f6f8;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .hero-nav-links {
+            display: flex;
+            gap: 25px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #b899a6;
+            font-weight: 600;
+        }
+        .hero-title {
+            font-family: 'Cinzel', serif;
+            font-size: 52px;
+            font-weight: 800;
+            color: #f9f6f8;
+            letter-spacing: 2px;
+            line-height: 1.1;
+            margin-bottom: 16px;
+        }
+        .hero-subtitle-tag {
+            font-size: 12px;
+            color: #f472b6;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        .hero-desc {
+            color: #b899a6;
+            font-size: 15px;
+            line-height: 1.6;
+            max-width: 650px;
+            margin-bottom: 35px;
+        }
+        .feature-pills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+        .feature-pill {
+            background: rgba(219, 39, 119, 0.1);
+            border: 1px solid rgba(219, 39, 119, 0.3);
+            color: #f472b6;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        </style>
+        
+        <div class="full-hero-wrapper">
+            <div class="hero-inner">
+                <div class="hero-topbar">
+                    <div class="hero-brand">
+                        <span style="width: 10px; height: 10px; background: #f472b6; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px #f472b6;"></span>
+                        PLAYING / MARKET
                     </div>
-                    <div class="hero-subtitle-tag">Headphones & Boutique Wireless</div>
-                    <h1 class="hero-title">Lewin Boutique<br>Control Center</h1>
-                    <p class="hero-desc">
-                        Mejores efectos de inventario y una experiencia de gestión auditiva y visual inigualable. Diseñado con interfaz minimalista de lujo en pantalla negra y oro rosa.
-                    </p>
-                    <div class="feature-pills-container">
-                        <span class="feature-pill">✨ Cuadrícula Grid Chic</span>
-                        <span class="feature-pill">⚡ Ajuste Rápido (+1/-1)</span>
-                        <span class="feature-pill">📂 Supabase & GitHub Sync</span>
-                        <span class="feature-pill">📋 Portapapeles Inteligente</span>
+                    <div class="hero-nav-links">
+                        <span>Inicio</span>
+                        <span>Tienda</span>
+                        <span>Categorías</span>
+                        <span>Blog</span>
+                        <span>Contacto</span>
                     </div>
                 </div>
+                <div class="hero-subtitle-tag">Headphones & Boutique Wireless</div>
+                <h1 class="hero-title">Lewin Boutique<br>Control Center</h1>
+                <p class="hero-desc">
+                    Mejores efectos de inventario y una experiencia de gestión auditiva y visual inigualable. Diseñado con interfaz minimalista de lujo en pantalla negra y oro rosa para cubrir toda la pantalla con absoluta elegancia.
+                </p>
+                <div class="feature-pills-container">
+                    <span class="feature-pill">✨ Cuadrícula Grid Chic</span>
+                    <span class="feature-pill">⚡ Ajuste Rápido (+1/-1)</span>
+                    <span class="feature-pill">📂 Supabase & GitHub Sync</span>
+                    <span class="feature-pill">📋 Portapapeles Inteligente</span>
+                </div>
             </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        
-        _, col_boton_centro, _ = st.columns([1, 1.4, 1])
-        with col_boton_centro:
-            if st.button("IR A LA TIENDA 🚪🚶", use_container_width=True):
-                st.session_state.etapa = "login"
-                st.rerun()
+            <div class="hero-inner" style="max-width: 380px;">
+        """,
+        unsafe_allow_html=True,
+    )
+    
+    if st.button("IR A LA TIENDA 🚪🚶", use_container_width=True):
+        st.session_state.etapa = "login"
+        st.rerun()
 
+    st.markdown("</div></div>", unsafe_allow_html=True)
     st.stop()
 
 # --- 2. FLUJO DE LOGIN ---
