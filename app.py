@@ -363,23 +363,101 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             st.session_state.etapa = "login"
             st.rerun()
 
-    st.markdown("<br><br><br>", unsafe_allow_html=True)
-    _, col_centro, _ = st.columns([1, 1.5, 1])
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    _, col_centro, _ = st.columns([1, 1.8, 1])
     with col_centro:
         st.markdown(
             """
-            <div style="text-align: center; padding: 40px 20px;">
-                <div style="font-size: 64px; margin-bottom: 20px; filter: drop-shadow(0 0 20px rgba(212,175,55,0.4));">👕</div>
-                <h1 style="font-family: 'Cinzel', serif; font-size: 42px; font-weight: 700; color: #ffffff; letter-spacing: 2px; margin-bottom: 10px;">LEWIN</h1>
-                <p style="font-size: 14px; color: #d4af37; text-transform: uppercase; letter-spacing: 4px; font-weight: 600; margin-bottom: 30px;">Boutique & Inventory Control</p>
-                <p style="color: #94a3b8; font-size: 14px; line-height: 1.6; max-width: 450px; margin: 0 auto 35px auto;">
-                    Sistema exclusivo de gestión de stock, monitoreo de existencias y control de colecciones en tiempo real.
-                </p>
+            <style>
+            @keyframes levitar {
+                0% { transform: translateY(0px); filter: drop-shadow(0 10px 15px rgba(212,175,55,0.4)); }
+                50% { transform: translateY(-12px); filter: drop-shadow(0 20px 25px rgba(212,175,55,0.7)); }
+                100% { transform: translateY(0px); filter: drop-shadow(0 10px 15px rgba(212,175,55,0.4)); }
+            }
+            .hero-card {
+                background: rgba(20, 23, 30, 0.4);
+                backdrop-filter: blur(25px);
+                -webkit-backdrop-filter: blur(25px);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 24px;
+                padding: 60px 30px 40px 30px;
+                text-align: center;
+                position: relative;
+                overflow: hidden;
+                box-shadow: 0 30px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+                margin-bottom: 25px;
+            }
+            .hero-card::before {
+                content: '';
+                position: absolute;
+                top: -50%; left: -50%;
+                width: 200%; height: 200%;
+                background: radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.08) 0%, transparent 55%);
+                pointer-events: none;
+                z-index: 0;
+            }
+            .hero-content {
+                position: relative;
+                z-index: 1;
+            }
+            .hero-icon {
+                font-size: 72px;
+                display: inline-block;
+                margin-bottom: 20px;
+                animation: levitar 4s ease-in-out infinite;
+            }
+            .hero-title {
+                font-family: 'Cinzel', serif;
+                font-size: 52px;
+                font-weight: 800;
+                color: #ffffff;
+                letter-spacing: 6px;
+                margin-bottom: 12px;
+                text-shadow: 0 0 40px rgba(255,255,255,0.2);
+            }
+            .hero-subtitle {
+                font-size: 13px;
+                color: #d4af37;
+                text-transform: uppercase;
+                letter-spacing: 5px;
+                font-weight: 700;
+                margin-bottom: 30px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 15px;
+            }
+            .hero-subtitle::before, .hero-subtitle::after {
+                content: '';
+                height: 1px;
+                width: 50px;
+                background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.6), transparent);
+            }
+            .hero-desc {
+                color: #94a3b8;
+                font-size: 15px;
+                line-height: 1.7;
+                max-width: 480px;
+                margin: 0 auto;
+                font-weight: 400;
+            }
+            </style>
+            
+            <div class="hero-card">
+                <div class="hero-content">
+                    <div class="hero-icon">👕</div>
+                    <h1 class="hero-title">LEWIN</h1>
+                    <p class="hero-subtitle">Boutique & Inventory Control</p>
+                    <p class="hero-desc">
+                        Sistema exclusivo de gestión de stock, monitoreo de existencias y control de colecciones en tiempo real.
+                    </p>
+                </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
-        _, col_boton_centro, _ = st.columns([1, 1.2, 1])
+        
+        _, col_boton_centro, _ = st.columns([1, 1.4, 1])
         with col_boton_centro:
             if st.button("Acceder al Sistema 🚪🚶", use_container_width=True):
                 st.session_state.etapa = "login"
