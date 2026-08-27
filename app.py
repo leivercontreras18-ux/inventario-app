@@ -183,6 +183,7 @@ st.markdown(
                 linear-gradient(135deg, #050811 0%, #0a1124 50%, #03050a 100%);
     background-attachment: fixed;
     color: #f8fafc !important; 
+    font-family: 'Montserrat', sans-serif !important;
 }
 
 header[data-testid="stHeader"] { background: transparent !important; }
@@ -264,19 +265,19 @@ div.stButton > button:active, div[data-testid="stFormSubmitButton"] > button:act
     box-shadow: 0 0 5px rgba(16, 185, 129, 0.6) !important;
 }
 
-/* Tarjeta de Bienvenida Glassmorphism */
+/* Tarjeta de Bienvenida Glassmorphism Refinada (Estilo Referencia Minimalista) */
 .hero-card {
-    background: rgba(11, 17, 33, 0.85) !important;
-    backdrop-filter: blur(30px) !important;
-    -webkit-backdrop-filter: blur(30px) !important;
-    border: 1px solid rgba(16, 185, 129, 0.3) !important;
-    border-radius: 24px;
-    padding: 60px 30px 40px 30px;
+    background: linear-gradient(145deg, rgba(13, 20, 38, 0.9) 0%, rgba(7, 11, 22, 0.95) 100%) !important;
+    backdrop-filter: blur(40px) !important;
+    -webkit-backdrop-filter: blur(40px) !important;
+    border: 1px solid rgba(16, 185, 129, 0.35) !important;
+    border-radius: 28px;
+    padding: 50px 40px 40px 40px;
     text-align: center;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15) !important;
-    margin-bottom: 25px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12) !important;
+    margin-bottom: 20px;
 }
 
 /* Formularios Glassmorphism */
@@ -374,25 +375,25 @@ if not st.session_state.autenticado and "recuerdame_user" in query_params:
         st.session_state.autenticado = True
         st.session_state.usuario_actual = saved_user
 
-# --- 1. PANTALLA DE BIENVENIDA ---
+# --- 1. PANTALLA DE BIENVENIDA (DISEÑO PORTADA REFINADO ESTILO REFERENCIA) ---
 if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
-    st.markdown("<br><br><br>", unsafe_allow_html=True)
-    _, col_centro, _ = st.columns([1, 1.8, 1])
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    _, col_centro, _ = st.columns([1, 1.9, 1])
     with col_centro:
         st.markdown(
             """
             <style>
             @keyframes levitar {
-                0% { transform: translateY(0px); filter: drop-shadow(0 10px 15px rgba(16,185,129,0.4)); }
-                50% { transform: translateY(-12px); filter: drop-shadow(0 20px 25px rgba(16,185,129,0.7)); }
-                100% { transform: translateY(0px); filter: drop-shadow(0 10px 15px rgba(16,185,129,0.4)); }
+                0% { transform: translateY(0px); filter: drop-shadow(0 10px 20px rgba(16,185,129,0.35)); }
+                50% { transform: translateY(-8px); filter: drop-shadow(0 20px 30px rgba(16,185,129,0.55)); }
+                100% { transform: translateY(0px); filter: drop-shadow(0 10px 20px rgba(16,185,129,0.35)); }
             }
-            .hero-card::before {
+            .hero-card::after {
                 content: '';
                 position: absolute;
                 top: -50%; left: -50%;
                 width: 200%; height: 200%;
-                background: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.08) 0%, transparent 55%);
+                background: radial-gradient(circle at 50% 40%, rgba(16, 185, 129, 0.07) 0%, transparent 60%);
                 pointer-events: none;
                 z-index: 0;
             }
@@ -401,43 +402,47 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                 z-index: 1;
             }
             .hero-icon {
-                font-size: 72px;
+                font-size: 64px;
                 display: inline-block;
-                margin-bottom: 20px;
+                margin-bottom: 16px;
                 animation: levitar 4s ease-in-out infinite;
+                background: rgba(16, 185, 129, 0.1);
+                padding: 16px 20px;
+                border-radius: 20px;
+                border: 1px solid rgba(16, 185, 129, 0.25);
             }
             .hero-title {
                 font-family: 'Cinzel', serif;
-                font-size: 44px;
+                font-size: 40px;
                 font-weight: 800;
                 color: #ffffff;
-                letter-spacing: 5px;
-                margin-bottom: 12px;
-                text-shadow: 0 0 40px rgba(255,255,255,0.2);
+                letter-spacing: 4px;
+                margin-bottom: 10px;
+                text-shadow: 0 0 30px rgba(255,255,255,0.15);
             }
             .hero-subtitle {
-                font-size: 13px;
+                font-size: 11px;
                 color: #10b981;
                 text-transform: uppercase;
-                letter-spacing: 5px;
+                letter-spacing: 4px;
                 font-weight: 700;
-                margin-bottom: 30px;
+                margin-bottom: 24px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                gap: 15px;
+                gap: 12px;
             }
             .hero-subtitle::before, .hero-subtitle::after {
                 content: '';
                 height: 1px;
-                width: 50px;
+                width: 40px;
                 background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.6), transparent);
             }
             .hero-desc {
                 color: #a6b8d4;
-                font-size: 15px;
-                line-height: 1.7;
-                max-width: 480px;
+                font-size: 14px;
+                line-height: 1.6;
+                max-width: 420px;
                 margin: 0 auto;
                 font-weight: 400;
             }
@@ -457,7 +462,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             unsafe_allow_html=True,
         )
         
-        _, col_boton_centro, _ = st.columns([1, 1.4, 1])
+        _, col_boton_centro, _ = st.columns([1, 1.3, 1])
         with col_boton_centro:
             if st.button("Acceder al Sistema 🚪🚶", use_container_width=True):
                 st.session_state.etapa = "login"
@@ -935,7 +940,7 @@ else:
             """
 <div class="page-header">
     <div class="page-title">⚙️ Configuración del Sistema</div>
-    <div class="page-subtitle">Gestiona y personaliza las opciones maestras de categorías, tallas y colores. Haz clic em guardar al terminar.</div>
+    <div class="page-subtitle">Gestiona y personaliza las opciones maestras de categorías, tallas y colores. Haz clic en guardar al terminar.</div>
 </div>
 """,
             unsafe_allow_html=True,
