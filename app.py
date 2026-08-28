@@ -702,7 +702,6 @@ else:
         st.rerun()
 
     menu = st.session_state.get("menu_activo", "existencias")
-    # Si un vendedor quedó apuntando a una página de admin (por sesión previa), lo regresamos
     if menu in ("registrar", "modificar", "configuracion") and not ES_ADMIN:
         menu = "existencias"
         st.session_state.menu_activo = "existencias"
@@ -900,7 +899,7 @@ else:
                                 </div>
                             </div>
                             """,
-                            unsafe_allow_html=True,
+                            unsafe_allow_html=True,  # <-- ¡Aquí se añadió el parámetro corregido!
                         )
 
                         c_fav, c_qr = st.columns(2)
