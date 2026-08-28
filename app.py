@@ -468,9 +468,26 @@ div[data-testid="stForm"] {{
     width: 100%; height: 160px; display: flex; align-items: center; justify-content: center;
     background: rgba(219, 39, 119, 0.08); font-size: 34px; color: var(--accent);
 }}
-div[data-testid="stCode"] pre {{
+div[data-testid="stCode"] {{
+    width: 100% !important;
+    overflow-x: hidden !important;
+}}
+
+div[data-testid="stCode"] pre,
+div[data-testid="stCode"] code,
+div[data-testid="stCode"] * {{
     white-space: pre-wrap !important;
     word-break: break-word !important;
+    overflow-x: hidden !important;
+}}
+
+div[data-testid="stTextArea"] textarea {{
+    background-color: var(--input-bg) !important;
+    color: var(--text-secondary) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    font-size: 12px !important;
+    resize: none !important;
 }}
 
 .alert-banner {{
@@ -1044,7 +1061,10 @@ else:
                                     st.caption("Instala 'qrcode' en requirements.txt para activar esta función.")
 
                         detalles_texto = f"ID: {row['ID']} - {row['Producto']} ({row['Categoria']}) - Talla: {row['talla']} - Color: {row['color']} - Stock: {row['cantidad']}"
-                        st.code(detalles_texto, language=None)
+                        st.text_area(
+                            "Detalles", value=detalles_texto, height=70, disabled=True,
+                            label_visibility="collapsed", key=f"detalle_{row['ID']}",
+                        )
                         st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
             else:
                 st.info("No se encontraron registros con los filtros seleccionados.")
