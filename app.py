@@ -879,27 +879,25 @@ else:
 
                     with col_actual:
                         st.markdown(
-                            f"""
-                            <div class="product-card" style="border-color: {borde_color};">
-                                {foto_html}
-                                <div class="product-card-body">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                        <span style="background: rgba(219, 39, 119, 0.15); color: var(--accent); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">ID: {row['ID']}</span>
-                                        <span style="font-size: 12px; color: var(--text-secondary);">{row['Categoria']}</span>
-                                    </div>
-                                    <div style="font-size: 16px; font-weight: 700; color: var(--text-color); margin-bottom: 8px;">{estrella} {row['Producto']}</div>
-                                    <div style="font-size: 13px; color: var(--text-secondary); display: flex; gap: 12px; margin-bottom: 8px;">
-                                        <span>📏 Talla: <b>{row['talla']}</b></span>
-                                        <span>🎨 Color: <b>{row['color']}</b></span>
-                                    </div>
-                                    {precio_html}
-                                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 10px; font-size: 13px;">
-                                        {badge_stock}
-                                        <span style="font-size: 11px; color: var(--text-secondary);">Alerta mín: {row['alerta']}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            """,
+                            f"""<div class="product-card" style="border-color: {borde_color};">
+{foto_html}
+<div class="product-card-body">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+<span style="background: rgba(219, 39, 119, 0.15); color: var(--accent); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">ID: {row['ID']}</span>
+<span style="font-size: 12px; color: var(--text-secondary);">{row['Categoria']}</span>
+</div>
+<div style="font-size: 16px; font-weight: 700; color: var(--text-color); margin-bottom: 8px;">{estrella} {row['Producto']}</div>
+<div style="font-size: 13px; color: var(--text-secondary); display: flex; gap: 12px; margin-bottom: 8px;">
+<span>📏 Talla: <b>{row['talla']}</b></span>
+<span>🎨 Color: <b>{row['color']}</b></span>
+</div>
+{precio_html}
+<div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 10px; font-size: 13px;">
+{badge_stock}
+<span style="font-size: 11px; color: var(--text-secondary);">Alerta mín: {row['alerta']}</span>
+</div>
+</div>
+</div>""",
                             unsafe_allow_html=True,
                         )
 
