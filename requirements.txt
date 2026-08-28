@@ -5,3 +5,4 @@ google-auth
 cryptography
 supabase
 pygithub
+qrcode[pil]
