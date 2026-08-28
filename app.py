@@ -1,4 +1,5 @@
 import json
+import textwrap
 import uuid
 from datetime import datetime
 from io import BytesIO
@@ -37,10 +38,18 @@ supabase = obtener_conexion_supabase()
 BUCKET_FOTOS = "productos-fotos"
 
 
+@st.cache_resource
+def obtener_conexion_github():
+    try:
+        return Github(st.secrets["GITHUB_TOKEN"])
+    except Exception:
+        return None
+
+
 @st.cache_data(ttl=60)
 def cargar_config_github():
     try:
-        g = Github(st.secrets["GITHUB_TOKEN"])
+        g = obtener_conexion_github()
         repo = g.get_repo("leivercontreras18-ux/inventario-app")
         file_content = repo.get_contents("config.json", ref="main")
         return json.loads(file_content.decoded_content.decode("utf-8"))
@@ -137,7 +146,7 @@ def registrar_movimiento(prenda_id, producto, tipo, cantidad, precio_unitario=0,
 
 def guardar_configuracion_completa(cats, tallas, colores):
     try:
-        g = Github(st.secrets["GITHUB_TOKEN"])
+        g = obtener_conexion_github()
         repo = g.get_repo("leivercontreras18-ux/inventario-app")
         config_data = {"categorias": cats, "tallas": tallas, "colores": colores}
         contenido = json.dumps(config_data, indent=4, ensure_ascii=False)
@@ -528,8 +537,13 @@ ES_ADMIN = st.session_state.rol_actual == "administrador"
 # =====================================================================================
 
 if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
-    st.markdown(
-        """
+    total_prendas_hero = len(df) if not df.empty else 0
+    if total_prendas_hero > 0:
+        porcentaje_ok_hero = round(int((df["cantidad"] > df["alerta"]).sum()) / total_prendas_hero * 100)
+    else:
+        porcentaje_ok_hero = 0
+
+    hero_html = """
         <style>
         .block-container { padding: 1.5rem 2rem !important; max-width: 100% !important; }
         .full-hero-wrapper {
@@ -539,18 +553,44 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             overflow: hidden; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.08);
             margin: 0 auto; max-width: 1450px;
         }
+        @keyframes floatParticle {
+            0%   { transform: translateY(0px) translateX(0px); opacity: 0.25; }
+            50%  { transform: translateY(-18px) translateX(8px); opacity: 0.6; }
+            100% { transform: translateY(0px) translateX(0px); opacity: 0.25; }
+        }
+        @keyframes pulseGlowHero {
+            0%, 100% { box-shadow: 0 8px 25px rgba(219, 39, 119, 0.35); }
+            50% { box-shadow: 0 8px 40px rgba(244, 114, 182, 0.65); }
+        }
+        @keyframes kenBurnsHero {
+            0% { transform: scale(1) translate(0,0); }
+            100% { transform: scale(1.08) translate(-1%, -1%); }
+        }
+        .bg-photo-hero {
+            position: absolute; top: -10%; right: -15%; width: 55%; height: 130%;
+            background: radial-gradient(circle at 30% 30%, rgba(219, 39, 119, 0.30), transparent 60%);
+            border-radius: 50%; filter: blur(10px);
+            animation: kenBurnsHero 14s ease-in-out infinite alternate; z-index: 0;
+        }
+        .particle-hero {
+            position: absolute; border-radius: 50%; background: #f472b6; filter: blur(1px); z-index: 0;
+        }
+        .stitch-line-hero { position: absolute; border-top: 1.5px dashed rgba(212, 175, 120, 0.4); z-index: 0; }
         .hero-inner { position: relative; z-index: 1; }
         .hero-topbar {
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px;
             border-bottom: 1px solid var(--border-color); padding-bottom: 20px;
         }
-        .hero-brand {
-            font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700; color: var(--text-color);
-            letter-spacing: 2px; display: flex; align-items: center; gap: 10px;
+        .hero-brand { display: flex; align-items: center; gap: 12px; }
+        .brand-icon-hero {
+            width: 30px; height: 30px; border-radius: 50%;
+            background: linear-gradient(135deg, #db2777 0%, #f472b6 60%, #d4af78 100%);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Cinzel', serif; font-weight: 800; font-size: 14px; color: #0c0b0e;
+            box-shadow: 0 0 14px rgba(244, 114, 182, 0.6);
         }
-        .hero-nav-links {
-            display: flex; gap: 25px; font-size: 12px; text-transform: uppercase;
-            letter-spacing: 1.5px; color: var(--text-secondary); font-weight: 600;
+        .hero-brand-name {
+            font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700; color: var(--text-color); letter-spacing: 2px;
         }
         .hero-title {
             font-family: 'Cinzel', serif; font-size: 52px; font-weight: 800; color: var(--text-color);
@@ -561,22 +601,36 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             font-weight: 700; margin-bottom: 20px;
         }
         .hero-desc { color: var(--text-secondary); font-size: 15px; line-height: 1.6; max-width: 650px; margin-bottom: 35px; }
-        .feature-pills-container { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 40px; }
+        .feature-pills-container { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 32px; }
         .feature-pill {
             background: rgba(219, 39, 119, 0.1); border: 1px solid var(--border-color); color: var(--accent);
             padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
         }
+        .stats-row-hero { display: flex; gap: 40px; }
+        .stat-value-hero { font-family: 'Cinzel', serif; font-size: 26px; font-weight: 800; color: var(--text-color); }
+        .stat-label-hero {
+            font-size: 10px; color: var(--text-secondary); text-transform: uppercase;
+            letter-spacing: 1.5px; font-weight: 700; margin-top: 2px;
+        }
+        .footer-signature-hero { margin-top: 12px; text-align: center; font-size: 10px; color: var(--text-secondary); }
+        .full-hero-wrapper .stButton > button { animation: pulseGlowHero 2.6s ease-in-out infinite; }
         </style>
         <div class="full-hero-wrapper">
+            <div class="bg-photo-hero"></div>
+            <div class="particle-hero" style="width:5px; height:5px; top:15%; left:60%; animation: floatParticle 6s ease-in-out infinite;"></div>
+            <div class="particle-hero" style="width:3px; height:3px; top:35%; left:75%; animation: floatParticle 8s ease-in-out infinite 1s;"></div>
+            <div class="particle-hero" style="width:4px; height:4px; top:55%; left:68%; animation: floatParticle 7s ease-in-out infinite 2s;"></div>
+            <div class="particle-hero" style="width:3px; height:3px; top:25%; left:85%; animation: floatParticle 9s ease-in-out infinite 0.5s;"></div>
+            <div class="stitch-line-hero" style="top:12%; left:5%; width:120px;"></div>
+            <div class="stitch-line-hero" style="bottom:18%; left:5%; width:80px;"></div>
             <div class="hero-inner">
                 <div class="hero-topbar">
                     <div class="hero-brand">
-                        <span style="width: 10px; height: 10px; background: #f472b6; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px #f472b6;"></span>
-                        PLAYING / MARKET
+                        <div class="brand-icon-hero">L</div>
+                        <div class="hero-brand-name">LEWIN BOUTIQUE</div>
                     </div>
-                    <div class="hero-nav-links"><span>Tienda</span><span>Categorías</span><span>Blog</span><span>Contacto</span></div>
                 </div>
-                <div class="hero-subtitle-tag">Boutique de Moda</div>
+                <div class="hero-subtitle-tag">Inventario Boutique</div>
                 <h1 class="hero-title">Lewin Boutique<br>Control Center</h1>
                 <p class="hero-desc">
                     Gestión completa de inventario, ventas, reportes y catálogo visual en una sola plataforma,
@@ -588,17 +642,23 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                     <span class="feature-pill">📈 Reportes de rentabilidad</span>
                     <span class="feature-pill">👥 Roles de usuario</span>
                 </div>
+                <div class="stats-row-hero">
+                    <div><div class="stat-value-hero">PLACEHOLDER_TOTAL</div><div class="stat-label-hero">Prendas en catálogo</div></div>
+                    <div><div class="stat-value-hero">PLACEHOLDER_PORC%</div><div class="stat-label-hero">Stock por encima del mínimo</div></div>
+                    <div><div class="stat-value-hero">24/7</div><div class="stat-label-hero">Acceso en la nube</div></div>
+                </div>
             </div>
             <div class="hero-inner" style="max-width: 380px;">
-        """,
-        unsafe_allow_html=True,
-    )
+        """
+    hero_html = hero_html.replace("PLACEHOLDER_TOTAL", str(total_prendas_hero)).replace("PLACEHOLDER_PORC", str(porcentaje_ok_hero))
+
+    st.markdown(hero_html, unsafe_allow_html=True)
 
     if st.button("INICIO", use_container_width=True):
         st.session_state.etapa = "login"
         st.rerun()
 
-    st.markdown("</div></div>", unsafe_allow_html=True)
+    st.markdown("<div class='footer-signature-hero'>Diseñado con ♥ para Lewin Boutique</div></div></div>", unsafe_allow_html=True)
     st.stop()
 
 # =====================================================================================
@@ -877,9 +937,7 @@ else:
                     if float(row.get("precio_venta", 0) or 0) > 0:
                         precio_html = f"<div style='margin-top:6px; font-size:14px; font-weight:700; color: var(--accent);'>{moneda(row.get('precio_venta', 0))}</div>"
 
-                    with col_actual:
-                        st.markdown(
-                            f"""<div class="product-card" style="border-color: {borde_color};">
+                    tarjeta_html = f"""<div class="product-card" style="border-color: {borde_color};">
 {foto_html}
 <div class="product-card-body">
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -897,9 +955,10 @@ else:
 <span style="font-size: 11px; color: var(--text-secondary);">Alerta mín: {row['alerta']}</span>
 </div>
 </div>
-</div>""",
-                            unsafe_allow_html=True,
-                        )
+</div>"""
+
+                    with col_actual:
+                        st.markdown(tarjeta_html, unsafe_allow_html=True)
 
                         c_fav, c_qr = st.columns(2)
                         with c_fav:
@@ -917,7 +976,7 @@ else:
                                     st.caption("Instala 'qrcode' en requirements.txt para activar esta función.")
 
                         detalles_texto = f"ID: {row['ID']} - {row['Producto']} ({row['Categoria']}) - Talla: {row['talla']} - Color: {row['color']} - Stock: {row['cantidad']}"
-                        render_copy_button(detalles_texto, label="Copiar Detalles")
+                        st.code(detalles_texto, language=None)
                         st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
             else:
                 st.info("No se encontraron registros con los filtros seleccionados.")
