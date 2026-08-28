@@ -677,6 +677,56 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
 # =====================================================================================
 
 elif not st.session_state.autenticado and st.session_state.etapa == "login":
+    st.markdown(
+        """
+        <style>
+        @keyframes floatParticleLogin {
+            0%   { transform: translateY(0px) translateX(0px); opacity: 0.2; }
+            50%  { transform: translateY(-20px) translateX(10px); opacity: 0.55; }
+            100% { transform: translateY(0px) translateX(0px); opacity: 0.2; }
+        }
+        @keyframes pulseGlowLogin {
+            0%, 100% { box-shadow: 0 8px 25px rgba(219, 39, 119, 0.35); }
+            50% { box-shadow: 0 8px 40px rgba(244, 114, 182, 0.65); }
+        }
+        .particle-login {
+            position: fixed; border-radius: 50%; background: #f472b6; filter: blur(1px);
+            z-index: 0; pointer-events: none;
+        }
+        .login-welcome-tag {
+            font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 3px;
+            font-weight: 700; text-align: center; margin-bottom: 6px;
+        }
+        .login-brand-icon {
+            width: 42px; height: 42px; border-radius: 50%; margin: 0 auto 12px auto;
+            background: linear-gradient(135deg, #db2777 0%, #f472b6 60%, #d4af78 100%);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Cinzel', serif !important; font-weight: 800; font-size: 18px; color: #0c0b0e;
+            box-shadow: 0 0 18px rgba(244, 114, 182, 0.6);
+        }
+        .login-title-text {
+            font-family: 'Cinzel', serif !important; font-size: 22px; font-weight: 700 !important;
+            color: var(--text-color); letter-spacing: 1px; text-align: center;
+        }
+        .login-subtitle-text {
+            font-size: 12px; color: var(--text-secondary); text-align: center; margin-top: 4px; margin-bottom: 14px;
+        }
+        div[data-testid="stForm"] div[data-testid="stFormSubmitButton"] > button {
+            background: linear-gradient(135deg, #db2777 0%, #f472b6 100%) !important;
+            color: #ffffff !important; border: none !important;
+            animation: pulseGlowLogin 2.6s ease-in-out infinite !important;
+        }
+        </style>
+        <div class="particle-login" style="width:5px; height:5px; top:15%; left:10%; animation: floatParticleLogin 7s ease-in-out infinite;"></div>
+        <div class="particle-login" style="width:3px; height:3px; top:75%; left:15%; animation: floatParticleLogin 9s ease-in-out infinite 1s;"></div>
+        <div class="particle-login" style="width:4px; height:4px; top:20%; left:88%; animation: floatParticleLogin 8s ease-in-out infinite 0.5s;"></div>
+        <div class="particle-login" style="width:3px; height:3px; top:80%; left:85%; animation: floatParticleLogin 10s ease-in-out infinite 2s;"></div>
+        <div class="particle-login" style="width:6px; height:6px; top:50%; left:6%; animation: floatParticleLogin 11s ease-in-out infinite 1.5s;"></div>
+        <div class="particle-login" style="width:4px; height:4px; top:45%; left:94%; animation: floatParticleLogin 9.5s ease-in-out infinite 0.8s;"></div>
+        """,
+        unsafe_allow_html=True,
+    )
+
     if st.button("← Volver a la portada"):
         st.session_state.etapa = "bienvenida"
         st.rerun()
@@ -684,15 +734,17 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
     _, col_centro, _ = st.columns([1, 1.4, 1])
     with col_centro:
         st.markdown("<br>", unsafe_allow_html=True)
-        with st.container(border=True):
-            st.markdown("<h3>✦ Lewin Boutique Access</h3>", unsafe_allow_html=True)
-            st.markdown("<p style='color: var(--text-secondary); font-size: 12px;'>Ingrese sus credenciales en el sistema.</p>", unsafe_allow_html=True)
+        st.markdown("<div class='login-welcome-tag'>Bienvenida de vuelta</div>", unsafe_allow_html=True)
+        with st.form("form_login"):
+            st.markdown("<div class='login-brand-icon'>L</div>", unsafe_allow_html=True)
+            st.markdown("<div class='login-title-text'>Lewin Boutique Access</div>", unsafe_allow_html=True)
+            st.markdown("<div class='login-subtitle-text'>Ingresa tus credenciales para continuar</div>", unsafe_allow_html=True)
 
-            usuario_input = st.text_input("Email Address / Usuario", placeholder="Ingrese su usuario")
-            clave_input = st.text_input("Password / Contraseña", type="password", placeholder="Ingrese su contraseña")
-            remember_checked = st.checkbox("Remember me")
+            usuario_input = st.text_input("👤 Usuario", placeholder="Ingresa tu usuario")
+            clave_input = st.text_input("🔒 Contraseña", type="password", placeholder="Ingresa tu contraseña")
+            remember_checked = st.checkbox("Recordarme")
 
-            if st.button("Log in 🚪🚶", use_container_width=True):
+            if st.form_submit_button("INGRESAR", use_container_width=True):
                 user_clean = usuario_input.strip().lower()
                 pass_clean = clave_input.strip()
 
