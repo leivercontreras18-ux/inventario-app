@@ -1428,11 +1428,13 @@ else:
 
             st.markdown("<div class='section-title'>Ventas por mes</div>", unsafe_allow_html=True)
             ventas_mes = ventas.groupby("mes")["monto"].sum()
-            st.bar_chart(ventas_mes)
+            if len(ventas_mes) < 2:
+                st.caption("Con solo un mes de datos el gráfico se ve muy simple — se vuelve más útil a medida que registres ventas en distintos meses.")
+            st.bar_chart(ventas_mes, color="#f472b6", height=260)
 
             st.markdown("<div class='section-title'>Top 5 productos más vendidos (unidades)</div>", unsafe_allow_html=True)
             top_productos = ventas.groupby("producto")["cantidad"].sum().sort_values(ascending=False).head(5)
-            st.bar_chart(top_productos)
+            st.bar_chart(top_productos, color="#f472b6", height=260)
         else:
             st.info("Aún no hay ventas registradas para generar gráficas. Usa el menú 'Vender' para empezar a registrar.")
 
