@@ -291,7 +291,7 @@ def render_copy_button(text_to_copy: str, label: str = "Copiar Código"):
         ">📋 {label}</button>
     </div>
     """
-    components.html(component_code, height=40)
+    components.html(component_code, height=45)
 
 
 # =====================================================================================
@@ -388,7 +388,6 @@ div[data-testid="stForm"] {{
 .page-title {{ font-size: 32px; font-weight: 700; color: var(--text-color) !important; }}
 .page-subtitle {{ font-size: 14px; color: var(--text-secondary) !important; margin-top: 4px; }}
 .section-title {{ font-size: 18px; font-weight: 600; color: var(--text-color); margin-bottom: 4px; }}
-.section-subtitle {{ font-size: 12px; color: var(--text-secondary); margin-bottom: 15px; }}
 
 .metric-card {{
     background: var(--card-bg); backdrop-filter: blur(20px);
@@ -424,10 +423,6 @@ div[data-testid="stForm"] {{
 .product-photo-placeholder {{
     width: 100%; height: 160px; display: flex; align-items: center; justify-content: center;
     background: rgba(219, 39, 119, 0.08); font-size: 34px; color: var(--accent);
-}}
-.alert-banner {{
-    background: rgba(244, 114, 182, 0.12); border: 1px solid var(--accent);
-    border-radius: 14px; padding: 14px 18px; margin-bottom: 20px; color: var(--text-color);
 }}
 </style>
 """
@@ -630,10 +625,8 @@ else:
         total_prendas = len(df) if not df.empty else 0
         stock_total = int(df["cantidad"].sum()) if not df.empty and "cantidad" in df.columns else 0
         total_alertas = 0
-        prendas_alerta = pd.DataFrame()
         if not df.empty and "cantidad" in df.columns and "alerta" in df.columns:
-            prendas_alerta = df[df["cantidad"] <= df["alerta"]]
-            total_alertas = int(prendas_alerta.shape[0])
+            total_alertas = int(df[df["cantidad"] <= df["alerta"]].shape[0])
 
         valor_inventario = float((df["cantidad"] * df["precio_venta"]).sum()) if not df.empty else 0.0
 
