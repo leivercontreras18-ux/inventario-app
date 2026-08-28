@@ -548,8 +548,8 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         .block-container { padding: 1.5rem 2rem !important; max-width: 100% !important; }
         .full-hero-wrapper {
             background: var(--card-bg); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
-            border: 1px solid var(--border-color); border-radius: 32px; padding: 50px 70px; min-height: 85vh;
-            display: flex; flex-direction: column; justify-content: space-between; position: relative;
+            border: 1px solid var(--border-color); border-radius: 32px 32px 0 0; padding: 50px 70px 35px 70px;
+            display: flex; flex-direction: column; position: relative;
             overflow: hidden; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.08);
             margin: 0 auto; max-width: 1450px;
         }
@@ -586,14 +586,14 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             width: 30px; height: 30px; border-radius: 50%;
             background: linear-gradient(135deg, #db2777 0%, #f472b6 60%, #d4af78 100%);
             display: flex; align-items: center; justify-content: center;
-            font-family: 'Cinzel', serif; font-weight: 800; font-size: 14px; color: #0c0b0e;
+            font-family: 'Cinzel', serif !important; font-weight: 800; font-size: 14px; color: #0c0b0e;
             box-shadow: 0 0 14px rgba(244, 114, 182, 0.6);
         }
         .hero-brand-name {
-            font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700; color: var(--text-color); letter-spacing: 2px;
+            font-family: 'Cinzel', serif !important; font-size: 15px; font-weight: 700; color: var(--text-color); letter-spacing: 2px;
         }
-        .hero-title {
-            font-family: 'Cinzel', serif; font-size: 52px; font-weight: 800; color: var(--text-color);
+        h1.hero-title, .hero-title {
+            font-family: 'Cinzel', serif !important; font-size: 52px; font-weight: 800 !important; color: var(--text-color);
             letter-spacing: 2px; line-height: 1.1; margin-bottom: 16px;
         }
         .hero-subtitle-tag {
@@ -607,13 +607,23 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
         }
         .stats-row-hero { display: flex; gap: 40px; }
-        .stat-value-hero { font-family: 'Cinzel', serif; font-size: 26px; font-weight: 800; color: var(--text-color); }
+        .stat-value-hero { font-family: 'Cinzel', serif !important; font-size: 26px; font-weight: 800; color: var(--text-color); }
         .stat-label-hero {
             font-size: 10px; color: var(--text-secondary); text-transform: uppercase;
             letter-spacing: 1.5px; font-weight: 700; margin-top: 2px;
         }
-        .footer-signature-hero { margin-top: 12px; text-align: center; font-size: 10px; color: var(--text-secondary); }
-        .full-hero-wrapper .stButton > button { animation: pulseGlowHero 2.6s ease-in-out infinite; }
+        .hero-cta-box {
+            max-width: 1450px; margin: 0 auto; background: var(--card-bg); backdrop-filter: blur(40px);
+            border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 32px 32px;
+            padding: 25px 70px 30px 70px;
+        }
+        div[data-testid="stButton"] { max-width: 340px; margin: 0 auto; }
+        div[data-testid="stButton"] > button {
+            background: linear-gradient(135deg, #db2777 0%, #f472b6 100%) !important;
+            color: #ffffff !important; border: none !important;
+            animation: pulseGlowHero 2.6s ease-in-out infinite !important;
+        }
+        .footer-signature-hero { margin-top: 10px; text-align: center; font-size: 10px; color: var(--text-secondary); }
         </style>
         <div class="full-hero-wrapper">
             <div class="bg-photo-hero"></div>
@@ -648,7 +658,8 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                     <div><div class="stat-value-hero">24/7</div><div class="stat-label-hero">Acceso en la nube</div></div>
                 </div>
             </div>
-            <div class="hero-inner" style="max-width: 380px;">
+        </div>
+        <div class="hero-cta-box">
         """
     hero_html = hero_html.replace("PLACEHOLDER_TOTAL", str(total_prendas_hero)).replace("PLACEHOLDER_PORC", str(porcentaje_ok_hero))
 
@@ -658,7 +669,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         st.session_state.etapa = "login"
         st.rerun()
 
-    st.markdown("<div class='footer-signature-hero'>Diseñado con ♥ para Lewin Boutique</div></div></div>", unsafe_allow_html=True)
+    st.markdown("<div class='footer-signature-hero'>Diseñado con ♥ para Lewin Boutique</div></div>", unsafe_allow_html=True)
     st.stop()
 
 # =====================================================================================
