@@ -373,7 +373,7 @@ def get_css(tema: str) -> str:
 
 header[data-testid="stHeader"] {{ background: transparent !important; }}
 
-.block-container {{ max-width: 100% !important; padding: 2rem !important; }}
+.block-container {{ max-width: 100% !important; padding: 3.5rem 2rem 2rem 2rem !important; }}
 
 section[data-testid="stSidebar"] {{
     width: 250px !important;
@@ -468,6 +468,11 @@ div[data-testid="stForm"] {{
     width: 100%; height: 160px; display: flex; align-items: center; justify-content: center;
     background: rgba(219, 39, 119, 0.08); font-size: 34px; color: var(--accent);
 }}
+div[data-testid="stCode"] pre {{
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+}}
+
 .alert-banner {{
     background: rgba(244, 114, 182, 0.12); border: 1px solid var(--accent);
     border-radius: 14px; padding: 14px 18px; margin-bottom: 20px; color: var(--text-color);
@@ -545,7 +550,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
 
     hero_html = """
         <style>
-        .block-container { padding: 1.5rem 2rem !important; max-width: 100% !important; }
+        .block-container { padding: 3.5rem 2rem 2rem 2rem !important; max-width: 100% !important; }
         .full-hero-wrapper {
             background: var(--card-bg); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
             border: 1px solid var(--border-color); border-radius: 32px 32px 0 0; padding: 50px 70px 35px 70px;
