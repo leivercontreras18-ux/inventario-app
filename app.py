@@ -327,6 +327,31 @@ def grafico_barras_horizontal(serie, altura=300):
     return fig
 
 
+def grafico_dona(serie, texto_centro_arriba="", texto_centro_abajo="", altura=340):
+    """Gráfica de dona (pastel) con la paleta rosa/oro, con un total destacado en el centro."""
+    c = colores_grafico()
+    paleta = ["#7a1f4a", "#db2777", "#f472b6", "#f9a8d4", "#d4af78", "#a52465", "#ec4899", "#be185d"]
+    colores_segmentos = [paleta[i % len(paleta)] for i in range(len(serie))]
+    fig = go.Figure(data=[go.Pie(
+        labels=list(serie.index), values=list(serie.values), hole=0.62,
+        marker=dict(colors=colores_segmentos, line=dict(color="rgba(0,0,0,0)", width=0)),
+        textinfo="percent", textfont=dict(color="#ffffff", size=12),
+        hovertemplate="%{label}<br>%{value} (%{percent})<extra></extra>",
+        sort=False,
+    )])
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color=c["texto"], family="Montserrat, sans-serif"),
+        margin=dict(l=10, r=10, t=10, b=10), height=altura, showlegend=True,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.2, font=dict(color=c["texto"], size=11)),
+        annotations=[dict(
+            text=f"<b style='font-size:26px'>{texto_centro_arriba}</b><br><span style='font-size:11px'>{texto_centro_abajo}</span>",
+            x=0.5, y=0.5, font=dict(color=c["texto"]), showarrow=False,
+        )],
+    )
+    return fig
+
+
 def generar_qr_bytes(texto):
     if not QR_DISPONIBLE:
         return None
@@ -608,7 +633,7 @@ if not st.session_state.autenticado and "recuerdame_user" in query_params:
         st.session_state.usuario_actual = saved_user
         st.session_state.rol_actual = USUARIOS[saved_user]["rol"]
 
-ES_ADMIN = st.session_state.rol_actual == "administrador"
+ES_ADMIN = True  # Todos los usuarios (leiver y winderly) tienen acceso completo por igual
 
 # =====================================================================================
 # 1. PANTALLA DE BIENVENIDA
@@ -1493,6 +1518,43 @@ else:
             st.plotly_chart(grafico_barras_horizontal(top_productos), use_container_width=True, config={"displayModeBar": False})
         else:
             st.info("Aún no hay ventas registradas para generar gráficas. Usa el menú 'Vender' para empezar a registrar.")
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        col_dona1, col_dona2 = st.columns(2)
+
+        with col_dona1:
+            st.markdown("<div class='section-title'>Inventario por categoría</div>", unsafe_allow_html=True)
+            if not df.empty:
+                inv_por_cat = df.groupby("Categoria")["cantidad"].sum()
+                inv_por_cat = inv_por_cat[inv_por_cat > 0]
+                if not inv_por_cat.empty:
+                    st.plotly_chart(
+                        grafico_dona(inv_por_cat, texto_centro_arriba=str(int(inv_por_cat.sum())), texto_centro_abajo="unidades"),
+                        use_container_width=True, config={"displayModeBar": False},
+                    )
+                else:
+                    st.info("No hay stock registrado todavía.")
+            else:
+                st.info("No hay prendas registradas todavía.")
+
+        with col_dona2:
+            st.markdown("<div class='section-title'>Ventas por categoría</div>", unsafe_allow_html=True)
+            if not ventas.empty and not df.empty:
+                ventas_cat = ventas.copy()
+                ventas_cat["prenda_id"] = ventas_cat["prenda_id"].astype(str)
+                mapa_categoria = df.set_index(df["ID"].astype(str))["Categoria"]
+                ventas_cat["Categoria"] = ventas_cat["prenda_id"].map(mapa_categoria)
+                ventas_por_cat = ventas_cat.dropna(subset=["Categoria"]).groupby("Categoria")["cantidad"].sum()
+                ventas_por_cat = ventas_por_cat[ventas_por_cat > 0]
+                if not ventas_por_cat.empty:
+                    st.plotly_chart(
+                        grafico_dona(ventas_por_cat, texto_centro_arriba=str(int(ventas_por_cat.sum())), texto_centro_abajo="vendidas"),
+                        use_container_width=True, config={"displayModeBar": False},
+                    )
+                else:
+                    st.info("Aún no hay suficientes ventas para mostrar por categoría.")
+            else:
+                st.info("Aún no hay ventas registradas.")
 
     # -----------------------------------------------------------------------------
     # CONFIGURACIÓN (solo admin)
