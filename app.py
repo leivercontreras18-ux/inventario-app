@@ -72,6 +72,12 @@ COLUMNAS_MOVIMIENTOS = [
     "precio_unitario", "costo_unitario", "fecha", "usuario",
 ]
 
+COLUMNAS_DEUDORES = ["id", "nombre", "telefono", "saldo", "notas"]
+
+COLUMNAS_DEUDAS_MOVIMIENTOS = [
+    "id", "deudor_id", "deudor_nombre", "tipo", "descripcion", "monto", "fecha", "usuario",
+]
+
 
 @st.cache_data(ttl=30)
 def cargar_datos_completos():
@@ -139,6 +145,112 @@ def registrar_movimiento(prenda_id, producto, tipo, cantidad, precio_unitario=0,
         }
         supabase.table("movimientos").insert(datos).execute()
         cargar_movimientos.clear()
+        return True
+    except Exception as e:
+        st.error(f"Error al registrar el movimiento: {e}")
+        return False
+
+
+def eliminar_todos_los_movimientos():
+    """Borra todo el historial de ventas/compras (usado por el botón 'Restablecer' de Reportes)."""
+    if not supabase:
+        return False
+    try:
+        supabase.table("movimientos").delete().neq("id", "___nunca___").execute()
+        cargar_movimientos.clear()
+        return True
+    except Exception as e:
+        st.error(f"Error al restablecer los movimientos: {e}")
+        return False
+
+
+@st.cache_data(ttl=20)
+def cargar_deudores():
+    if not supabase:
+        return pd.DataFrame(columns=COLUMNAS_DEUDORES)
+    try:
+        res = supabase.table("deudores").select("*").order("nombre").execute()
+        if res.data:
+            return pd.DataFrame(res.data)
+    except Exception as e:
+        st.warning(f"No se pudieron cargar los deudores: {e}")
+    return pd.DataFrame(columns=COLUMNAS_DEUDORES)
+
+
+@st.cache_data(ttl=20)
+def cargar_deudas_movimientos():
+    if not supabase:
+        return pd.DataFrame(columns=COLUMNAS_DEUDAS_MOVIMIENTOS)
+    try:
+        res = supabase.table("deudas_movimientos").select("*").order("fecha", desc=True).execute()
+        if res.data:
+            return pd.DataFrame(res.data)
+    except Exception as e:
+        st.warning(f"No se pudieron cargar los movimientos de deudores: {e}")
+    return pd.DataFrame(columns=COLUMNAS_DEUDAS_MOVIMIENTOS)
+
+
+def guardar_deudor(nombre, telefono="", notas=""):
+    if not supabase:
+        st.warning("No hay conexión a la base de datos.")
+        return False
+    try:
+        datos = {
+            "id": str(uuid.uuid4()),
+            "nombre": str(nombre).strip(),
+            "telefono": str(telefono or "").strip(),
+            "saldo": 0.0,
+            "notas": str(notas or "").strip(),
+        }
+        supabase.table("deudores").insert(datos).execute()
+        cargar_deudores.clear()
+        return True
+    except Exception as e:
+        st.error(f"Error al guardar la persona: {e}")
+        return False
+
+
+def actualizar_saldo_deudor(deudor_id, nuevo_saldo):
+    if not supabase:
+        return False
+    try:
+        supabase.table("deudores").update({"saldo": float(nuevo_saldo)}).match({"id": deudor_id}).execute()
+        cargar_deudores.clear()
+        return True
+    except Exception as e:
+        st.error(f"Error al actualizar el saldo: {e}")
+        return False
+
+
+def eliminar_deudor(deudor_id):
+    if not supabase:
+        return False
+    try:
+        supabase.table("deudores").delete().match({"id": deudor_id}).execute()
+        cargar_deudores.clear()
+        return True
+    except Exception as e:
+        st.error(f"Error al eliminar: {e}")
+        return False
+
+
+def registrar_movimiento_deuda(deudor_id, deudor_nombre, tipo, descripcion, monto):
+    if not supabase:
+        st.warning("No hay conexión a la base de datos.")
+        return False
+    try:
+        datos = {
+            "id": str(uuid.uuid4()),
+            "deudor_id": str(deudor_id),
+            "deudor_nombre": str(deudor_nombre),
+            "tipo": tipo,
+            "descripcion": str(descripcion or ""),
+            "monto": float(monto or 0),
+            "fecha": datetime.now().isoformat(),
+            "usuario": st.session_state.get("usuario_actual", ""),
+        }
+        supabase.table("deudas_movimientos").insert(datos).execute()
+        cargar_deudas_movimientos.clear()
         return True
     except Exception as e:
         st.error(f"Error al registrar el movimiento: {e}")
@@ -270,6 +382,54 @@ def moneda(valor):
         return f"${float(valor):,.2f}"
     except Exception:
         return "$0.00"
+
+
+def encabezado_seccion_form(icono, titulo):
+    st.markdown(
+        f"""<div class="form-section-header"><span class="form-section-icon">{icono}</span><span class="form-section-title">{titulo}</span></div>""",
+        unsafe_allow_html=True,
+    )
+
+
+def formatear_fecha_corta(valor_fecha):
+    try:
+        dt = pd.to_datetime(valor_fecha)
+        return dt.strftime("%d/%m/%Y %H:%M")
+    except Exception:
+        return str(valor_fecha)
+
+
+def render_tabla_movimientos(df_mov):
+    """Tabla HTML con estilo de marca para el historial de movimientos (ventas/compras)."""
+    filas_html = ""
+    for _, fila in df_mov.iterrows():
+        tipo = str(fila.get("tipo", ""))
+        if tipo == "venta":
+            badge = "<span style='background: rgba(52,211,153,0.15); color:#34d399; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>Venta</span>"
+        elif tipo == "compra":
+            badge = "<span style='background: rgba(212,175,120,0.15); color:#d4af78; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>Compra</span>"
+        else:
+            badge = f"<span style='background: rgba(219,39,119,0.15); color:var(--accent); padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>{tipo.capitalize()}</span>"
+
+        filas_html += f"""<tr>
+<td>{formatear_fecha_corta(fila.get('fecha', ''))}</td>
+<td>{fila.get('producto', '')}</td>
+<td>{badge}</td>
+<td style="text-align:center;">{int(fila.get('cantidad', 0) or 0)}</td>
+<td style="text-align:right;">{moneda(fila.get('precio_unitario', 0))}</td>
+<td style="text-align:right;">{moneda(fila.get('costo_unitario', 0))}</td>
+<td>{fila.get('usuario', '')}</td>
+</tr>"""
+
+    tabla_html = f"""<div class="tabla-movimientos-wrapper">
+<table class="tabla-movimientos">
+<thead><tr>
+<th>Fecha</th><th>Producto</th><th>Tipo</th><th>Cant.</th><th>Precio Unit.</th><th>Costo Unit.</th><th>Usuario</th>
+</tr></thead>
+<tbody>{filas_html}</tbody>
+</table>
+</div>"""
+    st.markdown(tabla_html, unsafe_allow_html=True)
 
 
 def colores_grafico():
@@ -504,6 +664,62 @@ div[data-testid="stForm"] {{
     border-radius: 20px !important;
     padding: 25px !important;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25) !important;
+}}
+
+.form-section-header {{
+    display: flex; align-items: center; gap: 10px;
+    margin: 22px 0 14px 0; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}}
+.form-section-header:first-of-type {{ margin-top: 2px; }}
+.form-section-icon {{
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, #db2777 0%, #f472b6 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; box-shadow: 0 0 10px rgba(219, 39, 119, 0.45);
+}}
+.form-section-title {{
+    font-size: 13px; font-weight: 700; color: var(--text-color);
+    text-transform: uppercase; letter-spacing: 1px;
+}}
+
+section[data-testid="stFileUploaderDropzone"] {{
+    background: var(--input-bg) !important;
+    border: 1.5px dashed var(--border-color) !important;
+    border-radius: 14px !important;
+}}
+section[data-testid="stFileUploaderDropzone"] button {{
+    background: rgba(219, 39, 119, 0.15) !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--border-color) !important;
+}}
+
+.tabla-movimientos-wrapper {{
+    max-height: 480px; overflow-y: auto; border: 1px solid var(--border-color);
+    border-radius: 14px; background: var(--card-bg); backdrop-filter: blur(20px);
+}}
+.tabla-movimientos {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
+.tabla-movimientos thead th {{
+    position: sticky; top: 0; background: rgba(219, 39, 119, 0.15); color: var(--text-color);
+    text-align: left; padding: 12px 14px; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); z-index: 1;
+}}
+.tabla-movimientos tbody td {{
+    padding: 10px 14px; color: var(--text-color); border-bottom: 1px solid var(--border-color);
+}}
+.tabla-movimientos tbody tr:hover {{ background: rgba(219, 39, 119, 0.06); }}
+.tabla-movimientos tbody tr:last-child td {{ border-bottom: none; }}
+
+div[data-testid="stVerticalBlockBorderWrapper"] {{
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 18px !important;
+    backdrop-filter: blur(20px);
+}}
+.config-chip {{
+    background: rgba(219, 39, 119, 0.07); border: 1px solid var(--border-color);
+    border-radius: 10px; padding: 8px 14px; margin-bottom: 6px;
+    font-size: 13px; color: var(--text-color); display: flex; align-items: center; height: 38px;
 }}
 
 .page-header {{ margin-bottom: 25px; padding-bottom: 10px; }}
@@ -935,6 +1151,9 @@ else:
             ("comprar", "📦", "Registrar Compra"),
             ("movimientos", "📜", "Movimientos"),
         ]),
+        ("Cuentas", [
+            ("deudores", "🧾", "Deudores"),
+        ]),
         ("Negocio", [
             ("reportes", "📈", "Reportes"),
             ("configuracion", "⚙️", "Configuración"),
@@ -1300,14 +1519,14 @@ else:
         )
 
         with st.form(f"form_ropa_{st.session_state.form_version}", clear_on_submit=True):
-            st.subheader("📦 Información Básica")
+            encabezado_seccion_form("📦", "Información Básica")
             col1, col2 = st.columns(2)
             with col1:
                 sku = st.text_input("ID", placeholder="Ej: A1")
             with col2:
                 nombre = st.text_input("Producto", placeholder="Ej: Short")
 
-            st.subheader("🏷️ Clasificación y Atributos")
+            encabezado_seccion_form("🏷️", "Clasificación y Atributos")
             col3, col4, col5 = st.columns(3)
             with col3:
                 categoria = st.selectbox("Categoría", st.session_state.categorias_maestras)
@@ -1316,7 +1535,7 @@ else:
             with col5:
                 color = st.selectbox("Color", st.session_state.colores_maestros)
 
-            st.subheader("📊 Control de Stock, Precios y Alertas")
+            encabezado_seccion_form("📊", "Control de Stock, Precios y Alertas")
             col6, col7 = st.columns(2)
             with col6:
                 cantidad = st.number_input("Cantidad", min_value=0, value=0, step=1)
@@ -1329,10 +1548,10 @@ else:
             with col9:
                 precio_venta = st.number_input("Precio de venta", min_value=0.0, value=0.0, step=1.0)
 
-            st.subheader("📷 Foto del producto (opcional)")
+            encabezado_seccion_form("📷", "Foto del producto (opcional)")
             foto_subida = st.file_uploader("Sube una imagen", type=["png", "jpg", "jpeg", "webp"])
 
-            st.markdown("---")
+            st.markdown("<br>", unsafe_allow_html=True)
             if st.form_submit_button("💾 Guardar Prenda en el Sistema", use_container_width=True):
                 if sku.strip() == "":
                     st.error("El campo ID es obligatorio.")
@@ -1492,11 +1711,119 @@ else:
             if filtro_usuario != "Todos":
                 movs_filtrado = movs_filtrado[movs_filtrado["usuario"] == filtro_usuario]
 
-            st.dataframe(movs_filtrado, use_container_width=True, hide_index=True)
+            st.markdown("<br>", unsafe_allow_html=True)
+            render_tabla_movimientos(movs_filtrado)
 
             csv_movs = movs_filtrado.to_csv(index=False, sep=';').encode('utf-8-sig')
             st.download_button("📥 Exportar Movimientos a CSV", data=csv_movs,
                                 file_name="movimientos_lewin.csv", mime="text/csv")
+
+    # -----------------------------------------------------------------------------
+    # DEUDORES (cuentas por cobrar)
+    # -----------------------------------------------------------------------------
+    elif menu == "deudores":
+        st.markdown(
+            """
+<div class="page-header">
+    <div class="page-title">🧾 Deudores</div>
+    <div class="page-subtitle">Lleva el control de quién te debe, cuánto le fiaste y cuánto te ha pagado.</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        deudores_df = cargar_deudores()
+        total_por_cobrar = float(deudores_df["saldo"].sum()) if not deudores_df.empty else 0.0
+        cantidad_deudores = int((deudores_df["saldo"] > 0).sum()) if not deudores_df.empty else 0
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown(f"""<div class="metric-card"><div class="metric-label">Total por Cobrar</div><div class="metric-value">{moneda(total_por_cobrar)}</div></div>""", unsafe_allow_html=True)
+        with col2:
+            st.markdown(f"""<div class="metric-card"><div class="metric-label">Personas que Deben</div><div class="metric-value">{cantidad_deudores}</div></div>""", unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        col_izq, col_der = st.columns([1, 1.3])
+
+        with col_izq:
+            st.markdown("<div class='section-title'>➕ Agregar Persona</div><div class='section-subtitle'>Registra a alguien nuevo antes de fiarle o cobrarle.</div>", unsafe_allow_html=True)
+            with st.form("form_nuevo_deudor", clear_on_submit=True):
+                nombre_deudor = st.text_input("Nombre", placeholder="Ej: María Pérez")
+                telefono_deudor = st.text_input("Teléfono (opcional)", placeholder="Ej: 0414-1234567")
+                if st.form_submit_button("Guardar Persona", use_container_width=True):
+                    if nombre_deudor.strip() == "":
+                        st.error("El nombre es obligatorio.")
+                    else:
+                        if guardar_deudor(nombre_deudor, telefono_deudor):
+                            st.success(f"¡{nombre_deudor} fue agregada/o!")
+                            st.rerun()
+
+            st.markdown("<br>", unsafe_allow_html=True)
+
+            if not deudores_df.empty:
+                st.markdown("<div class='section-title'>💸 Registrar Cargo o Abono</div><div class='section-subtitle'>¿Le fías algo (sube la deuda) o te paga (baja la deuda)?</div>", unsafe_allow_html=True)
+                with st.form("form_movimiento_deuda", clear_on_submit=True):
+                    ids_deudores = deudores_df["id"].astype(str).tolist()
+                    id_deudor_sel = st.selectbox(
+                        "Persona", ids_deudores,
+                        format_func=lambda x: deudores_df[deudores_df["id"].astype(str) == x]["nombre"].values[0],
+                    )
+                    tipo_mov = st.radio("Tipo de movimiento", ["Le fío algo (sube la deuda)", "Me paga (baja la deuda)"])
+                    descripcion_mov = st.text_input("Descripción", placeholder="Ej: 2 blusas, abono en efectivo, etc.")
+                    monto_mov = st.number_input("Monto", min_value=0.0, step=1.0)
+
+                    if st.form_submit_button("Registrar", use_container_width=True):
+                        if monto_mov <= 0:
+                            st.error("El monto debe ser mayor a 0.")
+                        else:
+                            fila_deudor = deudores_df[deudores_df["id"].astype(str) == str(id_deudor_sel)].iloc[0]
+                            saldo_actual = float(fila_deudor.get("saldo", 0) or 0)
+                            es_cargo = tipo_mov.startswith("Le fío")
+                            nuevo_saldo = saldo_actual + monto_mov if es_cargo else saldo_actual - monto_mov
+                            if actualizar_saldo_deudor(id_deudor_sel, nuevo_saldo):
+                                registrar_movimiento_deuda(
+                                    deudor_id=id_deudor_sel, deudor_nombre=fila_deudor["nombre"],
+                                    tipo="cargo" if es_cargo else "abono",
+                                    descripcion=descripcion_mov, monto=monto_mov,
+                                )
+                                st.success(f"Nuevo saldo de {fila_deudor['nombre']}: {moneda(nuevo_saldo)}")
+                                st.rerun()
+
+        with col_der:
+            st.markdown("<div class='section-title'>👥 Personas</div><div class='section-subtitle'>Saldo actual de cada quien.</div>", unsafe_allow_html=True)
+            if deudores_df.empty:
+                st.info("Todavía no has agregado a nadie. Usa el formulario de la izquierda para empezar.")
+            else:
+                deudores_ordenado = deudores_df.sort_values("saldo", ascending=False)
+                for _, fila in deudores_ordenado.iterrows():
+                    saldo_val = float(fila.get("saldo", 0) or 0)
+                    color_saldo = "#f472b6" if saldo_val > 0 else "#34d399"
+                    telefono_txt = f"📞 {fila['telefono']}" if fila.get("telefono") else ""
+                    tarjeta_deudor = f"""<div class="product-card" style="border-color: var(--border-color);">
+<div class="product-card-body">
+<div style="display: flex; justify-content: space-between; align-items: center;">
+<div>
+<div style="font-size: 15px; font-weight: 700; color: var(--text-color);">{fila['nombre']}</div>
+<div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">{telefono_txt}</div>
+</div>
+<div style="font-size: 18px; font-weight: 800; color: {color_saldo};">{moneda(saldo_val)}</div>
+</div>
+</div>
+</div>"""
+                    st.markdown(tarjeta_deudor, unsafe_allow_html=True)
+                    if st.button(f"🗑️ Eliminar a {fila['nombre']}", key=f"del_deudor_{fila['id']}", use_container_width=True):
+                        if eliminar_deudor(fila["id"]):
+                            st.rerun()
+                    st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<div class='section-title'>📜 Historial</div><div class='section-subtitle'>Todos los cargos y abonos registrados.</div>", unsafe_allow_html=True)
+        deudas_mov = cargar_deudas_movimientos()
+        if deudas_mov.empty:
+            st.info("Aún no hay movimientos de deudores registrados.")
+        else:
+            st.dataframe(deudas_mov, use_container_width=True, hide_index=True)
 
     # -----------------------------------------------------------------------------
     # REPORTES
@@ -1511,6 +1838,32 @@ else:
 """,
             unsafe_allow_html=True,
         )
+
+        col_reset1, col_reset2 = st.columns([3, 1])
+        with col_reset2:
+            if st.button("🔄 Restablecer Reportes", use_container_width=True):
+                st.session_state.confirmar_reset_reportes = True
+
+        if st.session_state.get("confirmar_reset_reportes"):
+            st.markdown(
+                "<div class='alert-banner'>⚠️ <b>¿Seguro que quieres restablecer el apartado de Reportes?</b><br>"
+                "Esto borrará TODO el historial de ventas y compras registrado hasta ahora (también desaparecerá de "
+                "'Movimientos'), para que puedas empezar a usar la app desde cero. Esta acción no se puede deshacer, "
+                "y no toca tus prendas ni el stock actual.</div>",
+                unsafe_allow_html=True,
+            )
+            col_c1, col_c2 = st.columns(2)
+            with col_c1:
+                if st.button("✅ Sí, restablecer todo", use_container_width=True):
+                    if eliminar_todos_los_movimientos():
+                        st.session_state.confirmar_reset_reportes = False
+                        st.success("¡Listo! Los reportes y el historial de movimientos quedaron en cero.")
+                        st.rerun()
+            with col_c2:
+                if st.button("❌ Cancelar", use_container_width=True):
+                    st.session_state.confirmar_reset_reportes = False
+                    st.rerun()
+            st.markdown("<br>", unsafe_allow_html=True)
 
         movs = cargar_movimientos()
         ventas = movs[movs["tipo"] == "venta"].copy() if not movs.empty else pd.DataFrame()
@@ -1610,19 +1963,21 @@ else:
 
         with col_cfg1:
             with st.container(border=True):
-                st.markdown("<div class='section-title'>📂 Categorías</div>", unsafe_allow_html=True)
+                encabezado_seccion_form("📂", "Categorías")
                 for cat in list(st.session_state.edit_cats):
-                    c_col1, c_col2 = st.columns([3, 1])
-                    c_col1.markdown(f"- {cat}")
-                    if c_col2.button("❌", key=f"del_cat_{cat}"):
-                        if len(st.session_state.edit_cats) > 1:
-                            st.session_state.edit_cats.remove(cat)
-                            st.rerun()
-                        else:
-                            st.error("Debe existir al menos una.")
+                    c_col1, c_col2 = st.columns([4, 1])
+                    with c_col1:
+                        st.markdown(f"<div class='config-chip'>{cat}</div>", unsafe_allow_html=True)
+                    with c_col2:
+                        if st.button("✕", key=f"del_cat_{cat}", use_container_width=True):
+                            if len(st.session_state.edit_cats) > 1:
+                                st.session_state.edit_cats.remove(cat)
+                                st.rerun()
+                            else:
+                                st.error("Debe existir al menos una.")
                 st.markdown("<br>", unsafe_allow_html=True)
                 nueva_cat_input = st.text_input("Nueva Categoría", placeholder="Ej: Faldas", key="input_nueva_cat")
-                if st.button("➕ Agregar Categoría", key="btn_add_cat"):
+                if st.button("➕ Agregar Categoría", key="btn_add_cat", use_container_width=True):
                     clean_cat = nueva_cat_input.strip().capitalize()
                     if clean_cat and clean_cat not in st.session_state.edit_cats:
                         st.session_state.edit_cats.append(clean_cat)
@@ -1632,19 +1987,21 @@ else:
 
         with col_cfg2:
             with st.container(border=True):
-                st.markdown("<div class='section-title'>📏 Tallas</div>", unsafe_allow_html=True)
+                encabezado_seccion_form("📏", "Tallas")
                 for t in list(st.session_state.edit_tallas):
-                    t_col1, t_col2 = st.columns([3, 1])
-                    t_col1.markdown(f"- {t}")
-                    if t_col2.button("❌", key=f"del_talla_{t}"):
-                        if len(st.session_state.edit_tallas) > 1:
-                            st.session_state.edit_tallas.remove(t)
-                            st.rerun()
-                        else:
-                            st.error("Debe existir al menos una.")
+                    t_col1, t_col2 = st.columns([4, 1])
+                    with t_col1:
+                        st.markdown(f"<div class='config-chip'>{t}</div>", unsafe_allow_html=True)
+                    with t_col2:
+                        if st.button("✕", key=f"del_talla_{t}", use_container_width=True):
+                            if len(st.session_state.edit_tallas) > 1:
+                                st.session_state.edit_tallas.remove(t)
+                                st.rerun()
+                            else:
+                                st.error("Debe existir al menos una.")
                 st.markdown("<br>", unsafe_allow_html=True)
                 nueva_talla_input = st.text_input("Nueva Talla", placeholder="Ej: 30, XXL", key="input_nueva_talla")
-                if st.button("➕ Agregar Talla", key="btn_add_talla"):
+                if st.button("➕ Agregar Talla", key="btn_add_talla", use_container_width=True):
                     clean_talla = nueva_talla_input.strip().upper()
                     if clean_talla and clean_talla not in st.session_state.edit_tallas:
                         st.session_state.edit_tallas.append(clean_talla)
@@ -1654,19 +2011,21 @@ else:
 
         with col_cfg3:
             with st.container(border=True):
-                st.markdown("<div class='section-title'>🎨 Colores</div>", unsafe_allow_html=True)
+                encabezado_seccion_form("🎨", "Colores")
                 for col_item in list(st.session_state.edit_colores):
-                    col_c1, col_c2 = st.columns([3, 1])
-                    col_c1.markdown(f"- {col_item}")
-                    if col_c2.button("❌", key=f"del_color_{col_item}"):
-                        if len(st.session_state.edit_colores) > 1:
-                            st.session_state.edit_colores.remove(col_item)
-                            st.rerun()
-                        else:
-                            st.error("Debe existir al menos uno.")
+                    col_c1, col_c2 = st.columns([4, 1])
+                    with col_c1:
+                        st.markdown(f"<div class='config-chip'>{col_item}</div>", unsafe_allow_html=True)
+                    with col_c2:
+                        if st.button("✕", key=f"del_color_{col_item}", use_container_width=True):
+                            if len(st.session_state.edit_colores) > 1:
+                                st.session_state.edit_colores.remove(col_item)
+                                st.rerun()
+                            else:
+                                st.error("Debe existir al menos uno.")
                 st.markdown("<br>", unsafe_allow_html=True)
                 nuevo_color_input = st.text_input("Nuevo Color", placeholder="Ej: Dorado", key="input_nuevo_color")
-                if st.button("➕ Agregar Color", key="btn_add_color"):
+                if st.button("➕ Agregar Color", key="btn_add_color", use_container_width=True):
                     clean_color = nuevo_color_input.strip().capitalize()
                     if clean_color and clean_color not in st.session_state.edit_colores:
                         st.session_state.edit_colores.append(clean_color)
