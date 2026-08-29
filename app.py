@@ -399,6 +399,39 @@ def formatear_fecha_corta(valor_fecha):
         return str(valor_fecha)
 
 
+def render_tabla_deudas(df_deudas):
+    """Tabla HTML con estilo de marca para el historial de cargos/abonos de deudores."""
+    filas_html = ""
+    for _, fila in df_deudas.iterrows():
+        tipo = str(fila.get("tipo", ""))
+        if tipo == "cargo":
+            badge = "<span style='background: rgba(244,114,182,0.15); color:#f472b6; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>Cargo (le fié)</span>"
+        elif tipo == "abono":
+            badge = "<span style='background: rgba(52,211,153,0.15); color:#34d399; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>Abono (pagó)</span>"
+        else:
+            badge = f"<span style='background: rgba(219,39,119,0.15); color:var(--accent); padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>{tipo.capitalize()}</span>"
+
+        descripcion_txt = fila.get("descripcion", "") or "—"
+        filas_html += f"""<tr>
+<td>{formatear_fecha_corta(fila.get('fecha', ''))}</td>
+<td>{fila.get('deudor_nombre', '')}</td>
+<td>{badge}</td>
+<td>{descripcion_txt}</td>
+<td style="text-align:right;">{moneda(fila.get('monto', 0))}</td>
+<td>{fila.get('usuario', '')}</td>
+</tr>"""
+
+    tabla_html = f"""<div class="tabla-movimientos-wrapper">
+<table class="tabla-movimientos">
+<thead><tr>
+<th>Fecha</th><th>Persona</th><th>Tipo</th><th>Descripción</th><th>Monto</th><th>Usuario</th>
+</tr></thead>
+<tbody>{filas_html}</tbody>
+</table>
+</div>"""
+    st.markdown(tabla_html, unsafe_allow_html=True)
+
+
 def render_tabla_movimientos(df_mov):
     """Tabla HTML con estilo de marca para el historial de movimientos (ventas/compras)."""
     filas_html = ""
@@ -1823,7 +1856,7 @@ else:
         if deudas_mov.empty:
             st.info("Aún no hay movimientos de deudores registrados.")
         else:
-            st.dataframe(deudas_mov, use_container_width=True, hide_index=True)
+            render_tabla_deudas(deudas_mov)
 
     # -----------------------------------------------------------------------------
     # REPORTES
