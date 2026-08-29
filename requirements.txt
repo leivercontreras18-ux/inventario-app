@@ -6,3 +6,4 @@ cryptography
 supabase
 pygithub
 qrcode[pil]
+plotly
