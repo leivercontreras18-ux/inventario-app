@@ -257,6 +257,27 @@ def registrar_movimiento_deuda(deudor_id, deudor_nombre, tipo, descripcion, mont
         return False
 
 
+def eliminar_movimiento_deuda(movimiento_id, deudor_id, tipo, monto):
+    """Borra un cargo/abono del historial y corrige el saldo del deudor para que cuadre."""
+    if not supabase:
+        st.warning("No hay conexión a la base de datos.")
+        return False
+    try:
+        deudores_actual = cargar_deudores()
+        fila_deudor = deudores_actual[deudores_actual["id"].astype(str) == str(deudor_id)]
+        if not fila_deudor.empty:
+            saldo_actual = float(fila_deudor.iloc[0].get("saldo", 0) or 0)
+            # Si se borra un cargo, se resta lo que había sumado; si se borra un abono, se vuelve a sumar.
+            nuevo_saldo = saldo_actual - float(monto) if tipo == "cargo" else saldo_actual + float(monto)
+            actualizar_saldo_deudor(deudor_id, nuevo_saldo)
+        supabase.table("deudas_movimientos").delete().match({"id": movimiento_id}).execute()
+        cargar_deudas_movimientos.clear()
+        return True
+    except Exception as e:
+        st.error(f"Error al eliminar el movimiento: {e}")
+        return False
+
+
 def guardar_configuracion_completa(cats, tallas, colores):
     try:
         g = obtener_conexion_github()
@@ -1857,6 +1878,32 @@ else:
             st.info("Aún no hay movimientos de deudores registrados.")
         else:
             render_tabla_deudas(deudas_mov)
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            with st.expander("🗑️ Eliminar un movimiento del historial"):
+                opciones_mov = deudas_mov["id"].astype(str).tolist()
+                mov_a_borrar = st.selectbox(
+                    "Elige el movimiento a eliminar",
+                    opciones_mov,
+                    format_func=lambda x: (
+                        f"{formatear_fecha_corta(deudas_mov[deudas_mov['id'].astype(str) == x]['fecha'].values[0])} — "
+                        f"{deudas_mov[deudas_mov['id'].astype(str) == x]['deudor_nombre'].values[0]} — "
+                        f"{deudas_mov[deudas_mov['id'].astype(str) == x]['tipo'].values[0]} — "
+                        f"{moneda(deudas_mov[deudas_mov['id'].astype(str) == x]['monto'].values[0])}"
+                    ),
+                    key="select_borrar_deuda_mov",
+                )
+                st.caption("Al eliminarlo, el saldo de esa persona se ajusta automáticamente para que siga cuadrando.")
+                if st.button("Eliminar este movimiento", key="btn_borrar_deuda_mov"):
+                    fila_a_borrar = deudas_mov[deudas_mov["id"].astype(str) == str(mov_a_borrar)].iloc[0]
+                    if eliminar_movimiento_deuda(
+                        movimiento_id=mov_a_borrar,
+                        deudor_id=fila_a_borrar["deudor_id"],
+                        tipo=fila_a_borrar["tipo"],
+                        monto=fila_a_borrar["monto"],
+                    ):
+                        st.success("Movimiento eliminado y saldo actualizado.")
+                        st.rerun()
 
     # -----------------------------------------------------------------------------
     # REPORTES
