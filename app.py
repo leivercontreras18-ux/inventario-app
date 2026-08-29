@@ -282,8 +282,9 @@ def grafico_barras_vertical(serie, formato_valor=None, altura=300):
     """Gráfica de barras vertical con degradado rosa/oro, para series tipo 'ventas por mes'."""
     c = colores_grafico()
     etiquetas = [formato_valor(v) if formato_valor else str(v) for v in serie.values]
+    x_valores = [str(v) for v in serie.index]
     fig = go.Figure(data=[go.Bar(
-        x=list(serie.index), y=serie.values,
+        x=x_valores, y=serie.values,
         marker=dict(
             color=serie.values,
             colorscale=[[0, "#7a1f4a"], [0.5, "#db2777"], [1, "#f472b6"]],
@@ -295,7 +296,7 @@ def grafico_barras_vertical(serie, formato_valor=None, altura=300):
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
         font=dict(color=c["texto"], family="Montserrat, sans-serif"),
-        xaxis=dict(showgrid=False, title=None, tickfont=dict(color=c["texto"])),
+        xaxis=dict(type="category", showgrid=False, title=None, tickfont=dict(color=c["texto"])),
         yaxis=dict(showgrid=True, gridcolor=c["grid"], title=None, tickfont=dict(color=c["texto"]), zeroline=False),
         margin=dict(l=10, r=10, t=30, b=10), height=altura, showlegend=False,
         bargap=0.35,
@@ -320,7 +321,7 @@ def grafico_barras_horizontal(serie, altura=300):
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
         font=dict(color=c["texto"], family="Montserrat, sans-serif"),
         xaxis=dict(showgrid=True, gridcolor=c["grid"], title=None, tickfont=dict(color=c["texto"]), zeroline=False),
-        yaxis=dict(showgrid=False, title=None, autorange="reversed", tickfont=dict(color=c["texto"])),
+        yaxis=dict(type="category", showgrid=False, title=None, autorange="reversed", tickfont=dict(color=c["texto"])),
         margin=dict(l=10, r=10, t=30, b=10), height=altura, showlegend=False,
         bargap=0.35,
     )
