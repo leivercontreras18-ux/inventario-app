@@ -5,6 +5,7 @@ from datetime import datetime
 from io import BytesIO
 
 import pandas as pd
+import plotly.graph_objects as go
 import streamlit as st
 import streamlit.components.v1 as components
 from github import Github
@@ -269,6 +270,61 @@ def moneda(valor):
         return f"${float(valor):,.2f}"
     except Exception:
         return "$0.00"
+
+
+def colores_grafico():
+    if st.session_state.get("tema") == "claro":
+        return {"texto": "#2b1f26", "grid": "rgba(219, 39, 119, 0.15)"}
+    return {"texto": "#f9f6f8", "grid": "rgba(219, 39, 119, 0.15)"}
+
+
+def grafico_barras_vertical(serie, formato_valor=None, altura=300):
+    """Gráfica de barras vertical con degradado rosa/oro, para series tipo 'ventas por mes'."""
+    c = colores_grafico()
+    etiquetas = [formato_valor(v) if formato_valor else str(v) for v in serie.values]
+    fig = go.Figure(data=[go.Bar(
+        x=list(serie.index), y=serie.values,
+        marker=dict(
+            color=serie.values,
+            colorscale=[[0, "#7a1f4a"], [0.5, "#db2777"], [1, "#f472b6"]],
+            line=dict(width=0),
+        ),
+        text=etiquetas, textposition="outside", textfont=dict(color=c["texto"], size=12),
+        hovertemplate="%{x}<br>%{text}<extra></extra>",
+    )])
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color=c["texto"], family="Montserrat, sans-serif"),
+        xaxis=dict(showgrid=False, title=None, tickfont=dict(color=c["texto"])),
+        yaxis=dict(showgrid=True, gridcolor=c["grid"], title=None, tickfont=dict(color=c["texto"]), zeroline=False),
+        margin=dict(l=10, r=10, t=30, b=10), height=altura, showlegend=False,
+        bargap=0.35,
+    )
+    return fig
+
+
+def grafico_barras_horizontal(serie, altura=300):
+    """Gráfica de barras horizontal con degradado rosa/oro, para rankings tipo 'top productos'."""
+    c = colores_grafico()
+    fig = go.Figure(data=[go.Bar(
+        x=serie.values, y=list(serie.index), orientation="h",
+        marker=dict(
+            color=serie.values,
+            colorscale=[[0, "#7a1f4a"], [0.5, "#db2777"], [1, "#f472b6"]],
+            line=dict(width=0),
+        ),
+        text=[str(int(v)) for v in serie.values], textposition="outside", textfont=dict(color=c["texto"], size=12),
+        hovertemplate="%{y}<br>%{x} unidades<extra></extra>",
+    )])
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color=c["texto"], family="Montserrat, sans-serif"),
+        xaxis=dict(showgrid=True, gridcolor=c["grid"], title=None, tickfont=dict(color=c["texto"]), zeroline=False),
+        yaxis=dict(showgrid=False, title=None, autorange="reversed", tickfont=dict(color=c["texto"])),
+        margin=dict(l=10, r=10, t=30, b=10), height=altura, showlegend=False,
+        bargap=0.35,
+    )
+    return fig
 
 
 def generar_qr_bytes(texto):
@@ -1430,11 +1486,11 @@ else:
             ventas_mes = ventas.groupby("mes")["monto"].sum()
             if len(ventas_mes) < 2:
                 st.caption("Con solo un mes de datos el gráfico se ve muy simple — se vuelve más útil a medida que registres ventas en distintos meses.")
-            st.bar_chart(ventas_mes, color="#f472b6", height=260)
+            st.plotly_chart(grafico_barras_vertical(ventas_mes, formato_valor=moneda), use_container_width=True, config={"displayModeBar": False})
 
             st.markdown("<div class='section-title'>Top 5 productos más vendidos (unidades)</div>", unsafe_allow_html=True)
             top_productos = ventas.groupby("producto")["cantidad"].sum().sort_values(ascending=False).head(5)
-            st.bar_chart(top_productos, color="#f472b6", height=260)
+            st.plotly_chart(grafico_barras_horizontal(top_productos), use_container_width=True, config={"displayModeBar": False})
         else:
             st.info("Aún no hay ventas registradas para generar gráficas. Usa el menú 'Vender' para empezar a registrar.")
 
