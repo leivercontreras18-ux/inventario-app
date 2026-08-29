@@ -523,19 +523,45 @@ div[data-testid="stForm"] {{
 .metric-value {{ font-size: 32px; font-weight: 800; color: var(--accent) !important; margin-top: 8px; }}
 .metric-label {{ font-size: 11px; color: var(--text-secondary) !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }}
 
-.user-profile {{
-    background: rgba(219, 39, 119, 0.1); padding: 14px 16px; border-radius: 14px;
-    border: 1px solid var(--border-color); margin-bottom: 20px;
-    display: flex; align-items: center; gap: 12px;
+.user-profile-compact {{
+    background: rgba(219, 39, 119, 0.08); padding: 10px 12px; border-radius: 12px;
+    border: 1px solid var(--border-color); margin-bottom: 10px;
+    display: flex; align-items: center; gap: 10px;
 }}
 .user-avatar {{
-    width: 36px; height: 36px; background: linear-gradient(135deg, #db2777 0%, #f472b6 100%); color: #ffffff;
+    width: 32px; height: 32px; background: linear-gradient(135deg, #db2777 0%, #f472b6 100%); color: #ffffff;
     font-weight: 800; border-radius: 50%; display: flex; align-items: center;
-    justify-content: center; font-size: 15px; box-shadow: 0 0 15px rgba(219, 39, 119, 0.5);
+    justify-content: center; font-size: 13px; box-shadow: 0 0 15px rgba(219, 39, 119, 0.5); flex-shrink: 0;
 }}
-.user-info-title {{ font-size: 9px; color: var(--accent); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }}
-.user-info-name {{ font-size: 14px; font-weight: 600; color: var(--text-color); }}
-.user-info-rol {{ font-size: 10px; color: var(--text-secondary); text-transform: capitalize; }}
+.user-info-name {{ font-size: 13px; font-weight: 700; color: var(--text-color); line-height: 1.2; }}
+.user-info-rol {{ font-size: 9px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }}
+
+.menu-divider {{ height: 1px; background: var(--border-color); margin: 12px 0 10px 0; }}
+
+.menu-group-title {{
+    font-size: 9px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1.5px;
+    font-weight: 700; margin: 14px 0 6px 4px; opacity: 0.75;
+}}
+
+section[data-testid="stSidebar"] button[kind="secondary"] {{
+    background: transparent !important; border: 1px solid transparent !important;
+    text-align: left !important; justify-content: flex-start !important;
+    box-shadow: none !important; padding: 9px 12px !important; font-weight: 500 !important;
+}}
+section[data-testid="stSidebar"] button[kind="secondary"]:hover {{
+    background: rgba(219, 39, 119, 0.08) !important; border-color: var(--border-color) !important;
+    transform: none !important;
+}}
+section[data-testid="stSidebar"] button[kind="primary"] {{
+    background: rgba(219, 39, 119, 0.15) !important; color: var(--text-color) !important;
+    border: none !important; border-left: 3px solid var(--accent) !important;
+    border-radius: 8px !important; text-align: left !important; justify-content: flex-start !important;
+    font-weight: 700 !important; padding: 9px 12px !important;
+    box-shadow: 0 4px 14px rgba(219, 39, 119, 0.25) !important;
+}}
+section[data-testid="stSidebar"] button[kind="primary"]:hover {{
+    transform: none !important; box-shadow: 0 4px 14px rgba(219, 39, 119, 0.35) !important;
+}}
 
 .product-card {{
     background: var(--card-bg); backdrop-filter: blur(20px);
@@ -875,15 +901,15 @@ else:
     usuario_formateado = st.session_state.usuario_actual.capitalize()
     inicial_usuario = usuario_formateado[0]
     rol_formateado = st.session_state.rol_actual.capitalize()
+    menu_actual = st.session_state.get("menu_activo", "existencias")
 
     st.sidebar.markdown(
         f"""
-<div class="user-profile">
+<div class="user-profile-compact">
     <div class="user-avatar">{inicial_usuario}</div>
     <div>
-        <div class="user-info-title">● Sesión Activa</div>
         <div class="user-info-name">{usuario_formateado}</div>
-        <div class="user-info-rol">{rol_formateado}</div>
+        <div class="user-info-rol">● {rol_formateado}</div>
     </div>
 </div>
 """,
@@ -896,28 +922,37 @@ else:
         st.session_state.tema = nuevo_tema
         st.rerun()
 
-    st.sidebar.markdown(
-        "<p style='font-size:10px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:1.5px; font-weight:700; margin: 12px 0 6px 4px;'>Menú Principal</p>",
-        unsafe_allow_html=True,
-    )
+    st.sidebar.markdown("<div class='menu-divider'></div>", unsafe_allow_html=True)
 
-    opciones_menu = [("existencias", "📊 Existencias")]
-    opciones_menu.append(("vender", "💳 Vender"))
-    opciones_menu.append(("comprar", "📦 Registrar Compra"))
-    if ES_ADMIN:
-        opciones_menu.append(("registrar", "➕ Registrar Prenda"))
-        opciones_menu.append(("modificar", "✏️ Editar / Borrar"))
-    opciones_menu.append(("movimientos", "📜 Movimientos"))
-    opciones_menu.append(("reportes", "📈 Reportes"))
-    if ES_ADMIN:
-        opciones_menu.append(("configuracion", "⚙️ Configuración"))
+    grupos_menu = [
+        ("Inventario", [
+            ("existencias", "📊", "Existencias"),
+            ("registrar", "➕", "Registrar Prenda"),
+            ("modificar", "✏️", "Editar / Borrar"),
+        ]),
+        ("Ventas", [
+            ("vender", "💳", "Vender"),
+            ("comprar", "📦", "Registrar Compra"),
+            ("movimientos", "📜", "Movimientos"),
+        ]),
+        ("Negocio", [
+            ("reportes", "📈", "Reportes"),
+            ("configuracion", "⚙️", "Configuración"),
+        ]),
+    ]
 
-    for clave, etiqueta in opciones_menu:
-        if st.sidebar.button(etiqueta, use_container_width=True, key=f"menu_{clave}"):
-            st.session_state.menu_activo = clave
-            st.rerun()
+    for titulo_grupo, items in grupos_menu:
+        st.sidebar.markdown(f"<p class='menu-group-title'>{titulo_grupo}</p>", unsafe_allow_html=True)
+        for clave, icono, etiqueta in items:
+            if clave in ("registrar", "modificar", "configuracion") and not ES_ADMIN:
+                continue
+            es_activo = (menu_actual == clave)
+            tipo_boton = "primary" if es_activo else "secondary"
+            if st.sidebar.button(f"{icono}  {etiqueta}", use_container_width=True, key=f"menu_{clave}", type=tipo_boton):
+                st.session_state.menu_activo = clave
+                st.rerun()
 
-    st.sidebar.markdown("<hr style='margin: 25px 0 15px 0; border-color: var(--border-color);'>", unsafe_allow_html=True)
+    st.sidebar.markdown("<hr style='margin: 20px 0 15px 0; border-color: var(--border-color);'>", unsafe_allow_html=True)
 
     if st.sidebar.button("🚪 Cerrar Sesión", use_container_width=True):
         st.session_state.autenticado = False
