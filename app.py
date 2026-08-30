@@ -6,6 +6,7 @@ from io import BytesIO
 
 import pandas as pd
 import plotly.graph_objects as go
+import requests
 import streamlit as st
 import streamlit.components.v1 as components
 from github import Github
@@ -400,6 +401,48 @@ def eliminar_prenda(id_prenda):
 # =====================================================================================
 # UTILIDADES
 # =====================================================================================
+
+@st.cache_data(ttl=900)
+def obtener_tasas_cambio():
+    """Consulta tasas de cambio de Venezuela (BCV, Paralelo/Binance, Euro) desde una API pública gratuita."""
+    fuentes = {
+        "BCV": "https://ve.dolarapi.com/v1/dolares/oficial",
+        "Paralelo / Binance": "https://ve.dolarapi.com/v1/dolares/paralelo",
+        "Euro BCV": "https://ve.dolarapi.com/v1/euros/oficial",
+        "Euro Paralelo": "https://ve.dolarapi.com/v1/euros/paralelo",
+    }
+    tasas = {}
+    for etiqueta, url in fuentes.items():
+        try:
+            resp = requests.get(url, timeout=6)
+            if resp.status_code == 200:
+                data = resp.json()
+                valor = data.get("promedio") or data.get("venta") or data.get("compra")
+                if valor:
+                    tasas[etiqueta] = {"valor": float(valor), "fecha": data.get("fechaActualizacion", "")}
+        except Exception:
+            pass
+    return tasas
+
+
+def selector_tasa_cambio(key_prefix, valor_por_defecto=0.0):
+    """Selector de tasa de cambio: BCV / Paralelo-Binance / Euro (en vivo) o Manual. Devuelve (valor, etiqueta_fuente)."""
+    tasas_disponibles = obtener_tasas_cambio()
+    opciones = list(tasas_disponibles.keys()) + ["Manual"]
+    if not tasas_disponibles:
+        st.caption("⚠️ No se pudo conectar con la API de tasas en este momento; usa 'Manual'.")
+
+    fuente_sel = st.selectbox("Tasa de cambio", opciones, key=f"{key_prefix}_fuente_tasa")
+
+    if fuente_sel == "Manual":
+        tasa_valor = st.number_input("Escribe la tasa manualmente", min_value=0.0, step=0.01, value=valor_por_defecto, key=f"{key_prefix}_tasa_manual")
+    else:
+        info_tasa = tasas_disponibles[fuente_sel]
+        tasa_valor = info_tasa["valor"]
+        st.caption(f"💱 {fuente_sel}: {tasa_valor:,.2f} Bs — actualizado: {info_tasa['fecha']}")
+
+    return tasa_valor, fuente_sel
+
 
 def moneda(valor):
     try:
@@ -1882,12 +1925,9 @@ else:
                                 key="select_deudor_fiar",
                             )
                         with col_t2:
-                            tasa_fiar = st.number_input(
-                                "Tasa de cambio del día (opcional)", min_value=0.0, step=0.01,
-                                value=float(st.session_state.get("ultima_tasa", 0.0)), key="tasa_fiar",
-                            )
+                            tasa_fiar, fuente_tasa_fiar = selector_tasa_cambio("fiar", st.session_state.get("ultima_tasa", 0.0))
                         if tasa_fiar > 0:
-                            st.caption(f"Equivalente aprox.: {total_pedido * tasa_fiar:,.2f} (moneda local)")
+                            st.caption(f"Equivalente aprox.: {total_pedido * tasa_fiar:,.2f} Bs")
 
                         if st.button("✅ Confirmar y Fiar Estos Productos", use_container_width=True, key="btn_confirmar_fiar"):
                             fila_deudor_sel = deudores_df[deudores_df["id"].astype(str) == str(deudor_fiar_sel)].iloc[0]
@@ -1920,6 +1960,17 @@ else:
 
                 # --- REGISTRAR PAGO / ABONO ---
                 st.markdown("<div class='section-title'>💵 Registrar Pago (Abono)</div><div class='section-subtitle'>Cuando te paguen, baja la deuda con el medio de pago y la tasa usada.</div>", unsafe_allow_html=True)
+
+                col_tasa_ab1, col_tasa_ab2 = st.columns(2)
+                with col_tasa_ab1:
+                    medio_pago_abono_sel = st.selectbox(
+                        "Medio de pago",
+                        ["Efectivo ($)", "Efectivo (Bs)", "Pago Móvil", "Transferencia", "Zelle", "Otro"],
+                        key="medio_pago_abono_fuera",
+                    )
+                with col_tasa_ab2:
+                    tasa_abono, fuente_tasa_abono = selector_tasa_cambio("abono")
+
                 with st.form("form_abono_deuda", clear_on_submit=True):
                     ids_deudores_abono = deudores_df["id"].astype(str).tolist()
                     id_deudor_abono = st.selectbox(
@@ -1927,15 +1978,9 @@ else:
                         format_func=lambda x: deudores_df[deudores_df["id"].astype(str) == x]["nombre"].values[0],
                         key="select_deudor_abono",
                     )
-                    col_a1, col_a2 = st.columns(2)
-                    with col_a1:
-                        monto_abono = st.number_input("Monto pagado", min_value=0.0, step=1.0)
-                    with col_a2:
-                        medio_pago_abono = st.selectbox(
-                            "Medio de pago",
-                            ["Efectivo ($)", "Efectivo (Bs)", "Pago Móvil", "Transferencia", "Zelle", "Otro"],
-                        )
-                    tasa_abono = st.number_input("Tasa de cambio usada (opcional)", min_value=0.0, step=0.01)
+                    monto_abono = st.number_input("Monto pagado", min_value=0.0, step=1.0)
+                    if tasa_abono > 0:
+                        st.caption(f"Con {medio_pago_abono_sel} a tasa {fuente_tasa_abono} ({tasa_abono:,.2f} Bs): equivalente ≈ {monto_abono * tasa_abono:,.2f} Bs")
                     descripcion_abono = st.text_input("Nota (opcional)", placeholder="Ej: abono parcial")
 
                     if st.form_submit_button("Registrar Pago", use_container_width=True):
@@ -1949,7 +1994,7 @@ else:
                             registrar_movimiento_deuda(
                                 deudor_id=id_deudor_abono, deudor_nombre=fila_deudor_abono["nombre"],
                                 tipo="abono", descripcion=descripcion_abono, monto=monto_abono,
-                                medio_pago=medio_pago_abono, tasa_cambio=tasa_abono,
+                                medio_pago=medio_pago_abono_sel, tasa_cambio=tasa_abono,
                             )
                             st.success(f"Nuevo saldo de {fila_deudor_abono['nombre']}: {moneda(nuevo_saldo_abono)}")
                             st.rerun()
