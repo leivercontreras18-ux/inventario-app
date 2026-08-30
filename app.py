@@ -75,7 +75,8 @@ COLUMNAS_MOVIMIENTOS = [
 COLUMNAS_DEUDORES = ["id", "nombre", "telefono", "saldo", "notas"]
 
 COLUMNAS_DEUDAS_MOVIMIENTOS = [
-    "id", "deudor_id", "deudor_nombre", "tipo", "descripcion", "monto", "fecha", "usuario",
+    "id", "deudor_id", "deudor_nombre", "tipo", "descripcion", "monto",
+    "medio_pago", "tasa_cambio", "fecha", "usuario",
 ]
 
 
@@ -234,7 +235,7 @@ def eliminar_deudor(deudor_id):
         return False
 
 
-def registrar_movimiento_deuda(deudor_id, deudor_nombre, tipo, descripcion, monto):
+def registrar_movimiento_deuda(deudor_id, deudor_nombre, tipo, descripcion, monto, medio_pago="", tasa_cambio=0):
     if not supabase:
         st.warning("No hay conexión a la base de datos.")
         return False
@@ -246,6 +247,8 @@ def registrar_movimiento_deuda(deudor_id, deudor_nombre, tipo, descripcion, mont
             "tipo": tipo,
             "descripcion": str(descripcion or ""),
             "monto": float(monto or 0),
+            "medio_pago": str(medio_pago or ""),
+            "tasa_cambio": float(tasa_cambio or 0),
             "fecha": datetime.now().isoformat(),
             "usuario": st.session_state.get("usuario_actual", ""),
         }
@@ -433,19 +436,24 @@ def render_tabla_deudas(df_deudas):
             badge = f"<span style='background: rgba(219,39,119,0.15); color:var(--accent); padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>{tipo.capitalize()}</span>"
 
         descripcion_txt = fila.get("descripcion", "") or "—"
+        medio_pago_txt = fila.get("medio_pago", "") or "—"
+        tasa_val = float(fila.get("tasa_cambio", 0) or 0)
+        tasa_txt = f"{tasa_val:,.2f}" if tasa_val > 0 else "—"
         filas_html += f"""<tr>
 <td>{formatear_fecha_corta(fila.get('fecha', ''))}</td>
 <td>{fila.get('deudor_nombre', '')}</td>
 <td>{badge}</td>
 <td>{descripcion_txt}</td>
 <td style="text-align:right;">{moneda(fila.get('monto', 0))}</td>
+<td>{medio_pago_txt}</td>
+<td style="text-align:right;">{tasa_txt}</td>
 <td>{fila.get('usuario', '')}</td>
 </tr>"""
 
     tabla_html = f"""<div class="tabla-movimientos-wrapper">
 <table class="tabla-movimientos">
 <thead><tr>
-<th>Fecha</th><th>Persona</th><th>Tipo</th><th>Descripción</th><th>Monto</th><th>Usuario</th>
+<th>Fecha</th><th>Persona</th><th>Tipo</th><th>Descripción</th><th>Monto</th><th>Medio de Pago</th><th>Tasa</th><th>Usuario</th>
 </tr></thead>
 <tbody>{filas_html}</tbody>
 </table>
@@ -1816,33 +1824,135 @@ else:
             st.markdown("<br>", unsafe_allow_html=True)
 
             if not deudores_df.empty:
-                st.markdown("<div class='section-title'>💸 Registrar Cargo o Abono</div><div class='section-subtitle'>¿Le fías algo (sube la deuda) o te paga (baja la deuda)?</div>", unsafe_allow_html=True)
-                with st.form("form_movimiento_deuda", clear_on_submit=True):
-                    ids_deudores = deudores_df["id"].astype(str).tolist()
-                    id_deudor_sel = st.selectbox(
-                        "Persona", ids_deudores,
-                        format_func=lambda x: deudores_df[deudores_df["id"].astype(str) == x]["nombre"].values[0],
-                    )
-                    tipo_mov = st.radio("Tipo de movimiento", ["Le fío algo (sube la deuda)", "Me paga (baja la deuda)"])
-                    descripcion_mov = st.text_input("Descripción", placeholder="Ej: 2 blusas, abono en efectivo, etc.")
-                    monto_mov = st.number_input("Monto", min_value=0.0, step=1.0)
+                # --- FIAR PRODUCTOS DEL INVENTARIO (carrito) ---
+                st.markdown("<div class='section-title'>🛒 Fiar Productos</div><div class='section-subtitle'>Elige de tu inventario lo que la persona se está llevando.</div>", unsafe_allow_html=True)
 
-                    if st.form_submit_button("Registrar", use_container_width=True):
-                        if monto_mov <= 0:
+                if "carrito_fiado" not in st.session_state:
+                    st.session_state.carrito_fiado = []
+
+                if df.empty:
+                    st.info("No tienes prendas registradas en el inventario todavía.")
+                else:
+                    col_p1, col_p2, col_p3 = st.columns([2, 1, 1])
+                    with col_p1:
+                        ids_prod_fiar = df["ID"].astype(str).tolist()
+                        producto_fiar_sel = st.selectbox(
+                            "Producto", ids_prod_fiar,
+                            format_func=lambda x: f"{x} — {df[df['ID'].astype(str) == x]['Producto'].values[0]} (stock: {int(df[df['ID'].astype(str) == x]['cantidad'].values[0])})",
+                            key="select_producto_fiar",
+                        )
+                    with col_p2:
+                        cantidad_fiar = st.number_input("Cantidad", min_value=1, value=1, step=1, key="cantidad_fiar")
+                    with col_p3:
+                        st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+                        if st.button("➕ Agregar", use_container_width=True, key="btn_agregar_carrito"):
+                            fila_prod = df[df["ID"].astype(str) == str(producto_fiar_sel)].iloc[0]
+                            if cantidad_fiar > int(fila_prod["cantidad"]):
+                                st.error(f"Solo hay {int(fila_prod['cantidad'])} en stock.")
+                            else:
+                                st.session_state.carrito_fiado.append({
+                                    "id": fila_prod["ID"], "producto": fila_prod["Producto"],
+                                    "cantidad": int(cantidad_fiar), "precio_unitario": float(fila_prod.get("precio_venta", 0) or 0),
+                                    "costo_unitario": float(fila_prod.get("costo", 0) or 0),
+                                })
+                                st.rerun()
+
+                    if st.session_state.carrito_fiado:
+                        total_pedido = sum(item["cantidad"] * item["precio_unitario"] for item in st.session_state.carrito_fiado)
+                        for idx, item in enumerate(st.session_state.carrito_fiado):
+                            c_item1, c_item2 = st.columns([4, 1])
+                            with c_item1:
+                                st.markdown(
+                                    f"<div class='config-chip'>{item['cantidad']} × {item['producto']} — {moneda(item['cantidad'] * item['precio_unitario'])}</div>",
+                                    unsafe_allow_html=True,
+                                )
+                            with c_item2:
+                                if st.button("✕", key=f"quitar_carrito_{idx}", use_container_width=True):
+                                    st.session_state.carrito_fiado.pop(idx)
+                                    st.rerun()
+
+                        st.markdown(f"**Total del pedido: {moneda(total_pedido)}**")
+
+                        col_t1, col_t2 = st.columns(2)
+                        with col_t1:
+                            ids_deudores_fiar = deudores_df["id"].astype(str).tolist()
+                            deudor_fiar_sel = st.selectbox(
+                                "¿A quién se le fía?", ids_deudores_fiar,
+                                format_func=lambda x: deudores_df[deudores_df["id"].astype(str) == x]["nombre"].values[0],
+                                key="select_deudor_fiar",
+                            )
+                        with col_t2:
+                            tasa_fiar = st.number_input(
+                                "Tasa de cambio del día (opcional)", min_value=0.0, step=0.01,
+                                value=float(st.session_state.get("ultima_tasa", 0.0)), key="tasa_fiar",
+                            )
+                        if tasa_fiar > 0:
+                            st.caption(f"Equivalente aprox.: {total_pedido * tasa_fiar:,.2f} (moneda local)")
+
+                        if st.button("✅ Confirmar y Fiar Estos Productos", use_container_width=True, key="btn_confirmar_fiar"):
+                            fila_deudor_sel = deudores_df[deudores_df["id"].astype(str) == str(deudor_fiar_sel)].iloc[0]
+                            for item in st.session_state.carrito_fiado:
+                                fila_prod_actual = df[df["ID"].astype(str) == str(item["id"])].iloc[0]
+                                datos_act = fila_prod_actual.to_dict()
+                                datos_act["cantidad"] = int(fila_prod_actual["cantidad"]) - item["cantidad"]
+                                actualizar_prenda(item["id"], datos_act)
+                                registrar_movimiento(
+                                    prenda_id=item["id"], producto=item["producto"], tipo="venta",
+                                    cantidad=item["cantidad"], precio_unitario=item["precio_unitario"],
+                                    costo_unitario=item["costo_unitario"],
+                                )
+                            descripcion_pedido = ", ".join(f"{i['cantidad']}× {i['producto']}" for i in st.session_state.carrito_fiado)
+                            saldo_actual = float(fila_deudor_sel.get("saldo", 0) or 0)
+                            nuevo_saldo = saldo_actual + total_pedido
+                            actualizar_saldo_deudor(deudor_fiar_sel, nuevo_saldo)
+                            registrar_movimiento_deuda(
+                                deudor_id=deudor_fiar_sel, deudor_nombre=fila_deudor_sel["nombre"],
+                                tipo="cargo", descripcion=descripcion_pedido, monto=total_pedido,
+                                tasa_cambio=tasa_fiar,
+                            )
+                            if tasa_fiar > 0:
+                                st.session_state.ultima_tasa = tasa_fiar
+                            st.session_state.carrito_fiado = []
+                            st.success(f"¡Listo! Nuevo saldo de {fila_deudor_sel['nombre']}: {moneda(nuevo_saldo)}")
+                            st.rerun()
+
+                st.markdown("<br>", unsafe_allow_html=True)
+
+                # --- REGISTRAR PAGO / ABONO ---
+                st.markdown("<div class='section-title'>💵 Registrar Pago (Abono)</div><div class='section-subtitle'>Cuando te paguen, baja la deuda con el medio de pago y la tasa usada.</div>", unsafe_allow_html=True)
+                with st.form("form_abono_deuda", clear_on_submit=True):
+                    ids_deudores_abono = deudores_df["id"].astype(str).tolist()
+                    id_deudor_abono = st.selectbox(
+                        "Persona", ids_deudores_abono,
+                        format_func=lambda x: deudores_df[deudores_df["id"].astype(str) == x]["nombre"].values[0],
+                        key="select_deudor_abono",
+                    )
+                    col_a1, col_a2 = st.columns(2)
+                    with col_a1:
+                        monto_abono = st.number_input("Monto pagado", min_value=0.0, step=1.0)
+                    with col_a2:
+                        medio_pago_abono = st.selectbox(
+                            "Medio de pago",
+                            ["Efectivo ($)", "Efectivo (Bs)", "Pago Móvil", "Transferencia", "Zelle", "Otro"],
+                        )
+                    tasa_abono = st.number_input("Tasa de cambio usada (opcional)", min_value=0.0, step=0.01)
+                    descripcion_abono = st.text_input("Nota (opcional)", placeholder="Ej: abono parcial")
+
+                    if st.form_submit_button("Registrar Pago", use_container_width=True):
+                        if monto_abono <= 0:
                             st.error("El monto debe ser mayor a 0.")
                         else:
-                            fila_deudor = deudores_df[deudores_df["id"].astype(str) == str(id_deudor_sel)].iloc[0]
-                            saldo_actual = float(fila_deudor.get("saldo", 0) or 0)
-                            es_cargo = tipo_mov.startswith("Le fío")
-                            nuevo_saldo = saldo_actual + monto_mov if es_cargo else saldo_actual - monto_mov
-                            if actualizar_saldo_deudor(id_deudor_sel, nuevo_saldo):
-                                registrar_movimiento_deuda(
-                                    deudor_id=id_deudor_sel, deudor_nombre=fila_deudor["nombre"],
-                                    tipo="cargo" if es_cargo else "abono",
-                                    descripcion=descripcion_mov, monto=monto_mov,
-                                )
-                                st.success(f"Nuevo saldo de {fila_deudor['nombre']}: {moneda(nuevo_saldo)}")
-                                st.rerun()
+                            fila_deudor_abono = deudores_df[deudores_df["id"].astype(str) == str(id_deudor_abono)].iloc[0]
+                            saldo_actual_abono = float(fila_deudor_abono.get("saldo", 0) or 0)
+                            nuevo_saldo_abono = saldo_actual_abono - monto_abono
+                            actualizar_saldo_deudor(id_deudor_abono, nuevo_saldo_abono)
+                            registrar_movimiento_deuda(
+                                deudor_id=id_deudor_abono, deudor_nombre=fila_deudor_abono["nombre"],
+                                tipo="abono", descripcion=descripcion_abono, monto=monto_abono,
+                                medio_pago=medio_pago_abono, tasa_cambio=tasa_abono,
+                            )
+                            st.success(f"Nuevo saldo de {fila_deudor_abono['nombre']}: {moneda(nuevo_saldo_abono)}")
+                            st.rerun()
 
         with col_der:
             st.markdown("<div class='section-title'>👥 Personas</div><div class='section-subtitle'>Saldo actual de cada quien.</div>", unsafe_allow_html=True)
@@ -1893,7 +2003,7 @@ else:
                     ),
                     key="select_borrar_deuda_mov",
                 )
-                st.caption("Al eliminarlo, el saldo de esa persona se ajusta automáticamente para que siga cuadrando.")
+                st.caption("Al eliminarlo, el saldo de esa persona se ajusta automáticamente. Nota: si el movimiento borrado era un cargo de productos, el stock NO se devuelve solo — ajústalo manualmente en 'Editar / Borrar' si hace falta.")
                 if st.button("Eliminar este movimiento", key="btn_borrar_deuda_mov"):
                     fila_a_borrar = deudas_mov[deudas_mov["id"].astype(str) == str(mov_a_borrar)].iloc[0]
                     if eliminar_movimiento_deuda(
