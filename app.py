@@ -1247,14 +1247,6 @@ else:
     st.sidebar.markdown("<div class='menu-divider'></div>", unsafe_allow_html=True)
 
     grupos_menu = [
-        ("Ventas", [
-            ("vender", "💳", "Vender"),
-            ("comprar", "📦", "Registrar Compra"),
-            ("movimientos", "📜", "Movimientos"),
-        ]),
-        ("Cuentas", [
-            ("deudores", "🧾", "Deudores"),
-        ]),
         ("Negocio", [
             ("reportes", "📈", "Reportes"),
             ("configuracion", "⚙️", "Configuración"),
@@ -1283,6 +1275,46 @@ else:
                 if st.button(f"{icono_sub}  {etiqueta_sub}", use_container_width=True, key=f"menu_{clave_sub}_sub", type=tipo_sub):
                     st.session_state.menu_activo = clave_sub
                     st.rerun()
+
+    # --- Grupo "Ventas" con submenú anidado: Ventas → Nueva Venta → Pagadas / Por Pagar ---
+    st.sidebar.markdown("<p class='menu-group-title'>Ventas</p>", unsafe_allow_html=True)
+    if "ventas_expandido" not in st.session_state:
+        st.session_state.ventas_expandido = False
+    if "nueva_venta_expandido" not in st.session_state:
+        st.session_state.nueva_venta_expandido = False
+
+    claves_venta = ("vender", "deudores")
+    tipo_boton_ventas = "primary" if menu_actual in claves_venta else "secondary"
+    if st.sidebar.button("🛍️  Ventas", use_container_width=True, key="menu_ventas_toggle", type=tipo_boton_ventas):
+        st.session_state.ventas_expandido = not st.session_state.ventas_expandido
+        st.rerun()
+
+    mostrar_nueva_venta = st.session_state.ventas_expandido or menu_actual in claves_venta
+    if mostrar_nueva_venta:
+        _, col_nv = st.sidebar.columns([0.18, 0.82])
+        with col_nv:
+            tipo_nv = "primary" if menu_actual in claves_venta else "secondary"
+            if st.button("🆕  Nueva Venta", use_container_width=True, key="menu_nueva_venta", type=tipo_nv):
+                st.session_state.menu_activo = "vender"
+                st.session_state.nueva_venta_expandido = not st.session_state.nueva_venta_expandido
+                st.rerun()
+
+        mostrar_subopciones_venta = st.session_state.nueva_venta_expandido or menu_actual in claves_venta
+        if mostrar_subopciones_venta:
+            for clave_v, icono_v, etiqueta_v in [("vender", "✅", "Ventas Pagadas"), ("deudores", "🧾", "Ventas por Pagar")]:
+                _, col_v2 = st.sidebar.columns([0.32, 0.68])
+                with col_v2:
+                    tipo_v = "primary" if menu_actual == clave_v else "secondary"
+                    if st.button(f"{icono_v}  {etiqueta_v}", use_container_width=True, key=f"menu_{clave_v}_lvl3", type=tipo_v):
+                        st.session_state.menu_activo = clave_v
+                        st.rerun()
+
+    if st.sidebar.button("📦  Registrar Compra", use_container_width=True, key="menu_comprar", type=("primary" if menu_actual == "comprar" else "secondary")):
+        st.session_state.menu_activo = "comprar"
+        st.rerun()
+    if st.sidebar.button("📜  Movimientos", use_container_width=True, key="menu_movimientos", type=("primary" if menu_actual == "movimientos" else "secondary")):
+        st.session_state.menu_activo = "movimientos"
+        st.rerun()
 
     for titulo_grupo, items in grupos_menu:
         st.sidebar.markdown(f"<p class='menu-group-title'>{titulo_grupo}</p>", unsafe_allow_html=True)
@@ -1538,7 +1570,7 @@ else:
         st.markdown(
             """
 <div class="page-header">
-    <div class="page-title">💳 Registrar Venta</div>
+    <div class="page-title">✅ Ventas Pagadas</div>
     <div class="page-subtitle">Descuenta stock automáticamente y guarda el movimiento en el historial.</div>
 </div>
 """,
@@ -1849,7 +1881,7 @@ else:
         st.markdown(
             """
 <div class="page-header">
-    <div class="page-title">🧾 Deudores</div>
+    <div class="page-title">🧾 Ventas por Pagar</div>
     <div class="page-subtitle">Lleva el control de quién te debe, cuánto le fiaste y cuánto te ha pagado.</div>
 </div>
 """,
