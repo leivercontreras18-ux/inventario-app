@@ -1,16 +1,41 @@
 {
     "categorias": [
-        "Semi hilo"
+        "Dama",
+        "Caballero",
+        "Niño",
+        "Niña",
+        "Ropa íntima de niña",
+        "Ropa íntima de niño",
+        "Ropa íntima de dama",
+        "Ropa íntima de caballero",
+        "Escolar",
+        "Deportiva de dama",
+        "Deportiva de caballero"
     ],
     "tallas": [
         "UNICA",
         "S",
         "M",
         "L",
-        "XL"
+        "XL",
+        "TALLAS PLUS",
+        "2",
+        "4",
+        "6",
+        "8",
+        "10",
+        "12",
+        "14",
+        "16"
     ],
     "colores": [
         "Negro",
-        "Blanco"
+        "Blanco",
+        "Gris",
+        "Verde oliva",
+        "Vinotinto",
+        "Rojo",
+        "Azul rey",
+        "Beige"
     ]
 }
