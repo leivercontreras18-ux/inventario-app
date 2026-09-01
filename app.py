@@ -1263,13 +1263,17 @@ else:
 
     # --- Grupo "Inventario" con submenú desplegable bajo "Prendas" ---
     st.sidebar.markdown("<p class='menu-group-title'>Inventario</p>", unsafe_allow_html=True)
-    claves_inventario = ("existencias", "registrar", "modificar")
+    if "inventario_expandido" not in st.session_state:
+        st.session_state.inventario_expandido = False
+
     tipo_boton_prendas = "primary" if menu_actual == "existencias" else "secondary"
     if st.sidebar.button("📊  Prendas", use_container_width=True, key="menu_existencias", type=tipo_boton_prendas):
         st.session_state.menu_activo = "existencias"
+        st.session_state.inventario_expandido = not st.session_state.inventario_expandido
         st.rerun()
 
-    if menu_actual in claves_inventario:
+    mostrar_submenu_inventario = st.session_state.inventario_expandido or menu_actual in ("registrar", "modificar")
+    if mostrar_submenu_inventario:
         for clave_sub, icono_sub, etiqueta_sub in [("registrar", "➕", "Registrar"), ("modificar", "🗑️", "Eliminar")]:
             if clave_sub in ("registrar", "modificar") and not ES_ADMIN:
                 continue
