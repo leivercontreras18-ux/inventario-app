@@ -1,14 +1,16 @@
 {
     "categorias": [
-        "Short con licra",
-        "Faldas"
+        "Semi hilo"
     ],
     "tallas": [
         "UNICA",
+        "S",
+        "M",
+        "L",
         "XL"
     ],
     "colores": [
-        "Azul con rojo",
-        "Verde"
+        "Negro",
+        "Blanco"
     ]
 }
