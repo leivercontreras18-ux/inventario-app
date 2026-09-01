@@ -70,7 +70,7 @@ COLUMNAS_INVENTARIO = [
 
 COLUMNAS_MOVIMIENTOS = [
     "id", "prenda_id", "producto", "tipo", "cantidad",
-    "precio_unitario", "costo_unitario", "fecha", "usuario",
+    "precio_unitario", "costo_unitario", "pagado", "medio_pago", "fecha", "usuario",
 ]
 
 COLUMNAS_DEUDORES = ["id", "nombre", "telefono", "saldo", "notas"]
@@ -123,13 +123,22 @@ def cargar_movimientos():
     try:
         res = supabase.table("movimientos").select("*").order("fecha", desc=True).execute()
         if res.data:
-            return pd.DataFrame(res.data)
+            df_mov = pd.DataFrame(res.data)
+            if "pagado" not in df_mov.columns:
+                df_mov["pagado"] = True
+            else:
+                df_mov["pagado"] = df_mov["pagado"].fillna(True)
+            if "medio_pago" not in df_mov.columns:
+                df_mov["medio_pago"] = ""
+            else:
+                df_mov["medio_pago"] = df_mov["medio_pago"].fillna("")
+            return df_mov
     except Exception as e:
         st.warning(f"No se pudieron cargar los movimientos: {e}")
     return pd.DataFrame(columns=COLUMNAS_MOVIMIENTOS)
 
 
-def registrar_movimiento(prenda_id, producto, tipo, cantidad, precio_unitario=0, costo_unitario=0):
+def registrar_movimiento(prenda_id, producto, tipo, cantidad, precio_unitario=0, costo_unitario=0, pagado=True, medio_pago=""):
     if not supabase:
         st.warning("No hay conexión a la base de datos para registrar el movimiento.")
         return False
@@ -142,6 +151,8 @@ def registrar_movimiento(prenda_id, producto, tipo, cantidad, precio_unitario=0,
             "cantidad": int(cantidad),
             "precio_unitario": float(precio_unitario or 0),
             "costo_unitario": float(costo_unitario or 0),
+            "pagado": bool(pagado),
+            "medio_pago": str(medio_pago or ""),
             "fecha": datetime.now().isoformat(),
             "usuario": st.session_state.get("usuario_actual", ""),
         }
@@ -1283,7 +1294,7 @@ else:
     if "nueva_venta_expandido" not in st.session_state:
         st.session_state.nueva_venta_expandido = False
 
-    claves_venta = ("vender", "deudores")
+    claves_venta = ("vender", "ventas_pagadas", "deudores")
     tipo_boton_ventas = "primary" if menu_actual in claves_venta else "secondary"
     if st.sidebar.button("🛍️  Ventas", use_container_width=True, key="menu_ventas_toggle", type=tipo_boton_ventas):
         st.session_state.ventas_expandido = not st.session_state.ventas_expandido
@@ -1301,7 +1312,7 @@ else:
 
         mostrar_subopciones_venta = st.session_state.nueva_venta_expandido or menu_actual in claves_venta
         if mostrar_subopciones_venta:
-            for clave_v, icono_v, etiqueta_v in [("vender", "✅", "Ventas Pagadas"), ("deudores", "🧾", "Ventas por Pagar")]:
+            for clave_v, icono_v, etiqueta_v in [("ventas_pagadas", "✅", "Ventas Pagadas"), ("deudores", "🧾", "Ventas por Pagar")]:
                 _, col_v2 = st.sidebar.columns([0.32, 0.68])
                 with col_v2:
                     tipo_v = "primary" if menu_actual == clave_v else "secondary"
@@ -1570,8 +1581,8 @@ else:
         st.markdown(
             """
 <div class="page-header">
-    <div class="page-title">✅ Ventas Pagadas</div>
-    <div class="page-subtitle">Descuenta stock automáticamente y guarda el movimiento en el historial.</div>
+    <div class="page-title">🆕 Nueva Venta</div>
+    <div class="page-subtitle">Arma el pedido y dinos si ya te pagaron o queda pendiente — la app la manda sola a "Ventas Pagadas" o "Ventas por Pagar".</div>
 </div>
 """,
             unsafe_allow_html=True,
@@ -1580,39 +1591,162 @@ else:
         if df.empty:
             st.info("No hay prendas registradas para vender.")
         else:
-            with st.form("form_vender"):
-                ids_venta = df["ID"].astype(str).tolist()
-                id_venta = st.selectbox(
-                    "Prenda", ids_venta,
-                    format_func=lambda x: f"{x} — {df[df['ID'].astype(str) == x]['Producto'].values[0]}",
+            if "carrito_venta_nueva" not in st.session_state:
+                st.session_state.carrito_venta_nueva = []
+
+            col_p1, col_p2, col_p3 = st.columns([2, 1, 1])
+            with col_p1:
+                ids_venta_nueva = df["ID"].astype(str).tolist()
+                producto_venta_sel = st.selectbox(
+                    "Producto", ids_venta_nueva,
+                    format_func=lambda x: f"{x} — {df[df['ID'].astype(str) == x]['Producto'].values[0]} (stock: {int(df[df['ID'].astype(str) == x]['cantidad'].values[0])})",
+                    key="select_producto_venta_nueva",
                 )
-                fila = df[df["ID"].astype(str) == str(id_venta)].iloc[0]
-
-                st.markdown(f"**Stock disponible:** {int(fila['cantidad'])} unidades")
-
-                col1, col2 = st.columns(2)
-                with col1:
-                    cantidad_vender = st.number_input("Cantidad a vender", min_value=1, max_value=max(1, int(fila["cantidad"])), value=1, step=1)
-                with col2:
-                    precio_unit = st.number_input("Precio de venta (por unidad)", min_value=0.0, value=float(fila.get("precio_venta", 0) or 0), step=1.0)
-
-                total_venta = cantidad_vender * precio_unit
-                st.markdown(f"**Total de la venta:** {moneda(total_venta)}")
-
-                if st.form_submit_button("💰 Confirmar Venta", use_container_width=True):
-                    if int(fila["cantidad"]) < cantidad_vender:
-                        st.error("No hay stock suficiente para esta venta.")
+            with col_p2:
+                cantidad_venta_sel = st.number_input("Cantidad", min_value=1, value=1, step=1, key="cantidad_venta_nueva")
+            with col_p3:
+                st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+                if st.button("➕ Agregar", use_container_width=True, key="btn_agregar_venta_nueva"):
+                    fila_prod = df[df["ID"].astype(str) == str(producto_venta_sel)].iloc[0]
+                    if cantidad_venta_sel > int(fila_prod["cantidad"]):
+                        st.error(f"Solo hay {int(fila_prod['cantidad'])} en stock.")
                     else:
-                        datos_act = fila.to_dict()
-                        datos_act["cantidad"] = int(fila["cantidad"]) - int(cantidad_vender)
-                        if actualizar_prenda(id_venta, datos_act):
-                            registrar_movimiento(
-                                prenda_id=id_venta, producto=fila["Producto"], tipo="venta",
-                                cantidad=cantidad_vender, precio_unitario=precio_unit,
-                                costo_unitario=fila.get("costo", 0),
-                            )
-                            st.success(f"¡Venta registrada! Total: {moneda(total_venta)}")
+                        st.session_state.carrito_venta_nueva.append({
+                            "id": fila_prod["ID"], "producto": fila_prod["Producto"],
+                            "cantidad": int(cantidad_venta_sel), "precio_unitario": float(fila_prod.get("precio_venta", 0) or 0),
+                            "costo_unitario": float(fila_prod.get("costo", 0) or 0),
+                        })
+                        st.rerun()
+
+            if st.session_state.carrito_venta_nueva:
+                total_venta_nueva = sum(item["cantidad"] * item["precio_unitario"] for item in st.session_state.carrito_venta_nueva)
+                for idx, item in enumerate(st.session_state.carrito_venta_nueva):
+                    c_item1, c_item2 = st.columns([4, 1])
+                    with c_item1:
+                        st.markdown(
+                            f"<div class='config-chip'>{item['cantidad']} × {item['producto']} — {moneda(item['cantidad'] * item['precio_unitario'])}</div>",
+                            unsafe_allow_html=True,
+                        )
+                    with c_item2:
+                        if st.button("✕", key=f"quitar_venta_nueva_{idx}", use_container_width=True):
+                            st.session_state.carrito_venta_nueva.pop(idx)
                             st.rerun()
+
+                st.markdown(f"**Total del pedido: {moneda(total_venta_nueva)}**")
+                st.markdown("<br>", unsafe_allow_html=True)
+
+                estado_pago = st.radio(
+                    "¿Esta venta fue pagada?",
+                    ["✅ Sí, pagada", "🧾 No, queda pendiente (fiado)"],
+                    horizontal=True, key="estado_pago_venta_nueva",
+                )
+                fue_pagada = estado_pago.startswith("✅")
+
+                nombre_valido = True
+                if fue_pagada:
+                    medio_pago_venta = st.selectbox(
+                        "Medio de pago", ["Efectivo", "Pago Móvil", "Transferencia", "Zelle", "Otro"],
+                        key="medio_pago_venta_nueva",
+                    )
+                    deudores_df_nv = pd.DataFrame()
+                    persona_sel_nv = None
+                else:
+                    deudores_df_nv = cargar_deudores()
+                    NUEVA_PERSONA_NV = "➕ Persona nueva"
+                    opciones_persona_nv = [NUEVA_PERSONA_NV] + deudores_df_nv["id"].astype(str).tolist()
+                    persona_sel_nv = st.selectbox(
+                        "¿A quién se le fía?", opciones_persona_nv,
+                        format_func=lambda x: x if x == NUEVA_PERSONA_NV else deudores_df_nv[deudores_df_nv["id"].astype(str) == x]["nombre"].values[0],
+                        key="select_persona_venta_nueva",
+                    )
+                    nombre_nuevo_nv, telefono_nuevo_nv = "", ""
+                    if persona_sel_nv == NUEVA_PERSONA_NV:
+                        col_np1, col_np2 = st.columns(2)
+                        with col_np1:
+                            nombre_nuevo_nv = st.text_input("Nombre", placeholder="Ej: María Pérez", key="nombre_nueva_persona_nv")
+                        with col_np2:
+                            telefono_nuevo_nv = st.text_input("Teléfono (opcional)", placeholder="Ej: 0414-1234567", key="telefono_nueva_persona_nv")
+                        nombre_valido = nombre_nuevo_nv.strip() != ""
+                    tasa_venta_nv, fuente_tasa_venta_nv = selector_tasa_cambio("venta_nueva", st.session_state.get("ultima_tasa", 0.0))
+                    if tasa_venta_nv > 0:
+                        st.caption(f"💱 Equivalente: {total_venta_nueva * tasa_venta_nv:,.2f} Bs")
+                    medio_pago_venta = ""
+
+                if st.button("✅ Confirmar Venta", use_container_width=True, key="btn_confirmar_venta_nueva", disabled=not nombre_valido):
+                    for item in st.session_state.carrito_venta_nueva:
+                        fila_prod_actual = df[df["ID"].astype(str) == str(item["id"])].iloc[0]
+                        datos_act = fila_prod_actual.to_dict()
+                        datos_act["cantidad"] = int(fila_prod_actual["cantidad"]) - item["cantidad"]
+                        actualizar_prenda(item["id"], datos_act)
+                        registrar_movimiento(
+                            prenda_id=item["id"], producto=item["producto"], tipo="venta",
+                            cantidad=item["cantidad"], precio_unitario=item["precio_unitario"],
+                            costo_unitario=item["costo_unitario"], pagado=fue_pagada,
+                            medio_pago=medio_pago_venta,
+                        )
+
+                    if fue_pagada:
+                        st.session_state.carrito_venta_nueva = []
+                        st.success(f"¡Venta registrada como pagada! Total: {moneda(total_venta_nueva)}")
+                        st.rerun()
+                    else:
+                        if persona_sel_nv == "➕ Persona nueva":
+                            id_persona_final_nv = guardar_deudor(nombre_nuevo_nv, telefono_nuevo_nv)
+                            nombre_persona_final_nv = nombre_nuevo_nv
+                        else:
+                            id_persona_final_nv = persona_sel_nv
+                            nombre_persona_final_nv = deudores_df_nv[deudores_df_nv["id"].astype(str) == str(persona_sel_nv)]["nombre"].values[0]
+
+                        if id_persona_final_nv:
+                            descripcion_pedido_nv = ", ".join(f"{i['cantidad']}× {i['producto']}" for i in st.session_state.carrito_venta_nueva)
+                            deudores_actualizado_nv = cargar_deudores()
+                            fila_persona_nv = deudores_actualizado_nv[deudores_actualizado_nv["id"].astype(str) == str(id_persona_final_nv)].iloc[0]
+                            saldo_actual_nv = float(fila_persona_nv.get("saldo", 0) or 0)
+                            nuevo_saldo_nv = saldo_actual_nv + total_venta_nueva
+                            actualizar_saldo_deudor(id_persona_final_nv, nuevo_saldo_nv)
+                            registrar_movimiento_deuda(
+                                deudor_id=id_persona_final_nv, deudor_nombre=nombre_persona_final_nv,
+                                tipo="cargo", descripcion=descripcion_pedido_nv, monto=total_venta_nueva,
+                                tasa_cambio=tasa_venta_nv,
+                            )
+                            if tasa_venta_nv > 0:
+                                st.session_state.ultima_tasa = tasa_venta_nv
+                            st.session_state.carrito_venta_nueva = []
+                            st.success(f"¡Venta registrada como pendiente! Nuevo saldo de {nombre_persona_final_nv}: {moneda(nuevo_saldo_nv)}")
+                            st.rerun()
+
+                if not nombre_valido:
+                    st.caption("⚠️ Escribe el nombre de la persona nueva para poder confirmar.")
+
+    # -----------------------------------------------------------------------------
+    # VENTAS PAGADAS (historial de ventas cobradas de una vez)
+    # -----------------------------------------------------------------------------
+    elif menu == "ventas_pagadas":
+        st.markdown(
+            """
+<div class="page-header">
+    <div class="page-title">✅ Ventas Pagadas</div>
+    <div class="page-subtitle">Historial de ventas que se cobraron completas al momento (sin fiar).</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        movs_todos = cargar_movimientos()
+        ventas_pagadas_df = movs_todos[(movs_todos["tipo"] == "venta") & (movs_todos["pagado"] == True)] if not movs_todos.empty else pd.DataFrame()  # noqa: E712
+
+        total_pagado_hist = float((ventas_pagadas_df["cantidad"] * ventas_pagadas_df["precio_unitario"]).sum()) if not ventas_pagadas_df.empty else 0.0
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown(f"""<div class="metric-card"><div class="metric-label">Total Vendido (pagado)</div><div class="metric-value">{moneda(total_pagado_hist)}</div></div>""", unsafe_allow_html=True)
+        with col2:
+            st.markdown(f"""<div class="metric-card"><div class="metric-label">Cantidad de Ventas</div><div class="metric-value">{len(ventas_pagadas_df)}</div></div>""", unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        if ventas_pagadas_df.empty:
+            st.info("Todavía no hay ventas pagadas registradas. Usa 'Nueva Venta' para empezar.")
+        else:
+            render_tabla_movimientos(ventas_pagadas_df)
 
     # -----------------------------------------------------------------------------
     # COMPRAR / REPONER STOCK
@@ -1899,120 +2033,6 @@ else:
             st.markdown(f"""<div class="metric-card"><div class="metric-label">Personas que Deben</div><div class="metric-value">{cantidad_deudores}</div></div>""", unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
-
-        # =========================================================================
-        # SECCIÓN 1: REGISTRAR Y FIAR (persona nueva o existente + carrito)
-        # =========================================================================
-        st.markdown("<div class='section-title'>➕ Registrar y Fiar</div><div class='section-subtitle'>Elige a la persona (o crea una nueva) y ve agregando lo que se lleva.</div>", unsafe_allow_html=True)
-
-        NUEVA_PERSONA = "➕ Persona nueva"
-        opciones_persona = [NUEVA_PERSONA] + deudores_df["id"].astype(str).tolist()
-        persona_sel = st.selectbox(
-            "Persona",
-            opciones_persona,
-            format_func=lambda x: x if x == NUEVA_PERSONA else deudores_df[deudores_df["id"].astype(str) == x]["nombre"].values[0],
-            key="select_persona_fiar",
-        )
-
-        nombre_nuevo, telefono_nuevo = "", ""
-        if persona_sel == NUEVA_PERSONA:
-            col_np1, col_np2 = st.columns(2)
-            with col_np1:
-                nombre_nuevo = st.text_input("Nombre", placeholder="Ej: María Pérez", key="nombre_nueva_persona")
-            with col_np2:
-                telefono_nuevo = st.text_input("Teléfono (opcional)", placeholder="Ej: 0414-1234567", key="telefono_nueva_persona")
-
-        if "carrito_fiado" not in st.session_state:
-            st.session_state.carrito_fiado = []
-
-        if df.empty:
-            st.info("No tienes prendas registradas en el inventario todavía.")
-        else:
-            col_p1, col_p2, col_p3 = st.columns([2, 1, 1])
-            with col_p1:
-                ids_prod_fiar = df["ID"].astype(str).tolist()
-                producto_fiar_sel = st.selectbox(
-                    "Producto", ids_prod_fiar,
-                    format_func=lambda x: f"{x} — {df[df['ID'].astype(str) == x]['Producto'].values[0]} (stock: {int(df[df['ID'].astype(str) == x]['cantidad'].values[0])})",
-                    key="select_producto_fiar",
-                )
-            with col_p2:
-                cantidad_fiar = st.number_input("Cantidad", min_value=1, value=1, step=1, key="cantidad_fiar")
-            with col_p3:
-                st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
-                if st.button("➕ Agregar", use_container_width=True, key="btn_agregar_carrito"):
-                    fila_prod = df[df["ID"].astype(str) == str(producto_fiar_sel)].iloc[0]
-                    if cantidad_fiar > int(fila_prod["cantidad"]):
-                        st.error(f"Solo hay {int(fila_prod['cantidad'])} en stock.")
-                    else:
-                        st.session_state.carrito_fiado.append({
-                            "id": fila_prod["ID"], "producto": fila_prod["Producto"],
-                            "cantidad": int(cantidad_fiar), "precio_unitario": float(fila_prod.get("precio_venta", 0) or 0),
-                            "costo_unitario": float(fila_prod.get("costo", 0) or 0),
-                        })
-                        st.rerun()
-
-            if st.session_state.carrito_fiado:
-                total_pedido = sum(item["cantidad"] * item["precio_unitario"] for item in st.session_state.carrito_fiado)
-                for idx, item in enumerate(st.session_state.carrito_fiado):
-                    c_item1, c_item2 = st.columns([4, 1])
-                    with c_item1:
-                        st.markdown(
-                            f"<div class='config-chip'>{item['cantidad']} × {item['producto']} — {moneda(item['cantidad'] * item['precio_unitario'])}</div>",
-                            unsafe_allow_html=True,
-                        )
-                    with c_item2:
-                        if st.button("✕", key=f"quitar_carrito_{idx}", use_container_width=True):
-                            st.session_state.carrito_fiado.pop(idx)
-                            st.rerun()
-
-                st.markdown(f"**Total del pedido: {moneda(total_pedido)}**")
-
-                tasa_fiar, fuente_tasa_fiar = selector_tasa_cambio("fiar", st.session_state.get("ultima_tasa", 0.0))
-                if tasa_fiar > 0:
-                    st.caption(f"💱 Equivalente: {total_pedido * tasa_fiar:,.2f} Bs")
-
-                nombre_valido = (persona_sel != NUEVA_PERSONA) or nombre_nuevo.strip() != ""
-
-                if st.button("✅ Confirmar y Fiar Estos Productos", use_container_width=True, key="btn_confirmar_fiar", disabled=not nombre_valido):
-                    if persona_sel == NUEVA_PERSONA:
-                        id_persona_final = guardar_deudor(nombre_nuevo, telefono_nuevo)
-                        nombre_persona_final = nombre_nuevo
-                    else:
-                        id_persona_final = persona_sel
-                        nombre_persona_final = deudores_df[deudores_df["id"].astype(str) == str(persona_sel)]["nombre"].values[0]
-
-                    if id_persona_final:
-                        for item in st.session_state.carrito_fiado:
-                            fila_prod_actual = df[df["ID"].astype(str) == str(item["id"])].iloc[0]
-                            datos_act = fila_prod_actual.to_dict()
-                            datos_act["cantidad"] = int(fila_prod_actual["cantidad"]) - item["cantidad"]
-                            actualizar_prenda(item["id"], datos_act)
-                            registrar_movimiento(
-                                prenda_id=item["id"], producto=item["producto"], tipo="venta",
-                                cantidad=item["cantidad"], precio_unitario=item["precio_unitario"],
-                                costo_unitario=item["costo_unitario"],
-                            )
-                        descripcion_pedido = ", ".join(f"{i['cantidad']}× {i['producto']}" for i in st.session_state.carrito_fiado)
-
-                        deudores_actualizado = cargar_deudores()
-                        fila_persona_final = deudores_actualizado[deudores_actualizado["id"].astype(str) == str(id_persona_final)].iloc[0]
-                        saldo_actual = float(fila_persona_final.get("saldo", 0) or 0)
-                        nuevo_saldo = saldo_actual + total_pedido
-                        actualizar_saldo_deudor(id_persona_final, nuevo_saldo)
-                        registrar_movimiento_deuda(
-                            deudor_id=id_persona_final, deudor_nombre=nombre_persona_final,
-                            tipo="cargo", descripcion=descripcion_pedido, monto=total_pedido,
-                            tasa_cambio=tasa_fiar,
-                        )
-                        if tasa_fiar > 0:
-                            st.session_state.ultima_tasa = tasa_fiar
-                        st.session_state.carrito_fiado = []
-                        st.success(f"¡Listo! Nuevo saldo de {nombre_persona_final}: {moneda(nuevo_saldo)}")
-                        st.rerun()
-
-                if not nombre_valido:
-                    st.caption("⚠️ Escribe el nombre de la persona nueva para poder confirmar.")
 
         with st.expander("👥 Ver todas las personas registradas"):
             if deudores_df.empty:
