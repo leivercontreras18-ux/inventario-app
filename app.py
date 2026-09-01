@@ -1247,11 +1247,6 @@ else:
     st.sidebar.markdown("<div class='menu-divider'></div>", unsafe_allow_html=True)
 
     grupos_menu = [
-        ("Inventario", [
-            ("existencias", "📊", "Existencias"),
-            ("registrar", "➕", "Registrar Prenda"),
-            ("modificar", "✏️", "Editar / Borrar"),
-        ]),
         ("Ventas", [
             ("vender", "💳", "Vender"),
             ("comprar", "📦", "Registrar Compra"),
@@ -1265,6 +1260,25 @@ else:
             ("configuracion", "⚙️", "Configuración"),
         ]),
     ]
+
+    # --- Grupo "Inventario" con submenú desplegable bajo "Prendas" ---
+    st.sidebar.markdown("<p class='menu-group-title'>Inventario</p>", unsafe_allow_html=True)
+    claves_inventario = ("existencias", "registrar", "modificar")
+    tipo_boton_prendas = "primary" if menu_actual == "existencias" else "secondary"
+    if st.sidebar.button("📊  Prendas", use_container_width=True, key="menu_existencias", type=tipo_boton_prendas):
+        st.session_state.menu_activo = "existencias"
+        st.rerun()
+
+    if menu_actual in claves_inventario:
+        for clave_sub, icono_sub, etiqueta_sub in [("registrar", "➕", "Registrar"), ("modificar", "🗑️", "Eliminar")]:
+            if clave_sub in ("registrar", "modificar") and not ES_ADMIN:
+                continue
+            _, col_sub = st.sidebar.columns([0.18, 0.82])
+            with col_sub:
+                tipo_sub = "primary" if menu_actual == clave_sub else "secondary"
+                if st.button(f"{icono_sub}  {etiqueta_sub}", use_container_width=True, key=f"menu_{clave_sub}_sub", type=tipo_sub):
+                    st.session_state.menu_activo = clave_sub
+                    st.rerun()
 
     for titulo_grupo, items in grupos_menu:
         st.sidebar.markdown(f"<p class='menu-group-title'>{titulo_grupo}</p>", unsafe_allow_html=True)
