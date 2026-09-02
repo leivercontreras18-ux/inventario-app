@@ -921,6 +921,20 @@ section[data-testid="stSidebar"] button[kind="primary"]:hover {{
     transform: none !important; box-shadow: 0 4px 14px rgba(219, 39, 119, 0.35) !important;
 }}
 
+section[data-testid="stSidebar"] button[aria-label^="•"] {{
+    font-size: 12.5px !important; color: var(--text-secondary) !important;
+    border-left: 1.5px solid var(--border-color) !important; border-radius: 0 !important;
+    margin-left: 14px !important; padding: 8px 10px 8px 14px !important; font-weight: 500 !important;
+    box-shadow: none !important; background: transparent !important;
+}}
+section[data-testid="stSidebar"] button[aria-label^="•"]:hover {{
+    background: rgba(219, 39, 119, 0.06) !important; color: var(--text-color) !important;
+}}
+section[data-testid="stSidebar"] button[kind="primary"][aria-label^="•"] {{
+    color: var(--accent) !important; border-left-color: var(--accent) !important;
+    background: transparent !important; box-shadow: none !important; font-weight: 700 !important;
+}}
+
 .product-card {{
     background: var(--card-bg); backdrop-filter: blur(20px);
     border: 1px solid var(--border-color);
@@ -1282,41 +1296,54 @@ else:
 
     st.sidebar.markdown("<div class='menu-divider'></div>", unsafe_allow_html=True)
 
-    grupos_menu = [
-        ("", [
-            ("inicio", "🏠", "Inicio"),
-        ]),
-        ("Inventario", [
-            ("existencias", "📊", "Prendas"),
-            ("registrar", "➕", "Registrar Prenda"),
-            ("modificar", "🗑️", "Eliminar Prenda"),
-        ]),
-        ("Ventas", [
-            ("vender", "🆕", "Nueva Venta"),
-            ("ventas_pagadas", "✅", "Ventas Pagadas"),
-            ("deudores", "🧾", "Ventas por Pagar"),
-        ]),
-        ("Compras", [
-            ("comprar", "📦", "Registrar Compra"),
-            ("movimientos", "📜", "Movimientos"),
-        ]),
-        ("Negocio", [
-            ("reportes", "📈", "Reportes"),
-            ("configuracion", "⚙️", "Configuración"),
-        ]),
-    ]
+    def render_grupo_acordeon(icono_grupo, titulo_grupo, items, session_key):
+        """Botón principal con flechita (chevron) que expande/colapsa sub-opciones con puntito."""
+        if session_key not in st.session_state:
+            st.session_state[session_key] = False
+        claves_grupo = [c for c, _ in items]
+        expandido = st.session_state[session_key] or menu_actual in claves_grupo
+        chevron = "▴" if expandido else "▾"
+        activo_grupo = menu_actual in claves_grupo
+        tipo_grupo = "primary" if activo_grupo else "secondary"
+        if st.sidebar.button(f"{icono_grupo}  {titulo_grupo}  {chevron}", use_container_width=True, key=f"grupo_{session_key}", type=tipo_grupo):
+            st.session_state[session_key] = not st.session_state[session_key]
+            st.rerun()
+        if expandido:
+            for clave, etiqueta in items:
+                if clave in ("registrar", "modificar", "configuracion") and not ES_ADMIN:
+                    continue
+                tipo_item = "primary" if menu_actual == clave else "secondary"
+                if st.sidebar.button(f"•  {etiqueta}", use_container_width=True, key=f"item_{clave}", type=tipo_item):
+                    st.session_state.menu_activo = clave
+                    st.rerun()
 
-    for titulo_grupo, items in grupos_menu:
-        if titulo_grupo:
-            st.sidebar.markdown(f"<p class='menu-group-title'>{titulo_grupo}</p>", unsafe_allow_html=True)
-        for clave, icono, etiqueta in items:
-            if clave in ("registrar", "modificar", "configuracion") and not ES_ADMIN:
-                continue
-            es_activo = (menu_actual == clave)
-            tipo_boton = "primary" if es_activo else "secondary"
-            if st.sidebar.button(f"{icono}  {etiqueta}", use_container_width=True, key=f"menu_{clave}", type=tipo_boton):
-                st.session_state.menu_activo = clave
-                st.rerun()
+    # --- Inicio (ítem plano, sin acordeón) ---
+    if st.sidebar.button("🏠  Inicio", use_container_width=True, key="menu_inicio", type=("primary" if menu_actual == "inicio" else "secondary")):
+        st.session_state.menu_activo = "inicio"
+        st.rerun()
+
+    st.sidebar.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
+
+    render_grupo_acordeon("📊", "Prendas", [
+        ("existencias", "Prendas"), ("registrar", "Registrar Prenda"), ("modificar", "Eliminar Prenda"),
+    ], "acc_inventario")
+
+    render_grupo_acordeon("🛍️", "Ventas", [
+        ("vender", "Nueva Venta"), ("ventas_pagadas", "Ventas Pagadas"), ("deudores", "Ventas por Pagar"),
+    ], "acc_ventas")
+
+    render_grupo_acordeon("📦", "Compras", [
+        ("comprar", "Registrar Compra"), ("movimientos", "Movimientos"),
+    ], "acc_compras")
+
+    st.sidebar.markdown("<p class='menu-group-title'>Negocio</p>", unsafe_allow_html=True)
+    for clave, icono, etiqueta in [("reportes", "📈", "Reportes"), ("configuracion", "⚙️", "Configuración")]:
+        if clave == "configuracion" and not ES_ADMIN:
+            continue
+        tipo_boton = "primary" if menu_actual == clave else "secondary"
+        if st.sidebar.button(f"{icono}  {etiqueta}", use_container_width=True, key=f"menu_{clave}", type=tipo_boton):
+            st.session_state.menu_activo = clave
+            st.rerun()
 
     st.sidebar.markdown("<hr style='margin: 20px 0 15px 0; border-color: var(--border-color);'>", unsafe_allow_html=True)
 
