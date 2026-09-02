@@ -1295,6 +1295,8 @@ else:
             ("vender", "🆕", "Nueva Venta"),
             ("ventas_pagadas", "✅", "Ventas Pagadas"),
             ("deudores", "🧾", "Ventas por Pagar"),
+        ]),
+        ("Compras", [
             ("comprar", "📦", "Registrar Compra"),
             ("movimientos", "📜", "Movimientos"),
         ]),
