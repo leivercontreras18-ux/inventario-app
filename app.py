@@ -70,7 +70,7 @@ COLUMNAS_INVENTARIO = [
 
 COLUMNAS_MOVIMIENTOS = [
     "id", "prenda_id", "producto", "tipo", "cantidad",
-    "precio_unitario", "costo_unitario", "pagado", "medio_pago", "fecha", "usuario",
+    "precio_unitario", "costo_unitario", "pagado", "medio_pago", "proveedor", "fecha", "usuario",
 ]
 
 COLUMNAS_DEUDORES = ["id", "nombre", "telefono", "saldo", "notas"]
@@ -132,13 +132,17 @@ def cargar_movimientos():
                 df_mov["medio_pago"] = ""
             else:
                 df_mov["medio_pago"] = df_mov["medio_pago"].fillna("")
+            if "proveedor" not in df_mov.columns:
+                df_mov["proveedor"] = ""
+            else:
+                df_mov["proveedor"] = df_mov["proveedor"].fillna("")
             return df_mov
     except Exception as e:
         st.warning(f"No se pudieron cargar los movimientos: {e}")
     return pd.DataFrame(columns=COLUMNAS_MOVIMIENTOS)
 
 
-def registrar_movimiento(prenda_id, producto, tipo, cantidad, precio_unitario=0, costo_unitario=0, pagado=True, medio_pago=""):
+def registrar_movimiento(prenda_id, producto, tipo, cantidad, precio_unitario=0, costo_unitario=0, pagado=True, medio_pago="", proveedor=""):
     if not supabase:
         st.warning("No hay conexión a la base de datos para registrar el movimiento.")
         return False
@@ -153,6 +157,7 @@ def registrar_movimiento(prenda_id, producto, tipo, cantidad, precio_unitario=0,
             "costo_unitario": float(costo_unitario or 0),
             "pagado": bool(pagado),
             "medio_pago": str(medio_pago or ""),
+            "proveedor": str(proveedor or ""),
             "fecha": datetime.now().isoformat(),
             "usuario": st.session_state.get("usuario_actual", ""),
         }
@@ -528,6 +533,7 @@ def render_tabla_movimientos(df_mov):
         else:
             badge = f"<span style='background: rgba(219,39,119,0.15); color:var(--accent); padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>{tipo.capitalize()}</span>"
 
+        proveedor_txt = fila.get("proveedor", "") or "—"
         filas_html += f"""<tr>
 <td>{formatear_fecha_corta(fila.get('fecha', ''))}</td>
 <td>{fila.get('producto', '')}</td>
@@ -535,13 +541,14 @@ def render_tabla_movimientos(df_mov):
 <td style="text-align:center;">{int(fila.get('cantidad', 0) or 0)}</td>
 <td style="text-align:right;">{moneda(fila.get('precio_unitario', 0))}</td>
 <td style="text-align:right;">{moneda(fila.get('costo_unitario', 0))}</td>
+<td>{proveedor_txt}</td>
 <td>{fila.get('usuario', '')}</td>
 </tr>"""
 
     tabla_html = f"""<div class="tabla-movimientos-wrapper">
 <table class="tabla-movimientos">
 <thead><tr>
-<th>Fecha</th><th>Producto</th><th>Tipo</th><th>Cant.</th><th>Precio Unit.</th><th>Costo Unit.</th><th>Usuario</th>
+<th>Fecha</th><th>Producto</th><th>Tipo</th><th>Cant.</th><th>Precio Unit.</th><th>Costo Unit.</th><th>Proveedor</th><th>Usuario</th>
 </tr></thead>
 <tbody>{filas_html}</tbody>
 </table>
@@ -1781,8 +1788,8 @@ else:
         st.markdown(
             """
 <div class="page-header">
-    <div class="page-title">📦 Registrar Compra de Mercancía</div>
-    <div class="page-subtitle">Suma unidades al stock existente y registra el costo pagado al proveedor.</div>
+    <div class="page-title">📦 Registrar Compra a Proveedores</div>
+    <div class="page-subtitle">Suma unidades al stock existente y registra a quién le compraste y cuánto pagaste.</div>
 </div>
 """,
             unsafe_allow_html=True,
@@ -1791,34 +1798,44 @@ else:
         if df.empty:
             st.info("No hay prendas registradas. Primero registra una prenda desde el menú correspondiente.")
         else:
-            with st.form("form_comprar"):
-                ids_compra = df["ID"].astype(str).tolist()
-                id_compra = st.selectbox(
-                    "Prenda", ids_compra,
-                    format_func=lambda x: f"{x} — {df[df['ID'].astype(str) == x]['Producto'].values[0]}",
-                )
-                fila = df[df["ID"].astype(str) == str(id_compra)].iloc[0]
+            proveedor_nombre = st.text_input("Proveedor", placeholder="Ej: Textiles Andina, María la mayorista, etc.")
 
-                col1, col2 = st.columns(2)
-                with col1:
-                    cantidad_comprar = st.number_input("Cantidad a añadir", min_value=1, value=1, step=1)
-                with col2:
-                    costo_unit = st.number_input("Costo por unidad", min_value=0.0, value=float(fila.get("costo", 0) or 0), step=1.0)
+            ids_compra = df["ID"].astype(str).tolist()
+            id_compra = st.selectbox(
+                "Prenda", ids_compra,
+                format_func=lambda x: f"{x} — {df[df['ID'].astype(str) == x]['Producto'].values[0]}",
+            )
+            fila = df[df["ID"].astype(str) == str(id_compra)].iloc[0]
 
-                actualizar_costo = st.checkbox("Actualizar el costo registrado de esta prenda con este valor", value=True)
+            col1, col2 = st.columns(2)
+            with col1:
+                cantidad_comprar = st.number_input("Cantidad a añadir", min_value=1, value=1, step=1)
+            with col2:
+                costo_unit = st.number_input("Costo por unidad", min_value=0.0, value=float(fila.get("costo", 0) or 0), step=1.0)
 
-                if st.form_submit_button("📦 Confirmar Compra", use_container_width=True):
-                    datos_act = fila.to_dict()
-                    datos_act["cantidad"] = int(fila["cantidad"]) + int(cantidad_comprar)
-                    if actualizar_costo:
-                        datos_act["costo"] = costo_unit
-                    if actualizar_prenda(id_compra, datos_act):
-                        registrar_movimiento(
-                            prenda_id=id_compra, producto=fila["Producto"], tipo="compra",
-                            cantidad=cantidad_comprar, costo_unitario=costo_unit,
-                        )
-                        st.success("¡Compra registrada y stock actualizado!")
-                        st.rerun()
+            monto_total_compra = cantidad_comprar * costo_unit
+            st.markdown(f"**Monto total de la compra: {moneda(monto_total_compra)}**")
+
+            actualizar_costo = st.checkbox("Actualizar el costo registrado de esta prenda con este valor", value=True)
+
+            proveedor_valido = proveedor_nombre.strip() != ""
+
+            if st.button("📦 Confirmar Compra", use_container_width=True, disabled=not proveedor_valido):
+                datos_act = fila.to_dict()
+                datos_act["cantidad"] = int(fila["cantidad"]) + int(cantidad_comprar)
+                if actualizar_costo:
+                    datos_act["costo"] = costo_unit
+                if actualizar_prenda(id_compra, datos_act):
+                    registrar_movimiento(
+                        prenda_id=id_compra, producto=fila["Producto"], tipo="compra",
+                        cantidad=cantidad_comprar, costo_unitario=costo_unit,
+                        proveedor=proveedor_nombre,
+                    )
+                    st.success(f"¡Compra registrada a {proveedor_nombre}! Total: {moneda(monto_total_compra)}")
+                    st.rerun()
+
+            if not proveedor_valido:
+                st.caption("⚠️ Escribe el nombre del proveedor para poder confirmar.")
 
     # -----------------------------------------------------------------------------
     # REGISTRAR PRENDA (solo admin)
