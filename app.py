@@ -457,7 +457,7 @@ def selector_tasa_cambio(key_prefix, valor_por_defecto=0.0):
     else:
         info_tasa = tasas_disponibles[fuente_sel]
         tasa_valor = info_tasa["valor"]
-        st.caption(f"\ud83d\udcb1 {fuente_sel}: {tasa_valor:,.2f} Bs \u2014 actualizado {formatear_fecha_corta(info_tasa['fecha'])}")
+        st.caption(f"\U0001F4B1 {fuente_sel}: {tasa_valor:,.2f} Bs \u2014 actualizado {formatear_fecha_corta(info_tasa['fecha'])}")
 
     return tasa_valor, fuente_sel
 
@@ -490,17 +490,17 @@ def generar_link_whatsapp(cliente, telefono, descripcion_items, total_usd, medio
         num_limpio = "58" + num_limpio[1:]
 
     fecha_str = datetime.now().strftime("%d/%m/%Y %I:%M %p")
-    tasa_text = f"\n\ud83d\udcb1 *Tasa aplicable:* {tasa_bs:,.2f} Bs/$ ({total_usd * tasa_bs:,.2f} Bs)" if tasa_bs > 0 else ""
+    tasa_text = f"\n\U0001F4B1 *Tasa aplicable:* {tasa_bs:,.2f} Bs/$ ({total_usd * tasa_bs:,.2f} Bs)" if tasa_bs > 0 else ""
     
     mensaje = (
         f"\u2728 *LEWIN BOUTIQUE* \u2728\n"
         f"\U0001F9FE *Comprobante de {tipo_operacion}*\n"
-        f"\ud83d\udcc5 Fecha: {fecha_str}\n"
+        f"\U0001F4C5 Fecha: {fecha_str}\n"
         f"\U0001F464 Cliente: {cliente}\n"
         f"----------------------------------------\n"
-        f"\ud83d\udc57 *Detalle:* {descripcion_items}\n"
-        f"\ud83d\udcb3 *Medio de Pago:* {medio_pago}\n"
-        f"\ud83d\udcb0 *Total:* {moneda(total_usd)}{tasa_text}\n"
+        f"\U0001F457 *Detalle:* {descripcion_items}\n"
+        f"\U0001F4B3 *Medio de Pago:* {medio_pago}\n"
+        f"\U0001F4B0 *Total:* {moneda(total_usd)}{tasa_text}\n"
         f"----------------------------------------\n"
         f"\u00a1Gracias por tu preferencia! \u2728 Estilo y elegancia siempre \u2728"
     )
@@ -708,7 +708,7 @@ def render_copy_button(text_to_copy: str, label: str = "Copiar C\u00f3digo"):
             width: 100%;
             transition: all 0.2s ease;
         ">
-            \ud83d\udccb {label}
+            \U0001F4CB {label}
         </button>
         <div id="feedback" style="text-align: center; font-size: 11px; color: #f472b6; opacity: 0; transition: opacity 0.3s; margin-top: 4px;">\u00a1Copiado con \u00e9xito!</div>
     </div>
@@ -1238,9 +1238,9 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                 </p>
                 <div class="feature-pills-container">
                     <span class="feature-pill">\U0001F4F7 Fotos de productos</span>
-                    <span class="feature-pill">\ud83d\udcb3 Ventas y compras</span>
+                    <span class="feature-pill">\U0001F4B3 Ventas y compras</span>
                     <span class="feature-pill">\U0001F4C8 Reportes de rentabilidad</span>
-                    <span class="feature-pill">\ud83d\udc65 Roles de usuario</span>
+                    <span class="feature-pill">\U0001F465 Roles de usuario</span>
                 </div>
                 <div class="stats-row-hero">
                     <div><div class="stat-value-hero">PLACEHOLDER_TOTAL</div><div class="stat-label-hero">Prendas en cat\u00e1logo</div></div>
@@ -1331,7 +1331,7 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
             st.markdown("<div class='login-subtitle-text'>Ingresa tus credenciales para continuar</div>", unsafe_allow_html=True)
 
             usuario_input = st.text_input("\U0001F464 Usuario", placeholder="Ingresa tu usuario")
-            clave_input = st.text_input("\ud83d\udd12 Contrase\u00f1a", type="password", placeholder="Ingresa tu contrase\u00f1a")
+            clave_input = st.text_input("\U0001F512 Contrase\u00f1a", type="password", placeholder="Ingresa tu contrase\u00f1a")
             remember_checked = st.checkbox("Recordarme")
 
             if st.form_submit_button("INGRESAR", use_container_width=True):
@@ -1581,22 +1581,22 @@ else:
                         st.rerun()
 
             st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown("<div class='section-title'>\ud83d\udccb B\u00fasqueda y Filtros Avanzados</div><div class='section-subtitle'>Combina filtros para encontrar exactamente lo que buscas.</div>", unsafe_allow_html=True)
+            st.markdown("<div class='section-title'>\U0001F4CB B\u00fasqueda y Filtros Avanzados</div><div class='section-subtitle'>Combina filtros para encontrar exactamente lo que buscas.</div>", unsafe_allow_html=True)
 
             col_f1, col_f2, col_f3 = st.columns([1.5, 1, 1])
             with col_f1:
-                busqueda = st.text_input("\ud83d\udd0d Buscar por nombre o ID", placeholder="Escribe el nombre de la prenda o su ID...")
+                busqueda = st.text_input("\U0001F50D Buscar por nombre o ID", placeholder="Escribe el nombre de la prenda o su ID...")
             with col_f2:
                 categorias_disponibles = ["Todas"] + sorted(list(df["Categoria"].dropna().unique()))
-                filtro_categoria = st.selectbox("\ud83d\udcc2 Categor\u00eda", categorias_disponibles)
+                filtro_categoria = st.selectbox("\U0001F4C2 Categor\u00eda", categorias_disponibles)
             with col_f3:
                 tallas_disponibles = ["Todas"] + sorted(list(df["talla"].dropna().unique()))
-                filtro_talla = st.selectbox("\ud83d\udccf Talla", tallas_disponibles)
+                filtro_talla = st.selectbox("\U0001F4CF Talla", tallas_disponibles)
 
             col_f4, col_f5, col_f6 = st.columns([1, 1, 1])
             with col_f4:
                 colores_disponibles = ["Todos"] + sorted(list(df["color"].dropna().unique()))
-                filtro_color = st.selectbox("\ud83c\udfa8 Color", colores_disponibles)
+                filtro_color = st.selectbox("\U0001F3A8 Color", colores_disponibles)
             with col_f5:
                 orden = st.selectbox("\u2195\ufe0f Ordenar por", ["Nombre (A-Z)", "Stock (mayor a menor)", "Stock (menor a mayor)", "M\u00e1s vendidos"])
             with col_f6:
@@ -1639,7 +1639,7 @@ else:
 
                 col_p1, col_p2 = st.columns([2, 2])
                 with col_p1:
-                    pagina_sel = st.selectbox("\ud83d\udcc4 P\u00e1gina", range(1, total_paginas + 1), key="paginacion_tabla") if total_paginas > 1 else 1
+                    pagina_sel = st.selectbox("\U0001F4C4 P\u00e1gina", range(1, total_paginas + 1), key="paginacion_tabla") if total_paginas > 1 else 1
 
                 inicio = (pagina_sel - 1) * items_por_pagina
                 fin = min(inicio + items_por_pagina, total_registros)
@@ -1648,7 +1648,7 @@ else:
                 csv_data = df_filtrado.to_csv(index=False, sep=';').encode('utf-8-sig')
                 with col_p2:
                     st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
-                    st.download_button("\ud83d\udce5 Exportar Inventario a CSV", data=csv_data,
+                    st.download_button("\U0001F4E5 Exportar Inventario a CSV", data=csv_data,
                                         file_name="inventario_lewin.csv", mime="text/csv",
                                         use_container_width=True)
 
@@ -1688,8 +1688,8 @@ else:
 </div>
 <div style="font-size: 16px; font-weight: 700; color: var(--text-color); margin-bottom: 8px;">{estrella} {row['Producto']}</div>
 <div style="font-size: 13px; color: var(--text-secondary); display: flex; gap: 12px; margin-bottom: 8px;">
-<span>\ud83d\udccf Talla: <b>{row['talla']}</b></span>
-<span>\ud83c\udfa8 Color: <b>{row['color']}</b></span>
+<span>\U0001F4CF Talla: <b>{row['talla']}</b></span>
+<span>\U0001F3A8 Color: <b>{row['color']}</b></span>
 </div>
 {precio_html}
 <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 10px; font-size: 13px;">
@@ -1710,7 +1710,7 @@ else:
                                 if actualizar_prenda(row["ID"], datos_act):
                                     st.rerun()
                         with c_qr:
-                            with st.popover("\ud83d\udd17 QR", use_container_width=True) if hasattr(st, "popover") else st.expander("\ud83d\udd17 QR"):
+                            with st.popover("\U0001F517 QR", use_container_width=True) if hasattr(st, "popover") else st.expander("\U0001F517 QR"):
                                 if QR_DISPONIBLE:
                                     qr_bytes = generar_qr_bytes(f"ID:{row['ID']} | {row['Producto']}")
                                     st.image(qr_bytes, width=140)
@@ -1729,7 +1729,7 @@ else:
         st.markdown(
             """
 <div class="page-header">
-    <div class="page-title">\ud83c\udd95 Nueva Venta</div>
+    <div class="page-title">\U0001F195 Nueva Venta</div>
     <div class="page-subtitle">Arma el pedido, aplica descuentos, elige pago \u00fanico o mixto y genera el recibo para WhatsApp.</div>
 </div>
 """,
@@ -1746,7 +1746,7 @@ else:
                 st.caption("Usa la c\u00e1mara para enfocar el c\u00f3digo QR o escribe el ID directamente para agregar r\u00e1pido al pedido.")
                 foto_scan = st.camera_input("Capturar c\u00f3digo de la prenda", key="cam_scan_vender")
                 if foto_scan:
-                    st.info("\ud83d\udca1 Consejo: Tambi\u00e9n puedes seleccionar directamente el ID del listado si no deseas usar la c\u00e1mara.")
+                    st.info("\U0001F4A1 Consejo: Tambi\u00e9n puedes seleccionar directamente el ID del listado si no deseas usar la c\u00e1mara.")
 
             col_p1, col_p2, col_p3 = st.columns([2, 1, 1])
             with col_p1:
@@ -1813,11 +1813,11 @@ else:
 
                 estado_pago = st.radio(
                     "\u00bfEsta venta fue pagada?",
-                    ["\u2705 S\u00ed, pagada de contado", "\ud83d\udd00 Pago Mixto / Dividido", "\U0001F9FE No, queda pendiente (fiado)"],
+                    ["\u2705 S\u00ed, pagada de contado", "\U0001F500 Pago Mixto / Dividido", "\U0001F9FE No, queda pendiente (fiado)"],
                     horizontal=True, key="estado_pago_venta_nueva",
                 )
                 fue_pagada = not estado_pago.startswith("\U0001F9FE")
-                es_pago_mixto = estado_pago.startswith("\ud83d\udd00")
+                es_pago_mixto = estado_pago.startswith("\U0001F500")
 
                 nombre_valido = True
                 cliente_nombre_recibo = ""
@@ -1839,7 +1839,7 @@ else:
                     tasa_venta_nv, _ = selector_tasa_cambio("venta_unica_tasa")
 
                 elif es_pago_mixto:
-                    st.markdown("#### \ud83d\udd00 Distribuci\u00f3n de Pago Mixto")
+                    st.markdown("#### \U0001F500 Distribuci\u00f3n de Pago Mixto")
                     c_cl1, c_cl2 = st.columns(2)
                     with c_cl1:
                         cliente_nombre_recibo = st.text_input("Nombre del cliente (opcional para recibo)", key="cli_nom_mixto")
@@ -1858,7 +1858,7 @@ else:
 
                     if tasa_venta_nv > 0:
                         bs_parte2 = pago_parte2_monto * tasa_venta_nv
-                        st.caption(f"\ud83d\udcb1 Parte 2 equivale a: {bs_parte2:,.2f} Bs (a {tasa_venta_nv:,.2f} Bs/$)")
+                        st.caption(f"\U0001F4B1 Parte 2 equivale a: {bs_parte2:,.2f} Bs (a {tasa_venta_nv:,.2f} Bs/$)")
 
                     medio_pago_venta = f"Mixto: ${pago_parte1_monto:.2f} ({pago_parte1_medio}) + ${pago_parte2_monto:.2f} ({pago_parte2_medio})"
                     persona_sel_nv = None
@@ -1890,7 +1890,7 @@ else:
 
                     tasa_venta_nv, fuente_tasa_venta_nv = selector_tasa_cambio("venta_nueva", st.session_state.get("ultima_tasa", 0.0))
                     if tasa_venta_nv > 0:
-                        st.caption(f"\ud83d\udcb1 Equivalente: {total_venta_nueva * tasa_venta_nv:,.2f} Bs")
+                        st.caption(f"\U0001F4B1 Equivalente: {total_venta_nueva * tasa_venta_nv:,.2f} Bs")
                     medio_pago_venta = "Pendiente (Fiado)"
 
                 if st.button("\u2705 Confirmar Venta", use_container_width=True, key="btn_confirmar_venta_nueva", disabled=not nombre_valido):
@@ -1921,7 +1921,7 @@ else:
                         st.session_state.carrito_venta_nueva = []
                         st.success(f"\u00a1Venta registrada exitosamente! Total: {moneda(total_venta_nueva)}")
                         if link_wa:
-                            st.markdown(f"[\ud83d\udcf2 **Enviar Recibo por WhatsApp**]({link_wa})")
+                            st.markdown(f"[\U0001F4F2 **Enviar Recibo por WhatsApp**]({link_wa})")
                         st.rerun()
                     else:
                         if persona_sel_nv == "\u2795 Persona nueva":
@@ -1947,7 +1947,7 @@ else:
                             st.session_state.carrito_venta_nueva = []
                             st.success(f"\u00a1Venta registrada como pendiente! Nuevo saldo de {nombre_persona_final_nv}: {moneda(nuevo_saldo_nv)}")
                             if link_wa:
-                                st.markdown(f"[\ud83d\udcf2 **Enviar Comprobante por WhatsApp**]({link_wa})")
+                                st.markdown(f"[\U0001F4F2 **Enviar Comprobante por WhatsApp**]({link_wa})")
                             st.rerun()
 
                 if not nombre_valido:
@@ -2087,7 +2087,7 @@ else:
             foto_subida = st.file_uploader("Sube una imagen", type=["png", "jpg", "jpeg", "webp"])
 
             st.markdown("<br>", unsafe_allow_html=True)
-            if st.form_submit_button("\ud83d\udcbe Guardar Prenda en el Sistema", use_container_width=True):
+            if st.form_submit_button("\U0001F4BE Guardar Prenda en el Sistema", use_container_width=True):
                 if sku.strip() == "":
                     st.error("El campo ID es obligatorio.")
                 else:
@@ -2188,8 +2188,8 @@ else:
 
                     st.markdown("<br>", unsafe_allow_html=True)
                     col_btn1, col_btn2 = st.columns(2)
-                    actualizar = col_btn1.form_submit_button("\ud83d\udcbe Guardar Cambios", use_container_width=True)
-                    eliminar = col_btn2.form_submit_button("\ud83d\uddd1\ufe0f Eliminar Prenda", use_container_width=True)
+                    actualizar = col_btn1.form_submit_button("\U0001F4BE Guardar Cambios", use_container_width=True)
+                    eliminar = col_btn2.form_submit_button("\U0001F5D1\ufe0f Eliminar Prenda", use_container_width=True)
 
                     if actualizar:
                         foto_final = fila_data.get("foto_url", "")
@@ -2221,7 +2221,7 @@ else:
         st.markdown(
             """
 <div class="page-header">
-    <div class="page-title">\ud83d\udcdc Historial de Movimientos</div>
+    <div class="page-title">\U0001F4DC Historial de Movimientos</div>
     <div class="page-subtitle">Todas las ventas, compras y ajustes registrados en el sistema.</div>
 </div>
 """,
@@ -2250,7 +2250,7 @@ else:
             render_tabla_movimientos(movs_filtrado)
 
             csv_movs = movs_filtrado.to_csv(index=False, sep=';').encode('utf-8-sig')
-            st.download_button("\ud83d\udce5 Exportar Movimientos a CSV", data=csv_movs,
+            st.download_button("\U0001F4E5 Exportar Movimientos a CSV", data=csv_movs,
                                 file_name="movimientos_lewin.csv", mime="text/csv")
 
     # -----------------------------------------------------------------------------
@@ -2279,7 +2279,7 @@ else:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        with st.expander("\ud83d\udc65 Ver todas las personas registradas"):
+        with st.expander("\U0001F465 Ver todas las personas registradas"):
             if deudores_df.empty:
                 st.info("Todav\u00eda no has agregado a nadie.")
             else:
@@ -2300,7 +2300,7 @@ else:
         # =========================================================================
         # SECCI\u00d3N 2: BUSCAR PERSONA Y COBRAR
         # =========================================================================
-        st.markdown("<div class='section-title'>\ud83d\udd0d Buscar Persona y Cobrar</div><div class='section-subtitle'>Encuentra a alguien para ver su saldo, su historial, o registrarle un pago.</div>", unsafe_allow_html=True)
+        st.markdown("<div class='section-title'>\U0001F50D Buscar Persona y Cobrar</div><div class='section-subtitle'>Encuentra a alguien para ver su saldo, su historial, o registrarle un pago.</div>", unsafe_allow_html=True)
 
         if deudores_df.empty:
             st.info("Todav\u00eda no hay personas registradas. Usa la secci\u00f3n de arriba para agregar la primera.")
@@ -2323,7 +2323,7 @@ else:
 <div style="display: flex; justify-content: space-between; align-items: center;">
 <div>
 <div style="font-size: 18px; font-weight: 700; color: var(--text-color);">{fila_buscada['nombre']}</div>
-<div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">\ud83d\udcde {telefono_buscado}</div>
+<div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">\U0001F4DE {telefono_buscado}</div>
 </div>
 <div style="font-size: 24px; font-weight: 800; color: {color_saldo_buscado};">{moneda(saldo_buscado)}</div>
 </div>
@@ -2347,7 +2347,7 @@ else:
                 monto_bs_ingresado = st.number_input("Monto recibido en Bs", min_value=0.0, step=1.0, key="monto_bs_cobro")
                 monto_pago_usd = (monto_bs_ingresado / tasa_cobro) if tasa_cobro > 0 else 0.0
                 if tasa_cobro > 0:
-                    st.caption(f"\ud83d\udcb1 Equivalente: {moneda(monto_pago_usd)}")
+                    st.caption(f"\U0001F4B1 Equivalente: {moneda(monto_pago_usd)}")
                 else:
                     st.caption("\u26a0\ufe0f Elige una tasa para poder calcular el equivalente en d\u00f3lares.")
             else:
@@ -2370,7 +2370,7 @@ else:
                     st.success(f"\u00a1Pago registrado! Nuevo saldo de {fila_buscada['nombre']}: {moneda(nuevo_saldo_buscado)}")
                     st.rerun()
 
-            with st.expander(f"\ud83d\udcdc Historial de {fila_buscada['nombre']}"):
+            with st.expander(f"\U0001F4DC Historial de {fila_buscada['nombre']}"):
                 deudas_mov_todas = cargar_deudas_movimientos()
                 historial_persona = deudas_mov_todas[deudas_mov_todas["deudor_id"].astype(str) == str(id_buscado)] if not deudas_mov_todas.empty else pd.DataFrame()
                 if historial_persona.empty:
@@ -2379,13 +2379,13 @@ else:
                     render_tabla_deudas(historial_persona)
 
             st.markdown("<br>", unsafe_allow_html=True)
-            if st.button(f"\ud83d\uddd1\ufe0f Eliminar a {fila_buscada['nombre']} del sistema", key="btn_eliminar_persona_buscada"):
+            if st.button(f"\U0001F5D1\ufe0f Eliminar a {fila_buscada['nombre']} del sistema", key="btn_eliminar_persona_buscada"):
                 if eliminar_deudor(id_buscado):
                     st.success(f"{fila_buscada['nombre']} fue eliminada/o.")
                     st.rerun()
 
         st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("<div class='section-title'>\ud83d\udcdc Historial General</div><div class='section-subtitle'>Todos los cargos y abonos registrados, de todas las personas.</div>", unsafe_allow_html=True)
+        st.markdown("<div class='section-title'>\U0001F4DC Historial General</div><div class='section-subtitle'>Todos los cargos y abonos registrados, de todas las personas.</div>", unsafe_allow_html=True)
         deudas_mov = cargar_deudas_movimientos()
         if deudas_mov.empty:
             st.info("A\u00fan no hay movimientos de deudores registrados.")
@@ -2393,7 +2393,7 @@ else:
             render_tabla_deudas(deudas_mov)
 
             st.markdown("<br>", unsafe_allow_html=True)
-            with st.expander("\ud83d\uddd1\ufe0f Eliminar un movimiento del historial"):
+            with st.expander("\U0001F5D1\ufe0f Eliminar un movimiento del historial"):
                 opciones_mov = deudas_mov["id"].astype(str).tolist()
                 mov_a_borrar = st.selectbox(
                     "Elige el movimiento a eliminar",
@@ -2434,7 +2434,7 @@ else:
 
         col_reset1, col_reset2 = st.columns([3, 1])
         with col_reset2:
-            if st.button("\ud83d\udd04 Restablecer Reportes", use_container_width=True):
+            if st.button("\U0001F504 Restablecer Reportes", use_container_width=True):
                 st.session_state.confirmar_reset_reportes = True
 
         if st.session_state.get("confirmar_reset_reportes"):
@@ -2556,7 +2556,7 @@ else:
 
         with col_cfg1:
             with st.container(border=True):
-                encabezado_seccion_form("\ud83d\udcc2", "Categor\u00edas")
+                encabezado_seccion_form("\U0001F4C2", "Categor\u00edas")
                 for cat in list(st.session_state.edit_cats):
                     c_col1, c_col2 = st.columns([4, 1])
                     with c_col1:
@@ -2580,7 +2580,7 @@ else:
 
         with col_cfg2:
             with st.container(border=True):
-                encabezado_seccion_form("\ud83d\udccf", "Tallas")
+                encabezado_seccion_form("\U0001F4CF", "Tallas")
                 for t in list(st.session_state.edit_tallas):
                     t_col1, t_col2 = st.columns([4, 1])
                     with t_col1:
@@ -2604,7 +2604,7 @@ else:
 
         with col_cfg3:
             with st.container(border=True):
-                encabezado_seccion_form("\ud83c\udfa8", "Colores")
+                encabezado_seccion_form("\U0001F3A8", "Colores")
                 for col_item in list(st.session_state.edit_colores):
                     col_c1, col_c2 = st.columns([4, 1])
                     with col_c1:
@@ -2629,7 +2629,7 @@ else:
         st.markdown("<br>", unsafe_allow_html=True)
         _, col_save_master, _ = st.columns([1, 2, 1])
         with col_save_master:
-            if st.button("\ud83d\udcbe Guardar configuraci\u00f3n en GitHub", use_container_width=True):
+            if st.button("\U0001F4BE Guardar configuraci\u00f3n en GitHub", use_container_width=True):
                 exito = guardar_configuracion_completa(
                     st.session_state.edit_cats, st.session_state.edit_tallas, st.session_state.edit_colores
                 )
@@ -2675,7 +2675,7 @@ else:
             
             if prendas_sel_et:
                 st.markdown("<br>", unsafe_allow_html=True)
-                st.markdown("<div class='section-title'>\ud83d\udccb Vista Previa de Etiquetas Imprimibles</div>", unsafe_allow_html=True)
+                st.markdown("<div class='section-title'>\U0001F4CB Vista Previa de Etiquetas Imprimibles</div>", unsafe_allow_html=True)
                 
                 cols_et = st.columns(3)
                 for idx, pid in enumerate(prendas_sel_et):
@@ -2774,7 +2774,7 @@ QR
                 st.markdown(f"""<div class="metric-card"><div class="metric-label">{label}</div><div class="metric-value">{value}</div></div>""", unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("<div class='section-title'>\ud83d\udccb Operaciones del D\u00eda Seleccionado</div>", unsafe_allow_html=True)
+        st.markdown("<div class='section-title'>\U0001F4CB Operaciones del D\u00eda Seleccionado</div>", unsafe_allow_html=True)
         if movs_dia.empty and abonos_dia.empty:
             st.info(f"No hay movimientos ni cobros registrados para la fecha {fecha_caja.strftime('%d/%m/%Y')}.")
         else:
