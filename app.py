@@ -941,19 +941,36 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
     font-weight: 700; margin: 14px 0 6px 4px; opacity: 0.75;
 }}
 
+/* Reducir espacio vertical entre botones de la barra lateral */
+section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {{
+    gap: 2px !important;
+}}
+section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div {{
+    margin-bottom: 0 !important;
+}}
+
 section[data-testid="stSidebar"] div.stButton > button {{
     background: transparent !important;
     border: 1px solid transparent !important;
     color: var(--text-color) !important;
     text-align: left !important;
     justify-content: flex-start !important;
+    align-items: center !important;
     border-radius: 10px !important;
-    padding: 8px 12px !important;
+    padding: 7px 12px !important;
     font-size: 13px !important;
     font-weight: 500 !important;
     box-shadow: none !important;
-    margin-bottom: 3px !important;
+    margin-bottom: 1px !important;
+    width: 100% !important;
     transition: all 0.2s ease !important;
+}}
+section[data-testid="stSidebar"] div.stButton > button p {{
+    text-align: left !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
 }}
 section[data-testid="stSidebar"] div.stButton > button:hover {{
     background: rgba(219, 39, 119, 0.08) !important;
@@ -971,20 +988,26 @@ section[data-testid="stSidebar"] div.stButton > button[kind="primary"] {{
     box-shadow: none !important;
 }}
 
-/* Sub-opciones dentro de los desplegables */
+/* Sub-opciones dentro de los desplegables (pegadas y alineadas a la izquierda) */
 section[data-testid="stSidebar"] div.stButton > button[aria-label*="\u2022"] {{
     font-size: 12px !important;
     color: var(--text-secondary) !important;
     border: none !important;
     border-left: 2px solid rgba(219, 39, 119, 0.25) !important;
     border-radius: 0 8px 8px 0 !important;
-    margin-left: 16px !important;
-    padding: 6px 10px 6px 14px !important;
+    margin-left: 18px !important;
+    padding: 5px 10px 5px 12px !important;
     font-weight: 500 !important;
     box-shadow: none !important;
-    background: transparent !important;
-    width: calc(100% - 16px) !important;
+    background: rgba(219, 39, 119, 0.02) !important;
+    width: calc(100% - 18px) !important;
     transition: all 0.2s ease !important;
+}}
+section[data-testid="stSidebar"] div.stButton > button[aria-label*="\u2022"] p {{
+    font-size: 12px !important;
+    color: var(--text-secondary) !important;
+    text-align: left !important;
+    justify-content: flex-start !important;
 }}
 section[data-testid="stSidebar"] div.stButton > button[aria-label*="\u2022"]:hover {{
     background: rgba(219, 39, 119, 0.08) !important;
