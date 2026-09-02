@@ -1902,10 +1902,6 @@ else:
                             st.rerun()
 
                 if not nombre_valido:
-                    st.caption("âš ï¸ Escribe el nombre de la persona nueva para poder confirmar.")                st.success(f"Â¡Venta registrada como pendiente! Nuevo saldo de {nombre_persona_final_nv}: {moneda(nuevo_saldo_nv)}")
-                            st.rerun()
-
-                if not nombre_valido:
                     st.caption("âš ï¸ Escribe el nombre de la persona nueva para poder confirmar.")
 
     # -----------------------------------------------------------------------------
