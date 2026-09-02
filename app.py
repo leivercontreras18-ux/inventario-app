@@ -839,6 +839,24 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
     font-size: 13px; color: var(--text-color); display: flex; align-items: center; height: 38px;
 }}
 
+.dashboard-card {{
+    background: var(--card-bg); backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color); border-radius: 16px;
+    padding: 20px; display: flex; justify-content: space-between; align-items: flex-start;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); margin-bottom: 16px; animation: fadeInUp 0.35s ease;
+}}
+.dashboard-card-value {{ font-size: 28px; font-weight: 800; color: var(--text-color); }}
+.dashboard-card-label {{ font-size: 12px; color: var(--text-secondary); margin-top: 4px; }}
+.dashboard-card-icon {{ font-size: 26px; opacity: 0.85; }}
+.dashboard-total-banner {{
+    background: linear-gradient(135deg, #db2777 0%, #f472b6 100%); border-radius: 18px;
+    padding: 26px 32px; display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 15px 35px rgba(219, 39, 119, 0.35); margin-top: 8px;
+}}
+.dashboard-total-value {{ font-size: 32px; font-weight: 800; color: #ffffff; }}
+.dashboard-total-label {{ font-size: 13px; color: rgba(255,255,255,0.85); margin-top: 4px; }}
+.dashboard-total-icon {{ font-size: 34px; color: #ffffff; opacity: 0.9; }}
+
 .page-header {{ margin-bottom: 25px; padding-bottom: 10px; }}
 .page-title {{ font-size: 32px; font-weight: 700; color: var(--text-color) !important; letter-spacing: 0.5px; }}
 .page-subtitle {{ font-size: 14px; color: var(--text-secondary) !important; margin-top: 4px; }}
@@ -959,7 +977,7 @@ defaults_sesion = {
     "etapa": "bienvenida",
     "tema": "oscuro",
     "form_version": 0,
-    "menu_activo": "existencias",
+    "menu_activo": "inicio",
 }
 for k, v in defaults_sesion.items():
     if k not in st.session_state:
@@ -1234,7 +1252,7 @@ else:
     usuario_formateado = st.session_state.usuario_actual.capitalize()
     inicial_usuario = usuario_formateado[0]
     rol_formateado = st.session_state.rol_actual.capitalize()
-    menu_actual = st.session_state.get("menu_activo", "existencias")
+    menu_actual = st.session_state.get("menu_activo", "inicio")
 
     st.sidebar.markdown(
         f"""
@@ -1258,77 +1276,30 @@ else:
     st.sidebar.markdown("<div class='menu-divider'></div>", unsafe_allow_html=True)
 
     grupos_menu = [
+        ("", [
+            ("inicio", "🏠", "Inicio"),
+        ]),
+        ("Inventario", [
+            ("existencias", "📊", "Prendas"),
+            ("registrar", "➕", "Registrar Prenda"),
+            ("modificar", "🗑️", "Eliminar Prenda"),
+        ]),
+        ("Ventas", [
+            ("vender", "🆕", "Nueva Venta"),
+            ("ventas_pagadas", "✅", "Ventas Pagadas"),
+            ("deudores", "🧾", "Ventas por Pagar"),
+            ("comprar", "📦", "Registrar Compra"),
+            ("movimientos", "📜", "Movimientos"),
+        ]),
         ("Negocio", [
             ("reportes", "📈", "Reportes"),
             ("configuracion", "⚙️", "Configuración"),
         ]),
     ]
 
-    # --- Grupo "Inventario" con submenú desplegable bajo "Prendas" ---
-    st.sidebar.markdown("<p class='menu-group-title'>Inventario</p>", unsafe_allow_html=True)
-    if "inventario_expandido" not in st.session_state:
-        st.session_state.inventario_expandido = False
-
-    tipo_boton_prendas = "primary" if menu_actual == "existencias" else "secondary"
-    if st.sidebar.button("📊  Prendas", use_container_width=True, key="menu_existencias", type=tipo_boton_prendas):
-        st.session_state.menu_activo = "existencias"
-        st.session_state.inventario_expandido = not st.session_state.inventario_expandido
-        st.rerun()
-
-    mostrar_submenu_inventario = st.session_state.inventario_expandido or menu_actual in ("registrar", "modificar")
-    if mostrar_submenu_inventario:
-        for clave_sub, icono_sub, etiqueta_sub in [("registrar", "➕", "Registrar"), ("modificar", "🗑️", "Eliminar")]:
-            if clave_sub in ("registrar", "modificar") and not ES_ADMIN:
-                continue
-            _, col_sub = st.sidebar.columns([0.18, 0.82])
-            with col_sub:
-                tipo_sub = "primary" if menu_actual == clave_sub else "secondary"
-                if st.button(f"{icono_sub}  {etiqueta_sub}", use_container_width=True, key=f"menu_{clave_sub}_sub", type=tipo_sub):
-                    st.session_state.menu_activo = clave_sub
-                    st.rerun()
-
-    # --- Grupo "Ventas" con submenú anidado: Ventas → Nueva Venta → Pagadas / Por Pagar ---
-    st.sidebar.markdown("<p class='menu-group-title'>Ventas</p>", unsafe_allow_html=True)
-    if "ventas_expandido" not in st.session_state:
-        st.session_state.ventas_expandido = False
-    if "nueva_venta_expandido" not in st.session_state:
-        st.session_state.nueva_venta_expandido = False
-
-    claves_venta = ("vender", "ventas_pagadas", "deudores")
-    tipo_boton_ventas = "primary" if menu_actual in claves_venta else "secondary"
-    if st.sidebar.button("🛍️  Ventas", use_container_width=True, key="menu_ventas_toggle", type=tipo_boton_ventas):
-        st.session_state.ventas_expandido = not st.session_state.ventas_expandido
-        st.rerun()
-
-    mostrar_nueva_venta = st.session_state.ventas_expandido or menu_actual in claves_venta
-    if mostrar_nueva_venta:
-        _, col_nv = st.sidebar.columns([0.18, 0.82])
-        with col_nv:
-            tipo_nv = "primary" if menu_actual in claves_venta else "secondary"
-            if st.button("🆕  Nueva Venta", use_container_width=True, key="menu_nueva_venta", type=tipo_nv):
-                st.session_state.menu_activo = "vender"
-                st.session_state.nueva_venta_expandido = not st.session_state.nueva_venta_expandido
-                st.rerun()
-
-        mostrar_subopciones_venta = st.session_state.nueva_venta_expandido or menu_actual in claves_venta
-        if mostrar_subopciones_venta:
-            for clave_v, icono_v, etiqueta_v in [("ventas_pagadas", "✅", "Ventas Pagadas"), ("deudores", "🧾", "Ventas por Pagar")]:
-                _, col_v2 = st.sidebar.columns([0.32, 0.68])
-                with col_v2:
-                    tipo_v = "primary" if menu_actual == clave_v else "secondary"
-                    if st.button(f"{icono_v}  {etiqueta_v}", use_container_width=True, key=f"menu_{clave_v}_lvl3", type=tipo_v):
-                        st.session_state.menu_activo = clave_v
-                        st.rerun()
-
-    if st.sidebar.button("📦  Registrar Compra", use_container_width=True, key="menu_comprar", type=("primary" if menu_actual == "comprar" else "secondary")):
-        st.session_state.menu_activo = "comprar"
-        st.rerun()
-    if st.sidebar.button("📜  Movimientos", use_container_width=True, key="menu_movimientos", type=("primary" if menu_actual == "movimientos" else "secondary")):
-        st.session_state.menu_activo = "movimientos"
-        st.rerun()
-
     for titulo_grupo, items in grupos_menu:
-        st.sidebar.markdown(f"<p class='menu-group-title'>{titulo_grupo}</p>", unsafe_allow_html=True)
+        if titulo_grupo:
+            st.sidebar.markdown(f"<p class='menu-group-title'>{titulo_grupo}</p>", unsafe_allow_html=True)
         for clave, icono, etiqueta in items:
             if clave in ("registrar", "modificar", "configuracion") and not ES_ADMIN:
                 continue
@@ -1349,16 +1320,71 @@ else:
             del st.query_params["recuerdame_user"]
         st.rerun()
 
-    menu = st.session_state.get("menu_activo", "existencias")
+    menu = st.session_state.get("menu_activo", "inicio")
     # Si un vendedor quedó apuntando a una página de admin (por sesión previa), lo regresamos
     if menu in ("registrar", "modificar", "configuracion") and not ES_ADMIN:
         menu = "existencias"
         st.session_state.menu_activo = "existencias"
 
     # -----------------------------------------------------------------------------
+    # INICIO (dashboard resumen)
+    # -----------------------------------------------------------------------------
+    if menu == "inicio":
+        st.markdown(
+            f"""
+<div class="page-header">
+    <div class="page-title">🏠 Inicio</div>
+    <div class="page-subtitle">Resumen general de Lewin Boutique, {st.session_state.usuario_actual.capitalize()}.</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        movs_inicio = cargar_movimientos()
+        deudores_inicio = cargar_deudores()
+
+        total_prendas_inicio = len(df) if not df.empty else 0
+        alertas_inicio = int((df["cantidad"] <= df["alerta"]).sum()) if not df.empty else 0
+        compras_inicio = int((movs_inicio["tipo"] == "compra").sum()) if not movs_inicio.empty else 0
+        ventas_inicio = int((movs_inicio["tipo"] == "venta").sum()) if not movs_inicio.empty else 0
+        deudores_count_inicio = int((deudores_inicio["saldo"] > 0).sum()) if not deudores_inicio.empty else 0
+        total_usuarios_inicio = len(USUARIOS)
+
+        ventas_df_inicio = movs_inicio[movs_inicio["tipo"] == "venta"] if not movs_inicio.empty else pd.DataFrame()
+        total_ventas_monto = float((ventas_df_inicio["cantidad"] * ventas_df_inicio["precio_unitario"]).sum()) if not ventas_df_inicio.empty else 0.0
+
+        tarjetas_inicio = [
+            ("👕", total_prendas_inicio, "Prendas"),
+            ("📦", compras_inicio, "Compras"),
+            ("🛍️", ventas_inicio, "Ventas"),
+            ("⚠️", alertas_inicio, "Reposición"),
+            ("🧾", deudores_count_inicio, "Clientes por Cobrar"),
+            ("👤", total_usuarios_inicio, "Usuarios"),
+        ]
+
+        cols_inicio = st.columns(3)
+        for idx, (icono_t, valor_t, etiqueta_t) in enumerate(tarjetas_inicio):
+            with cols_inicio[idx % 3]:
+                st.markdown(
+                    f"""<div class="dashboard-card">
+<div><div class="dashboard-card-value">{valor_t}</div><div class="dashboard-card-label">{etiqueta_t}</div></div>
+<div class="dashboard-card-icon">{icono_t}</div>
+</div>""",
+                    unsafe_allow_html=True,
+                )
+
+        st.markdown(
+            f"""<div class="dashboard-total-banner">
+<div><div class="dashboard-total-value">{moneda(total_ventas_monto)}</div><div class="dashboard-total-label">Total Ventas</div></div>
+<div class="dashboard-total-icon">$</div>
+</div>""",
+            unsafe_allow_html=True,
+        )
+
+    # -----------------------------------------------------------------------------
     # EXISTENCIAS
     # -----------------------------------------------------------------------------
-    if menu == "existencias":
+    elif menu == "existencias":
         st.markdown(
             """
 <div class="page-header">
