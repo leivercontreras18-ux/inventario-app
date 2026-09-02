@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import json
 import textwrap
 import uuid
@@ -20,7 +19,7 @@ except ImportError:
     QR_DISPONIBLE = False
 
 st.set_page_config(
-    page_title="Lewin // Inventario Boutique", page_icon="\U0001F455", layout="wide"
+    page_title="Lewin // Inventario Boutique", page_icon="👕", layout="wide"
 )
 
 # =====================================================================================
@@ -85,7 +84,7 @@ COLUMNAS_DEUDAS_MOVIMIENTOS = [
 @st.cache_data(ttl=30)
 def cargar_datos_completos():
     cats_default = ["Vestidos", "Blusas", "Pantalones", "Jeans", "Chaquetas", "Calzado", "Accesorios"]
-    tallas_default = ["XS", "S", "M", "L", "XL", "\u00danica"]
+    tallas_default = ["XS", "S", "M", "L", "XL", "Única"]
     colores_default = ["Negro", "Blanco", "Beige", "Rojo", "Azul", "Rosa", "Verde"]
 
     df = pd.DataFrame(columns=COLUMNAS_INVENTARIO)
@@ -100,7 +99,7 @@ def cargar_datos_completos():
         except Exception as e:
             st.warning(f"Aviso al cargar inventario de la nube: {e}")
 
-    # Asegurar que existan las columnas nuevas aunque la tabla a\u00fan no las tenga
+    # Asegurar que existan las columnas nuevas aunque la tabla aún no las tenga
     defaults_nuevos = {"foto_url": "", "costo": 0.0, "precio_venta": 0.0, "favorito": False}
     for col, default in defaults_nuevos.items():
         if col not in df.columns:
@@ -145,7 +144,7 @@ def cargar_movimientos():
 
 def registrar_movimiento(prenda_id, producto, tipo, cantidad, precio_unitario=0, costo_unitario=0, pagado=True, medio_pago="", proveedor=""):
     if not supabase:
-        st.warning("No hay conexi\u00f3n a la base de datos para registrar el movimiento.")
+        st.warning("No hay conexión a la base de datos para registrar el movimiento.")
         return False
     try:
         datos = {
@@ -171,7 +170,7 @@ def registrar_movimiento(prenda_id, producto, tipo, cantidad, precio_unitario=0,
 
 
 def eliminar_todos_los_movimientos():
-    """Borra todo el historial de ventas/compras (usado por el bot\u00f3n 'Restablecer' de Reportes)."""
+    """Borra todo el historial de ventas/compras (usado por el botón 'Restablecer' de Reportes)."""
     if not supabase:
         return False
     try:
@@ -211,7 +210,7 @@ def cargar_deudas_movimientos():
 
 def guardar_deudor(nombre, telefono="", notas=""):
     if not supabase:
-        st.warning("No hay conexi\u00f3n a la base de datos.")
+        st.warning("No hay conexión a la base de datos.")
         return None
     try:
         nuevo_id = str(uuid.uuid4())
@@ -256,7 +255,7 @@ def eliminar_deudor(deudor_id):
 
 def registrar_movimiento_deuda(deudor_id, deudor_nombre, tipo, descripcion, monto, medio_pago="", tasa_cambio=0):
     if not supabase:
-        st.warning("No hay conexi\u00f3n a la base de datos.")
+        st.warning("No hay conexión a la base de datos.")
         return False
     try:
         datos = {
@@ -282,14 +281,14 @@ def registrar_movimiento_deuda(deudor_id, deudor_nombre, tipo, descripcion, mont
 def eliminar_movimiento_deuda(movimiento_id, deudor_id, tipo, monto):
     """Borra un cargo/abono del historial y corrige el saldo del deudor para que cuadre."""
     if not supabase:
-        st.warning("No hay conexi\u00f3n a la base de datos.")
+        st.warning("No hay conexión a la base de datos.")
         return False
     try:
         deudores_actual = cargar_deudores()
         fila_deudor = deudores_actual[deudores_actual["id"].astype(str) == str(deudor_id)]
         if not fila_deudor.empty:
             saldo_actual = float(fila_deudor.iloc[0].get("saldo", 0) or 0)
-            # Si se borra un cargo, se resta lo que hab\u00eda sumado; si se borra un abono, se vuelve a sumar.
+            # Si se borra un cargo, se resta lo que había sumado; si se borra un abono, se vuelve a sumar.
             nuevo_saldo = saldo_actual - float(monto) if tipo == "cargo" else saldo_actual + float(monto)
             actualizar_saldo_deudor(deudor_id, nuevo_saldo)
         supabase.table("deudas_movimientos").delete().match({"id": movimiento_id}).execute()
@@ -308,21 +307,21 @@ def guardar_configuracion_completa(cats, tallas, colores):
         contenido = json.dumps(config_data, indent=4, ensure_ascii=False)
         try:
             file = repo.get_contents("config.json", ref="main")
-            repo.update_file(file.path, "Actualizaci\u00f3n autom\u00e1tica de configuraci\u00f3n de inventario",
+            repo.update_file(file.path, "Actualización automática de configuración de inventario",
                               contenido, file.sha, branch="main")
         except Exception:
-            repo.create_file("config.json", "Creaci\u00f3n inicial de configuraci\u00f3n de inventario",
+            repo.create_file("config.json", "Creación inicial de configuración de inventario",
                               contenido, branch="main")
         cargar_config_github.clear()
         cargar_datos_completos.clear()
         return True
     except Exception as e:
-        st.error(f"Error al guardar configuraci\u00f3n en GitHub: {e}")
+        st.error(f"Error al guardar configuración en GitHub: {e}")
         return False
 
 
 def subir_imagen(archivo, prenda_id):
-    """Sube una foto al bucket de Supabase Storage y devuelve la URL p\u00fablica."""
+    """Sube una foto al bucket de Supabase Storage y devuelve la URL pública."""
     if not supabase or archivo is None:
         return None
     try:
@@ -422,7 +421,7 @@ def eliminar_prenda(id_prenda):
 
 @st.cache_data(ttl=900)
 def obtener_tasas_cambio():
-    """Consulta tasas de cambio de Venezuela (BCV, Paralelo/Binance, Euro) desde una API p\u00fablica gratuita."""
+    """Consulta tasas de cambio de Venezuela (BCV, Paralelo/Binance, Euro) desde una API pública gratuita."""
     fuentes = {
         "BCV": "https://ve.dolarapi.com/v1/dolares/oficial",
         "Paralelo / Binance": "https://ve.dolarapi.com/v1/dolares/paralelo",
@@ -448,7 +447,7 @@ def selector_tasa_cambio(key_prefix, valor_por_defecto=0.0):
     tasas_disponibles = obtener_tasas_cambio()
     opciones = list(tasas_disponibles.keys()) + ["Manual"]
     if not tasas_disponibles:
-        st.caption("\u26a0\ufe0f No se pudo conectar con la API de tasas en este momento; usa 'Manual'.")
+        st.caption("⚠️ No se pudo conectar con la API de tasas en este momento; usa 'Manual'.")
 
     fuente_sel = st.selectbox("Tasa de cambio", opciones, key=f"{key_prefix}_fuente_tasa")
 
@@ -457,7 +456,7 @@ def selector_tasa_cambio(key_prefix, valor_por_defecto=0.0):
     else:
         info_tasa = tasas_disponibles[fuente_sel]
         tasa_valor = info_tasa["valor"]
-        st.caption(f"\U0001F4B1 {fuente_sel}: {tasa_valor:,.2f} Bs \u2014 actualizado {formatear_fecha_corta(info_tasa['fecha'])}")
+        st.caption(f"💱 {fuente_sel}: {tasa_valor:,.2f} Bs — actualizado {formatear_fecha_corta(info_tasa['fecha'])}")
 
     return tasa_valor, fuente_sel
 
@@ -467,45 +466,6 @@ def moneda(valor):
         return f"${float(valor):,.2f}"
     except Exception:
         return "$0.00"
-
-
-def calcular_margen_rentabilidad(costo, precio):
-    """Calcula la ganancia en $ y el margen de rentabilidad bruto en %."""
-    costo_f = float(costo or 0)
-    precio_f = float(precio or 0)
-    ganancia = precio_f - costo_f
-    margen_pct = (ganancia / costo_f * 100) if costo_f > 0 else (100.0 if precio_f > 0 else 0.0)
-    return ganancia, margen_pct
-
-
-def generar_link_whatsapp(cliente, telefono, descripcion_items, total_usd, medio_pago, tasa_bs=0.0, tipo_operacion="Venta"):
-    """Genera un enlace de WhatsApp Web/App pre-llenado con el comprobante de la venta o abono."""
-    import urllib.parse
-    num_limpio = "".join(filter(str.isdigit, str(telefono or "")))
-    if not num_limpio:
-        return ""
-    if len(num_limpio) == 10 and num_limpio.startswith("4"):
-        num_limpio = "58" + num_limpio
-    elif len(num_limpio) == 11 and num_limpio.startswith("04"):
-        num_limpio = "58" + num_limpio[1:]
-
-    fecha_str = datetime.now().strftime("%d/%m/%Y %I:%M %p")
-    tasa_text = f"\n\U0001F4B1 *Tasa aplicable:* {tasa_bs:,.2f} Bs/$ ({total_usd * tasa_bs:,.2f} Bs)" if tasa_bs > 0 else ""
-    
-    mensaje = (
-        f"\u2728 *LEWIN BOUTIQUE* \u2728\n"
-        f"\U0001F9FE *Comprobante de {tipo_operacion}*\n"
-        f"\U0001F4C5 Fecha: {fecha_str}\n"
-        f"\U0001F464 Cliente: {cliente}\n"
-        f"----------------------------------------\n"
-        f"\U0001F457 *Detalle:* {descripcion_items}\n"
-        f"\U0001F4B3 *Medio de Pago:* {medio_pago}\n"
-        f"\U0001F4B0 *Total:* {moneda(total_usd)}{tasa_text}\n"
-        f"----------------------------------------\n"
-        f"\u00a1Gracias por tu preferencia! \u2728 Estilo y elegancia siempre \u2728"
-    )
-    msg_encoded = urllib.parse.quote(mensaje)
-    return f"https://api.whatsapp.com/send?phone={num_limpio}&text={msg_encoded}"
 
 
 def encabezado_seccion_form(icono, titulo):
@@ -529,16 +489,16 @@ def render_tabla_deudas(df_deudas):
     for _, fila in df_deudas.iterrows():
         tipo = str(fila.get("tipo", ""))
         if tipo == "cargo":
-            badge = "<span style='background: rgba(244,114,182,0.15); color:#f472b6; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>Cargo (le fi\u00e9)</span>"
+            badge = "<span style='background: rgba(244,114,182,0.15); color:#f472b6; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>Cargo (le fié)</span>"
         elif tipo == "abono":
-            badge = "<span style='background: rgba(52,211,153,0.15); color:#34d399; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>Abono (pag\u00f3)</span>"
+            badge = "<span style='background: rgba(52,211,153,0.15); color:#34d399; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>Abono (pagó)</span>"
         else:
             badge = f"<span style='background: rgba(219,39,119,0.15); color:var(--accent); padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>{tipo.capitalize()}</span>"
 
-        descripcion_txt = fila.get("descripcion", "") or "\u2014"
-        medio_pago_txt = fila.get("medio_pago", "") or "\u2014"
+        descripcion_txt = fila.get("descripcion", "") or "—"
+        medio_pago_txt = fila.get("medio_pago", "") or "—"
         tasa_val = float(fila.get("tasa_cambio", 0) or 0)
-        tasa_txt = f"{tasa_val:,.2f}" if tasa_val > 0 else "\u2014"
+        tasa_txt = f"{tasa_val:,.2f}" if tasa_val > 0 else "—"
         filas_html += f"""<tr>
 <td>{formatear_fecha_corta(fila.get('fecha', ''))}</td>
 <td>{fila.get('deudor_nombre', '')}</td>
@@ -553,7 +513,7 @@ def render_tabla_deudas(df_deudas):
     tabla_html = f"""<div class="tabla-movimientos-wrapper">
 <table class="tabla-movimientos">
 <thead><tr>
-<th>Fecha</th><th>Persona</th><th>Tipo</th><th>Descripci\u00f3n</th><th>Monto</th><th>Medio de Pago</th><th>Tasa</th><th>Usuario</th>
+<th>Fecha</th><th>Persona</th><th>Tipo</th><th>Descripción</th><th>Monto</th><th>Medio de Pago</th><th>Tasa</th><th>Usuario</th>
 </tr></thead>
 <tbody>{filas_html}</tbody>
 </table>
@@ -573,7 +533,7 @@ def render_tabla_movimientos(df_mov):
         else:
             badge = f"<span style='background: rgba(219,39,119,0.15); color:var(--accent); padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>{tipo.capitalize()}</span>"
 
-        proveedor_txt = fila.get("proveedor", "") or "\u2014"
+        proveedor_txt = fila.get("proveedor", "") or "—"
         filas_html += f"""<tr>
 <td>{formatear_fecha_corta(fila.get('fecha', ''))}</td>
 <td>{fila.get('producto', '')}</td>
@@ -603,7 +563,7 @@ def colores_grafico():
 
 
 def grafico_barras_vertical(serie, formato_valor=None, altura=300):
-    """Gr\u00e1fica de barras vertical con degradado rosa/oro, para series tipo 'ventas por mes'."""
+    """Gráfica de barras vertical con degradado rosa/oro, para series tipo 'ventas por mes'."""
     c = colores_grafico()
     etiquetas = [formato_valor(v) if formato_valor else str(v) for v in serie.values]
     x_valores = [str(v) for v in serie.index]
@@ -629,7 +589,7 @@ def grafico_barras_vertical(serie, formato_valor=None, altura=300):
 
 
 def grafico_barras_horizontal(serie, altura=300):
-    """Gr\u00e1fica de barras horizontal con degradado rosa/oro, para rankings tipo 'top productos'."""
+    """Gráfica de barras horizontal con degradado rosa/oro, para rankings tipo 'top productos'."""
     c = colores_grafico()
     fig = go.Figure(data=[go.Bar(
         x=serie.values, y=list(serie.index), orientation="h",
@@ -653,7 +613,7 @@ def grafico_barras_horizontal(serie, altura=300):
 
 
 def grafico_dona(serie, texto_centro_arriba="", texto_centro_abajo="", altura=340):
-    """Gr\u00e1fica de dona (pastel) con la paleta rosa/oro, con un total destacado en el centro."""
+    """Gráfica de dona (pastel) con la paleta rosa/oro, con un total destacado en el centro."""
     c = colores_grafico()
     paleta = ["#7a1f4a", "#db2777", "#f472b6", "#f9a8d4", "#d4af78", "#a52465", "#ec4899", "#be185d"]
     colores_segmentos = [paleta[i % len(paleta)] for i in range(len(serie))]
@@ -689,7 +649,7 @@ def generar_qr_bytes(texto):
     return buf.getvalue()
 
 
-def render_copy_button(text_to_copy: str, label: str = "Copiar C\u00f3digo"):
+def render_copy_button(text_to_copy: str, label: str = "Copiar Código"):
     component_code = f"""
     <div style="display: inline-block; width: 100%;">
         <button id="copy-btn" onclick="copyText()" style="
@@ -708,9 +668,9 @@ def render_copy_button(text_to_copy: str, label: str = "Copiar C\u00f3digo"):
             width: 100%;
             transition: all 0.2s ease;
         ">
-            \U0001F4CB {label}
+            📋 {label}
         </button>
-        <div id="feedback" style="text-align: center; font-size: 11px; color: #f472b6; opacity: 0; transition: opacity 0.3s; margin-top: 4px;">\u00a1Copiado con \u00e9xito!</div>
+        <div id="feedback" style="text-align: center; font-size: 11px; color: #f472b6; opacity: 0; transition: opacity 0.3s; margin-top: 4px;">¡Copiado con éxito!</div>
     </div>
     <script>
     function copyText() {{
@@ -729,34 +689,37 @@ def render_copy_button(text_to_copy: str, label: str = "Copiar C\u00f3digo"):
 # ESTILOS (con soporte de tema claro / oscuro mediante variables CSS)
 # =====================================================================================
 
-def get_css(tema: str) -> str:
+def get_css(tema: str, compacto: bool = False) -> str:
+    ancho_sidebar = "84px" if compacto else "260px"
     if tema == "claro":
         variables = """
-            --bg-gradient: radial-gradient(circle at 20% 20%, rgba(219, 39, 119, 0.08) 0%, transparent 40%),
-                           radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.06) 0%, transparent 40%),
-                           linear-gradient(135deg, #fdf2f8 0%, #ffffff 50%, #fdf4f9 100%);
+            --bg-gradient: radial-gradient(circle at 20% 20%, rgba(219, 39, 119, 0.05) 0%, transparent 40%),
+                           radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 40%),
+                           linear-gradient(135deg, #fdf5f8 0%, #ffffff 50%, #fdf6f9 100%);
             --text-color: #2b1f26;
             --text-secondary: #8a6b78;
             --accent: #db2777;
             --accent-light: #ec4899;
-            --card-bg: rgba(255, 255, 255, 0.85);
-            --border-color: rgba(219, 39, 119, 0.25);
-            --sidebar-bg: rgba(255, 255, 255, 0.95);
-            --input-bg: rgba(255, 255, 255, 0.9);
+            --accent-neon: #34d399;
+            --card-bg: rgba(255, 255, 255, 0.88);
+            --border-color: rgba(219, 39, 119, 0.16);
+            --sidebar-bg: rgba(255, 255, 255, 0.96);
+            --input-bg: rgba(255, 255, 255, 0.92);
         """
     else:
         variables = """
-            --bg-gradient: radial-gradient(circle at 20% 20%, rgba(219, 39, 119, 0.12) 0%, transparent 40%),
-                           radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.08) 0%, transparent 40%),
-                           linear-gradient(135deg, #0c0b0e 0%, #141117 50%, #100f13 100%);
-            --text-color: #f9f6f8;
-            --text-secondary: #b899a6;
-            --accent: #f472b6;
-            --accent-light: #f472b6;
-            --card-bg: rgba(18, 16, 22, 0.9);
-            --border-color: rgba(219, 39, 119, 0.25);
-            --sidebar-bg: rgba(16, 15, 19, 0.95);
-            --input-bg: rgba(24, 22, 28, 0.9);
+            --bg-gradient: radial-gradient(circle at 20% 20%, rgba(219, 39, 119, 0.07) 0%, transparent 40%),
+                           radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.05) 0%, transparent 40%),
+                           linear-gradient(135deg, #100e12 0%, #17141a 50%, #130f14 100%);
+            --text-color: #f5f1f3;
+            --text-secondary: #a8909d;
+            --accent: #ec6aa8;
+            --accent-light: #ec6aa8;
+            --accent-neon: #34d399;
+            --card-bg: rgba(22, 19, 24, 0.85);
+            --border-color: rgba(219, 39, 119, 0.14);
+            --sidebar-bg: rgba(18, 16, 20, 0.96);
+            --input-bg: rgba(28, 25, 31, 0.85);
         """
 
     return f"""
@@ -768,6 +731,11 @@ def get_css(tema: str) -> str:
 @keyframes fadeInUp {{
     from {{ opacity: 0; transform: translateY(12px); }}
     to {{ opacity: 1; transform: translateY(0); }}
+}}
+
+@keyframes glowActivo {{
+    0%, 100% {{ box-shadow: 0 0 8px rgba(236, 106, 168, 0.35), inset 3px 0 0 var(--accent); }}
+    50% {{ box-shadow: 0 0 16px rgba(236, 106, 168, 0.55), inset 3px 0 0 var(--accent); }}
 }}
 
 .stApp {{
@@ -782,10 +750,12 @@ header[data-testid="stHeader"] {{ background: transparent !important; }}
 .block-container {{ max-width: 100% !important; padding: 3.5rem 2rem 2rem 2rem !important; }}
 
 section[data-testid="stSidebar"] {{
-    width: 250px !important;
+    width: {ancho_sidebar} !important;
+    min-width: {ancho_sidebar} !important;
     background: var(--sidebar-bg) !important;
     border-right: 1px solid var(--border-color);
     backdrop-filter: blur(25px);
+    transition: width 0.25s ease;
 }}
 section[data-testid="stSidebar"] * {{ color: var(--text-color) !important; }}
 
@@ -941,86 +911,34 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
     font-weight: 700; margin: 14px 0 6px 4px; opacity: 0.75;
 }}
 
-/* Reducir espacio vertical entre botones de la barra lateral */
-section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {{
-    gap: 2px !important;
+section[data-testid="stSidebar"] button[kind="secondary"] {{
+    background: transparent !important; border: 1px solid transparent !important;
+    text-align: left !important; justify-content: flex-start !important;
+    box-shadow: none !important; padding: 9px 12px !important; font-weight: 500 !important;
+    transition: background 0.15s ease !important;
 }}
-section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div {{
-    margin-bottom: 0 !important;
+section[data-testid="stSidebar"] button[kind="secondary"]:hover {{
+    background: rgba(236, 106, 168, 0.08) !important; border-color: var(--border-color) !important;
+    transform: none !important;
 }}
-
-section[data-testid="stSidebar"] div.stButton > button {{
-    background: transparent !important;
-    border: 1px solid transparent !important;
-    color: var(--text-color) !important;
-    text-align: left !important;
-    justify-content: flex-start !important;
-    align-items: center !important;
-    border-radius: 10px !important;
-    padding: 7px 12px !important;
-    font-size: 13px !important;
-    font-weight: 500 !important;
-    box-shadow: none !important;
-    margin-bottom: 1px !important;
-    width: 100% !important;
-    transition: all 0.2s ease !important;
+section[data-testid="stSidebar"] button[kind="primary"] {{
+    background: rgba(236, 106, 168, 0.13) !important; color: var(--text-color) !important;
+    border: none !important; border-radius: 10px !important;
+    text-align: left !important; justify-content: flex-start !important;
+    font-weight: 700 !important; padding: 9px 12px !important;
+    animation: glowActivo 2.4s ease-in-out infinite !important;
 }}
-section[data-testid="stSidebar"] div.stButton > button p {{
-    text-align: left !important;
-    justify-content: flex-start !important;
-    width: 100% !important;
-    display: flex !important;
-    align-items: center !important;
-}}
-section[data-testid="stSidebar"] div.stButton > button:hover {{
-    background: rgba(219, 39, 119, 0.08) !important;
-    color: #f472b6 !important;
-    border-color: rgba(219, 39, 119, 0.15) !important;
-    transform: translateX(2px) !important;
-}}
-section[data-testid="stSidebar"] div.stButton > button[kind="primary"] {{
-    background: linear-gradient(90deg, rgba(219, 39, 119, 0.16) 0%, rgba(219, 39, 119, 0.03) 100%) !important;
-    color: #f472b6 !important;
-    border: none !important;
-    border-left: 3px solid #db2777 !important;
-    border-radius: 8px !important;
-    font-weight: 700 !important;
-    box-shadow: none !important;
+section[data-testid="stSidebar"] button[kind="primary"]:hover {{
+    transform: none !important;
 }}
 
-/* Sub-opciones dentro de los desplegables (pegadas y alineadas a la izquierda) */
-section[data-testid="stSidebar"] div.stButton > button[aria-label*="\u2022"] {{
-    font-size: 12px !important;
-    color: var(--text-secondary) !important;
-    border: none !important;
-    border-left: 2px solid rgba(219, 39, 119, 0.25) !important;
-    border-radius: 0 8px 8px 0 !important;
-    margin-left: 18px !important;
-    padding: 5px 10px 5px 12px !important;
-    font-weight: 500 !important;
-    box-shadow: none !important;
-    background: rgba(219, 39, 119, 0.02) !important;
-    width: calc(100% - 18px) !important;
-    transition: all 0.2s ease !important;
+.user-badge-neon {{
+    display: inline-flex; align-items: center; gap: 5px; font-size: 9px; font-weight: 800;
+    letter-spacing: 1px; color: var(--accent-neon); text-transform: uppercase;
 }}
-section[data-testid="stSidebar"] div.stButton > button[aria-label*="\u2022"] p {{
-    font-size: 12px !important;
-    color: var(--text-secondary) !important;
-    text-align: left !important;
-    justify-content: flex-start !important;
-}}
-section[data-testid="stSidebar"] div.stButton > button[aria-label*="\u2022"]:hover {{
-    background: rgba(219, 39, 119, 0.08) !important;
-    color: #f472b6 !important;
-    border-left-color: #f472b6 !important;
-    transform: translateX(2px) !important;
-}}
-section[data-testid="stSidebar"] div.stButton > button[kind="primary"][aria-label*="\u2022"] {{
-    color: #f472b6 !important;
-    border-left: 3px solid #db2777 !important;
-    background: rgba(219, 39, 119, 0.12) !important;
-    box-shadow: none !important;
-    font-weight: 700 !important;
+.user-badge-neon .dot-neon {{
+    width: 6px; height: 6px; border-radius: 50%; background: var(--accent-neon);
+    box-shadow: 0 0 6px var(--accent-neon); flex-shrink: 0;
 }}
 
 .product-card {{
@@ -1062,6 +980,22 @@ div[data-testid="stTextArea"] textarea {{
     background: rgba(244, 114, 182, 0.12); border: 1px solid var(--accent);
     border-radius: 14px; padding: 14px 18px; margin-bottom: 20px; color: var(--text-color);
 }}
+
+/* --- Sub-opciones del menú (van al final para garantizar que ganen) --- */
+section[data-testid="stSidebar"] button[aria-label^="•"] {{
+    font-size: 12.5px !important; color: var(--text-secondary) !important;
+    border-left: 1.5px solid var(--border-color) !important; border-radius: 0 !important;
+    margin-left: 16px !important; padding: 7px 10px 7px 14px !important; font-weight: 500 !important;
+    box-shadow: none !important; background: transparent !important; animation: none !important;
+}}
+section[data-testid="stSidebar"] button[aria-label^="•"]:hover {{
+    background: rgba(236, 106, 168, 0.06) !important; color: var(--text-color) !important;
+}}
+section[data-testid="stSidebar"] button[kind="primary"][aria-label^="•"] {{
+    color: var(--accent) !important; border-left: 2px solid var(--accent) !important;
+    background: transparent !important; box-shadow: none !important; font-weight: 700 !important;
+    animation: none !important;
+}}
 </style>
 """
 
@@ -1076,7 +1010,7 @@ USUARIOS = {
 }
 
 # =====================================================================================
-# ESTADO DE SESI\u00d3N
+# ESTADO DE SESIÓN
 # =====================================================================================
 
 defaults_sesion = {
@@ -1087,6 +1021,7 @@ defaults_sesion = {
     "tema": "oscuro",
     "form_version": 0,
     "menu_activo": "inicio",
+    "sidebar_compacto": False,
 }
 for k, v in defaults_sesion.items():
     if k not in st.session_state:
@@ -1095,7 +1030,7 @@ for k, v in defaults_sesion.items():
 if "inventario_local" not in st.session_state:
     st.session_state.inventario_local = pd.DataFrame(columns=COLUMNAS_INVENTARIO)
 
-st.markdown(get_css(st.session_state.tema), unsafe_allow_html=True)
+st.markdown(get_css(st.session_state.tema, st.session_state.sidebar_compacto), unsafe_allow_html=True)
 
 df, cats_init, tallas_init, colores_init = cargar_datos_completos()
 
@@ -1233,18 +1168,18 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                 <div class="hero-subtitle-tag">Inventario Boutique</div>
                 <h1 class="hero-title">Lewin Boutique<br>Control Center</h1>
                 <p class="hero-desc">
-                    Gesti\u00f3n completa de inventario, ventas, reportes y cat\u00e1logo visual en una sola plataforma,
+                    Gestión completa de inventario, ventas, reportes y catálogo visual en una sola plataforma,
                     con una interfaz de lujo en pantalla negra y oro rosa.
                 </p>
                 <div class="feature-pills-container">
-                    <span class="feature-pill">\U0001F4F7 Fotos de productos</span>
-                    <span class="feature-pill">\U0001F4B3 Ventas y compras</span>
-                    <span class="feature-pill">\U0001F4C8 Reportes de rentabilidad</span>
-                    <span class="feature-pill">\U0001F465 Roles de usuario</span>
+                    <span class="feature-pill">📷 Fotos de productos</span>
+                    <span class="feature-pill">💳 Ventas y compras</span>
+                    <span class="feature-pill">📈 Reportes de rentabilidad</span>
+                    <span class="feature-pill">👥 Roles de usuario</span>
                 </div>
                 <div class="stats-row-hero">
-                    <div><div class="stat-value-hero">PLACEHOLDER_TOTAL</div><div class="stat-label-hero">Prendas en cat\u00e1logo</div></div>
-                    <div><div class="stat-value-hero">PLACEHOLDER_PORC%</div><div class="stat-label-hero">Stock por encima del m\u00ednimo</div></div>
+                    <div><div class="stat-value-hero">PLACEHOLDER_TOTAL</div><div class="stat-label-hero">Prendas en catálogo</div></div>
+                    <div><div class="stat-value-hero">PLACEHOLDER_PORC%</div><div class="stat-label-hero">Stock por encima del mínimo</div></div>
                     <div><div class="stat-value-hero">24/7</div><div class="stat-label-hero">Acceso en la nube</div></div>
                 </div>
             </div>
@@ -1259,7 +1194,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         st.session_state.etapa = "login"
         st.rerun()
 
-    st.markdown("<div class='footer-signature-hero'>Dise\u00f1ado con \u2665 para Lewin Boutique</div></div>", unsafe_allow_html=True)
+    st.markdown("<div class='footer-signature-hero'>Diseñado con ♥ para Lewin Boutique</div></div>", unsafe_allow_html=True)
     st.stop()
 
 # =====================================================================================
@@ -1317,7 +1252,7 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
         unsafe_allow_html=True,
     )
 
-    if st.button("\u2190 Volver a la portada"):
+    if st.button("← Volver a la portada"):
         st.session_state.etapa = "bienvenida"
         st.rerun()
 
@@ -1330,8 +1265,8 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
             st.markdown("<div class='login-title-text'>Lewin Boutique Access</div>", unsafe_allow_html=True)
             st.markdown("<div class='login-subtitle-text'>Ingresa tus credenciales para continuar</div>", unsafe_allow_html=True)
 
-            usuario_input = st.text_input("\U0001F464 Usuario", placeholder="Ingresa tu usuario")
-            clave_input = st.text_input("\U0001F512 Contrase\u00f1a", type="password", placeholder="Ingresa tu contrase\u00f1a")
+            usuario_input = st.text_input("👤 Usuario", placeholder="Ingresa tu usuario")
+            clave_input = st.text_input("🔒 Contraseña", type="password", placeholder="Ingresa tu contraseña")
             remember_checked = st.checkbox("Recordarme")
 
             if st.form_submit_button("INGRESAR", use_container_width=True):
@@ -1350,7 +1285,7 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
 
                     st.rerun()
                 else:
-                    st.error("\u26a0\ufe0f Usuario o contrase\u00f1a incorrectos.")
+                    st.error("⚠️ Usuario o contraseña incorrectos.")
     st.stop()
 
 # =====================================================================================
@@ -1362,37 +1297,58 @@ else:
     inicial_usuario = usuario_formateado[0]
     rol_formateado = st.session_state.rol_actual.capitalize()
     menu_actual = st.session_state.get("menu_activo", "inicio")
+    compacto = st.session_state.sidebar_compacto
 
-    st.sidebar.markdown(
-        f"""
+    col_collapse1, col_collapse2 = st.sidebar.columns([3, 1])
+    with col_collapse2:
+        if st.button("☰", key="btn_toggle_compacto", help="Colapsar / expandir menú"):
+            st.session_state.sidebar_compacto = not st.session_state.sidebar_compacto
+            st.rerun()
+
+    if compacto:
+        st.sidebar.markdown(
+            f"""<div class="user-profile-compact" style="justify-content: center;"><div class="user-avatar">{inicial_usuario}</div></div>""",
+            unsafe_allow_html=True,
+        )
+    else:
+        st.sidebar.markdown(
+            f"""
 <div class="user-profile-compact">
     <div class="user-avatar">{inicial_usuario}</div>
     <div>
         <div class="user-info-name">{usuario_formateado}</div>
-        <div class="user-info-rol">\u25cf {rol_formateado}</div>
+        <div class="user-badge-neon"><span class="dot-neon"></span>{rol_formateado}</div>
     </div>
 </div>
 """,
-        unsafe_allow_html=True,
-    )
+            unsafe_allow_html=True,
+        )
 
-    tema_claro = st.sidebar.toggle("\u2600\ufe0f Modo claro", value=(st.session_state.tema == "claro"))
-    nuevo_tema = "claro" if tema_claro else "oscuro"
-    if nuevo_tema != st.session_state.tema:
-        st.session_state.tema = nuevo_tema
-        st.rerun()
+    if not compacto:
+        tema_claro = st.sidebar.toggle("☀️ Modo claro", value=(st.session_state.tema == "claro"))
+        nuevo_tema = "claro" if tema_claro else "oscuro"
+        if nuevo_tema != st.session_state.tema:
+            st.session_state.tema = nuevo_tema
+            st.rerun()
 
     st.sidebar.markdown("<div class='menu-divider'></div>", unsafe_allow_html=True)
 
     def render_grupo_acordeon(icono_grupo, titulo_grupo, items, session_key):
-        """Bot\u00f3n principal con flechita sutil que expande/colapsa sub-opciones."""
-        if session_key not in st.session_state:
-            st.session_state[session_key] = False
+        """Botón principal con flechita (▼/▶) que expande/colapsa sub-opciones con puntito."""
         claves_grupo = [c for c, _ in items]
-        expandido = st.session_state[session_key] or menu_actual in claves_grupo
-        chevron = "\u25be" if expandido else "\u25b8"
         activo_grupo = menu_actual in claves_grupo
         tipo_grupo = "primary" if activo_grupo else "secondary"
+
+        if compacto:
+            if st.sidebar.button(icono_grupo, use_container_width=True, key=f"grupo_{session_key}", type=tipo_grupo, help=titulo_grupo):
+                st.session_state.menu_activo = claves_grupo[0]
+                st.rerun()
+            return
+
+        if session_key not in st.session_state:
+            st.session_state[session_key] = False
+        expandido = st.session_state[session_key] or activo_grupo
+        chevron = "▼" if expandido else "▶"
         if st.sidebar.button(f"{icono_grupo}  {titulo_grupo}  {chevron}", use_container_width=True, key=f"grupo_{session_key}", type=tipo_grupo):
             st.session_state[session_key] = not st.session_state[session_key]
             st.rerun()
@@ -1401,41 +1357,45 @@ else:
                 if clave in ("registrar", "modificar", "configuracion") and not ES_ADMIN:
                     continue
                 tipo_item = "primary" if menu_actual == clave else "secondary"
-                if st.sidebar.button(f"\u2022  {etiqueta}", use_container_width=True, key=f"item_{clave}", type=tipo_item):
+                if st.sidebar.button(f"•  {etiqueta}", use_container_width=True, key=f"item_{clave}", type=tipo_item):
                     st.session_state.menu_activo = clave
                     st.rerun()
 
-    # --- Inicio (\u00edtem plano, sin acorde\u00f3n) ---
-    if st.sidebar.button("\U0001F3E0  Inicio", use_container_width=True, key="menu_inicio", type=("primary" if menu_actual == "inicio" else "secondary")):
+    # --- Inicio (ítem plano, sin acordeón) ---
+    etiqueta_inicio = "🏠" if compacto else "🏠  Inicio"
+    if st.sidebar.button(etiqueta_inicio, use_container_width=True, key="menu_inicio", type=("primary" if menu_actual == "inicio" else "secondary"), help="Inicio" if compacto else None):
         st.session_state.menu_activo = "inicio"
         st.rerun()
 
     st.sidebar.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
 
-    render_grupo_acordeon("\U0001F4CA", "Prendas", [
-        ("existencias", "Prendas"), ("etiquetas", "Etiquetas de Precios"), ("registrar", "Registrar Prenda"), ("modificar", "Eliminar Prenda"),
+    render_grupo_acordeon("📊", "Prendas", [
+        ("existencias", "Prendas"), ("registrar", "Registrar Prenda"), ("modificar", "Eliminar Prenda"),
     ], "acc_inventario")
 
-    render_grupo_acordeon("\U0001F6CD\ufe0f", "Ventas", [
+    render_grupo_acordeon("🛍️", "Ventas", [
         ("vender", "Nueva Venta"), ("ventas_pagadas", "Ventas Pagadas"), ("deudores", "Ventas por Pagar"),
     ], "acc_ventas")
 
-    render_grupo_acordeon("\U0001F4E6", "Compras", [
+    render_grupo_acordeon("📦", "Compras", [
         ("comprar", "Registrar Compra"), ("movimientos", "Movimientos"),
     ], "acc_compras")
 
-    st.sidebar.markdown("<p class='menu-group-title'>Negocio</p>", unsafe_allow_html=True)
-    for clave, icono, etiqueta in [("reportes", "\U0001F4C8", "Reportes"), ("caja", "\U0001F4B5", "Cierre de Caja"), ("configuracion", "\u2699\ufe0f", "Configuraci\u00f3n")]:
+    if not compacto:
+        st.sidebar.markdown("<p class='menu-group-title'>Negocio</p>", unsafe_allow_html=True)
+    for clave, icono, etiqueta in [("reportes", "📈", "Reportes"), ("configuracion", "⚙️", "Configuración")]:
         if clave == "configuracion" and not ES_ADMIN:
             continue
         tipo_boton = "primary" if menu_actual == clave else "secondary"
-        if st.sidebar.button(f"{icono}  {etiqueta}", use_container_width=True, key=f"menu_{clave}", type=tipo_boton):
+        label_boton = icono if compacto else f"{icono}  {etiqueta}"
+        if st.sidebar.button(label_boton, use_container_width=True, key=f"menu_{clave}", type=tipo_boton, help=etiqueta if compacto else None):
             st.session_state.menu_activo = clave
             st.rerun()
 
     st.sidebar.markdown("<hr style='margin: 20px 0 15px 0; border-color: var(--border-color);'>", unsafe_allow_html=True)
 
-    if st.sidebar.button("\U0001F6AA Cerrar Sesi\u00f3n", use_container_width=True):
+    etiqueta_salir = "🚪" if compacto else "🚪 Cerrar Sesión"
+    if st.sidebar.button(etiqueta_salir, use_container_width=True, help="Cerrar Sesión" if compacto else None):
         st.session_state.autenticado = False
         st.session_state.usuario_actual = ""
         st.session_state.rol_actual = ""
@@ -1445,7 +1405,7 @@ else:
         st.rerun()
 
     menu = st.session_state.get("menu_activo", "inicio")
-    # Si un vendedor qued\u00f3 apuntando a una p\u00e1gina de admin (por sesi\u00f3n previa), lo regresamos
+    # Si un vendedor quedó apuntando a una página de admin (por sesión previa), lo regresamos
     if menu in ("registrar", "modificar", "configuracion") and not ES_ADMIN:
         menu = "existencias"
         st.session_state.menu_activo = "existencias"
@@ -1457,7 +1417,7 @@ else:
         st.markdown(
             f"""
 <div class="page-header">
-    <div class="page-title">\U0001F3E0 Inicio</div>
+    <div class="page-title">🏠 Inicio</div>
     <div class="page-subtitle">Resumen general de Lewin Boutique, {st.session_state.usuario_actual.capitalize()}.</div>
 </div>
 """,
@@ -1478,12 +1438,12 @@ else:
         total_ventas_monto = float((ventas_df_inicio["cantidad"] * ventas_df_inicio["precio_unitario"]).sum()) if not ventas_df_inicio.empty else 0.0
 
         tarjetas_inicio = [
-            ("\U0001F455", total_prendas_inicio, "Prendas"),
-            ("\U0001F4E6", compras_inicio, "Compras"),
-            ("\U0001F6CD\ufe0f", ventas_inicio, "Ventas"),
-            ("\u26a0\ufe0f", alertas_inicio, "Reposici\u00f3n"),
-            ("\U0001F9FE", deudores_count_inicio, "Clientes por Cobrar"),
-            ("\U0001F464", total_usuarios_inicio, "Usuarios"),
+            ("👕", total_prendas_inicio, "Prendas"),
+            ("📦", compras_inicio, "Compras"),
+            ("🛍️", ventas_inicio, "Ventas"),
+            ("⚠️", alertas_inicio, "Reposición"),
+            ("🧾", deudores_count_inicio, "Clientes por Cobrar"),
+            ("👤", total_usuarios_inicio, "Usuarios"),
         ]
 
         cols_inicio = st.columns(3)
@@ -1531,7 +1491,7 @@ else:
         if not df.empty and "cantidad" in df.columns and "precio_venta" in df.columns:
             valor_inventario = float((df["cantidad"] * df["precio_venta"]).sum())
 
-        st.markdown("<div class='section-title'>Visi\u00f3n General del Inventario</div><div class='section-subtitle'>Resumen general de m\u00e9tricas y existencias.</div>", unsafe_allow_html=True)
+        st.markdown("<div class='section-title'>Visión General del Inventario</div><div class='section-subtitle'>Resumen general de métricas y existencias.</div>", unsafe_allow_html=True)
 
         col1, col2, col3, col4 = st.columns(4)
         for col, label, value in [
@@ -1547,21 +1507,21 @@ else:
             st.markdown("<br>", unsafe_allow_html=True)
             nombres_alerta = ", ".join(prendas_alerta["Producto"].astype(str).tolist()[:8])
             st.markdown(
-                f"""<div class="alert-banner">\u26a0\ufe0f <b>{total_alertas} prenda(s)</b> est\u00e1n en o por debajo del m\u00ednimo de stock: {nombres_alerta}{"..." if total_alertas > 8 else ""}</div>""",
+                f"""<div class="alert-banner">⚠️ <b>{total_alertas} prenda(s)</b> están en o por debajo del mínimo de stock: {nombres_alerta}{"..." if total_alertas > 8 else ""}</div>""",
                 unsafe_allow_html=True,
             )
 
         st.markdown("<br>", unsafe_allow_html=True)
 
         if not df.empty:
-            st.markdown("<div class='section-title'>\u26a1 Ajuste R\u00e1pido de Stock</div><div class='section-subtitle'>Modifica existencias de manera inmediata seleccionando la prenda.</div>", unsafe_allow_html=True)
+            st.markdown("<div class='section-title'>⚡ Ajuste Rápido de Stock</div><div class='section-subtitle'>Modifica existencias de manera inmediata seleccionando la prenda.</div>", unsafe_allow_html=True)
             col_q1, col_q2, col_q3 = st.columns([2, 1, 1])
             with col_q1:
                 ids_rapidos = df["ID"].astype(str).tolist()
                 id_rapido = st.selectbox("Seleccionar Prenda", ids_rapidos, key="select_ajuste_rapido")
             with col_q2:
                 st.markdown("<div style='height: 24px;'></div>", unsafe_allow_html=True)
-                if st.button("\u2796 Quitar 1 (-1)", use_container_width=True, key="btn_minus_1"):
+                if st.button("➖ Quitar 1 (-1)", use_container_width=True, key="btn_minus_1"):
                     fila_actual = df[df["ID"].astype(str) == str(id_rapido)].iloc[0]
                     nueva_cant = max(0, int(fila_actual["cantidad"]) - 1)
                     datos_act = fila_actual.to_dict()
@@ -1571,7 +1531,7 @@ else:
                         st.rerun()
             with col_q3:
                 st.markdown("<div style='height: 24px;'></div>", unsafe_allow_html=True)
-                if st.button("\u2795 A\u00f1adir 1 (+1)", use_container_width=True, key="btn_plus_1"):
+                if st.button("➕ Añadir 1 (+1)", use_container_width=True, key="btn_plus_1"):
                     fila_actual = df[df["ID"].astype(str) == str(id_rapido)].iloc[0]
                     nueva_cant = int(fila_actual["cantidad"]) + 1
                     datos_act = fila_actual.to_dict()
@@ -1581,26 +1541,26 @@ else:
                         st.rerun()
 
             st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown("<div class='section-title'>\U0001F4CB B\u00fasqueda y Filtros Avanzados</div><div class='section-subtitle'>Combina filtros para encontrar exactamente lo que buscas.</div>", unsafe_allow_html=True)
+            st.markdown("<div class='section-title'>📋 Búsqueda y Filtros Avanzados</div><div class='section-subtitle'>Combina filtros para encontrar exactamente lo que buscas.</div>", unsafe_allow_html=True)
 
             col_f1, col_f2, col_f3 = st.columns([1.5, 1, 1])
             with col_f1:
-                busqueda = st.text_input("\U0001F50D Buscar por nombre o ID", placeholder="Escribe el nombre de la prenda o su ID...")
+                busqueda = st.text_input("🔍 Buscar por nombre o ID", placeholder="Escribe el nombre de la prenda o su ID...")
             with col_f2:
                 categorias_disponibles = ["Todas"] + sorted(list(df["Categoria"].dropna().unique()))
-                filtro_categoria = st.selectbox("\U0001F4C2 Categor\u00eda", categorias_disponibles)
+                filtro_categoria = st.selectbox("📂 Categoría", categorias_disponibles)
             with col_f3:
                 tallas_disponibles = ["Todas"] + sorted(list(df["talla"].dropna().unique()))
-                filtro_talla = st.selectbox("\U0001F4CF Talla", tallas_disponibles)
+                filtro_talla = st.selectbox("📏 Talla", tallas_disponibles)
 
             col_f4, col_f5, col_f6 = st.columns([1, 1, 1])
             with col_f4:
                 colores_disponibles = ["Todos"] + sorted(list(df["color"].dropna().unique()))
-                filtro_color = st.selectbox("\U0001F3A8 Color", colores_disponibles)
+                filtro_color = st.selectbox("🎨 Color", colores_disponibles)
             with col_f5:
-                orden = st.selectbox("\u2195\ufe0f Ordenar por", ["Nombre (A-Z)", "Stock (mayor a menor)", "Stock (menor a mayor)", "M\u00e1s vendidos"])
+                orden = st.selectbox("↕️ Ordenar por", ["Nombre (A-Z)", "Stock (mayor a menor)", "Stock (menor a mayor)", "Más vendidos"])
             with col_f6:
-                solo_favoritos = st.checkbox("\u2b50 Solo favoritos", value=False)
+                solo_favoritos = st.checkbox("⭐ Solo favoritos", value=False)
 
             df_filtrado = df.copy()
             if busqueda.strip():
@@ -1624,7 +1584,7 @@ else:
                 df_filtrado = df_filtrado.sort_values("cantidad", ascending=False)
             elif orden == "Stock (menor a mayor)":
                 df_filtrado = df_filtrado.sort_values("cantidad", ascending=True)
-            elif orden == "M\u00e1s vendidos":
+            elif orden == "Más vendidos":
                 movs = cargar_movimientos()
                 if not movs.empty:
                     ventas = movs[movs["tipo"] == "venta"].groupby("prenda_id")["cantidad"].sum()
@@ -1639,7 +1599,7 @@ else:
 
                 col_p1, col_p2 = st.columns([2, 2])
                 with col_p1:
-                    pagina_sel = st.selectbox("\U0001F4C4 P\u00e1gina", range(1, total_paginas + 1), key="paginacion_tabla") if total_paginas > 1 else 1
+                    pagina_sel = st.selectbox("📄 Página", range(1, total_paginas + 1), key="paginacion_tabla") if total_paginas > 1 else 1
 
                 inicio = (pagina_sel - 1) * items_por_pagina
                 fin = min(inicio + items_por_pagina, total_registros)
@@ -1648,7 +1608,7 @@ else:
                 csv_data = df_filtrado.to_csv(index=False, sep=';').encode('utf-8-sig')
                 with col_p2:
                     st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
-                    st.download_button("\U0001F4E5 Exportar Inventario a CSV", data=csv_data,
+                    st.download_button("📥 Exportar Inventario a CSV", data=csv_data,
                                         file_name="inventario_lewin.csv", mime="text/csv",
                                         use_container_width=True)
 
@@ -1665,19 +1625,15 @@ else:
                         if is_alerta else
                         f"<span style='color: #34d399; font-weight: 700;'>Stock: {row['cantidad']}</span>"
                     )
-                    estrella = "\u2b50" if bool(row.get("favorito", False)) else "\u2606"
+                    estrella = "⭐" if bool(row.get("favorito", False)) else "☆"
                     foto_html = (
                         f'<img class="product-photo" src="{row["foto_url"]}" />'
                         if row.get("foto_url") else
-                        '<div class="product-photo-placeholder">\U0001F455</div>'
+                        '<div class="product-photo-placeholder">👕</div>'
                     )
-                    costo_item = float(row.get("costo", 0) or 0)
-                    precio_item = float(row.get("precio_venta", 0) or 0)
-                    ganancia_item, margen_pct_item = calcular_margen_rentabilidad(costo_item, precio_item)
                     precio_html = ""
-                    if precio_item > 0:
-                        margen_chip = f" <span style='font-size:10px; background:rgba(52,211,153,0.15); color:#34d399; padding:2px 6px; border-radius:10px; font-weight:700;'>+{margen_pct_item:.0f}% Margen (+{moneda(ganancia_item)})</span>" if costo_item > 0 else ""
-                        precio_html = f"<div style='margin-top:6px; font-size:14px; font-weight:700; color: var(--accent);'>{moneda(precio_item)}{margen_chip}</div>"
+                    if float(row.get("precio_venta", 0) or 0) > 0:
+                        precio_html = f"<div style='margin-top:6px; font-size:14px; font-weight:700; color: var(--accent);'>{moneda(row.get('precio_venta', 0))}</div>"
 
                     tarjeta_html = f"""<div class="product-card" style="border-color: {borde_color};">
 {foto_html}
@@ -1688,13 +1644,13 @@ else:
 </div>
 <div style="font-size: 16px; font-weight: 700; color: var(--text-color); margin-bottom: 8px;">{estrella} {row['Producto']}</div>
 <div style="font-size: 13px; color: var(--text-secondary); display: flex; gap: 12px; margin-bottom: 8px;">
-<span>\U0001F4CF Talla: <b>{row['talla']}</b></span>
-<span>\U0001F3A8 Color: <b>{row['color']}</b></span>
+<span>📏 Talla: <b>{row['talla']}</b></span>
+<span>🎨 Color: <b>{row['color']}</b></span>
 </div>
 {precio_html}
 <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 10px; font-size: 13px;">
 {badge_stock}
-<span style="font-size: 11px; color: var(--text-secondary);">Alerta m\u00edn: {row['alerta']}</span>
+<span style="font-size: 11px; color: var(--text-secondary);">Alerta mín: {row['alerta']}</span>
 </div>
 </div>
 </div>"""
@@ -1704,33 +1660,39 @@ else:
 
                         c_fav, c_qr = st.columns(2)
                         with c_fav:
-                            if st.button("\u2b50 Favorito" if not row.get("favorito", False) else "\u2606 Quitar", key=f"fav_{row['ID']}", use_container_width=True):
+                            if st.button("⭐ Favorito" if not row.get("favorito", False) else "☆ Quitar", key=f"fav_{row['ID']}", use_container_width=True):
                                 datos_act = row.to_dict()
                                 datos_act["favorito"] = not bool(row.get("favorito", False))
                                 if actualizar_prenda(row["ID"], datos_act):
                                     st.rerun()
                         with c_qr:
-                            with st.popover("\U0001F517 QR", use_container_width=True) if hasattr(st, "popover") else st.expander("\U0001F517 QR"):
+                            with st.popover("🔗 QR", use_container_width=True) if hasattr(st, "popover") else st.expander("🔗 QR"):
                                 if QR_DISPONIBLE:
                                     qr_bytes = generar_qr_bytes(f"ID:{row['ID']} | {row['Producto']}")
                                     st.image(qr_bytes, width=140)
                                 else:
-                                    st.caption("Instala 'qrcode' en requirements.txt para activar esta funci\u00f3n.")
+                                    st.caption("Instala 'qrcode' en requirements.txt para activar esta función.")
 
                         detalles_texto = f"ID: {row['ID']} - {row['Producto']} ({row['Categoria']}) - Talla: {row['talla']} - Color: {row['color']} - Stock: {row['cantidad']}"
                         st.text_area(
                             "Detalles", value=detalles_texto, height=70, disabled=True,
                             label_visibility="collapsed", key=f"detalle_{row['ID']}",
                         )
-                        st.markd    # -----------------------------------------------------------------------------
+                        st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
+            else:
+                st.info("No se encontraron registros con los filtros seleccionados.")
+        else:
+            st.info("No hay prendas registradas todavía en el sistema.")
+
+    # -----------------------------------------------------------------------------
     # VENDER
     # -----------------------------------------------------------------------------
     elif menu == "vender":
         st.markdown(
             """
 <div class="page-header">
-    <div class="page-title">\U0001F195 Nueva Venta</div>
-    <div class="page-subtitle">Arma el pedido, aplica descuentos, elige pago \u00fanico o mixto y genera el recibo para WhatsApp.</div>
+    <div class="page-title">🆕 Nueva Venta</div>
+    <div class="page-subtitle">Arma el pedido y dinos si ya te pagaron o queda pendiente — la app la manda sola a "Ventas Pagadas" o "Ventas por Pagar".</div>
 </div>
 """,
             unsafe_allow_html=True,
@@ -1742,25 +1704,19 @@ else:
             if "carrito_venta_nueva" not in st.session_state:
                 st.session_state.carrito_venta_nueva = []
 
-            with st.expander("\U0001F4F7 Esc\u00e1ner R\u00e1pido / C\u00e1mara"):
-                st.caption("Usa la c\u00e1mara para enfocar el c\u00f3digo QR o escribe el ID directamente para agregar r\u00e1pido al pedido.")
-                foto_scan = st.camera_input("Capturar c\u00f3digo de la prenda", key="cam_scan_vender")
-                if foto_scan:
-                    st.info("\U0001F4A1 Consejo: Tambi\u00e9n puedes seleccionar directamente el ID del listado si no deseas usar la c\u00e1mara.")
-
             col_p1, col_p2, col_p3 = st.columns([2, 1, 1])
             with col_p1:
                 ids_venta_nueva = df["ID"].astype(str).tolist()
                 producto_venta_sel = st.selectbox(
                     "Producto", ids_venta_nueva,
-                    format_func=lambda x: f"{x} \u2014 {df[df['ID'].astype(str) == x]['Producto'].values[0]} (stock: {int(df[df['ID'].astype(str) == x]['cantidad'].values[0])})",
+                    format_func=lambda x: f"{x} — {df[df['ID'].astype(str) == x]['Producto'].values[0]} (stock: {int(df[df['ID'].astype(str) == x]['cantidad'].values[0])})",
                     key="select_producto_venta_nueva",
                 )
             with col_p2:
                 cantidad_venta_sel = st.number_input("Cantidad", min_value=1, value=1, step=1, key="cantidad_venta_nueva")
             with col_p3:
                 st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
-                if st.button("\u2795 Agregar", use_container_width=True, key="btn_agregar_venta_nueva"):
+                if st.button("➕ Agregar", use_container_width=True, key="btn_agregar_venta_nueva"):
                     fila_prod = df[df["ID"].astype(str) == str(producto_venta_sel)].iloc[0]
                     if cantidad_venta_sel > int(fila_prod["cantidad"]):
                         st.error(f"Solo hay {int(fila_prod['cantidad'])} en stock.")
@@ -1773,103 +1729,43 @@ else:
                         st.rerun()
 
             if st.session_state.carrito_venta_nueva:
-                subtotal_venta = sum(item["cantidad"] * item["precio_unitario"] for item in st.session_state.carrito_venta_nueva)
+                total_venta_nueva = sum(item["cantidad"] * item["precio_unitario"] for item in st.session_state.carrito_venta_nueva)
                 for idx, item in enumerate(st.session_state.carrito_venta_nueva):
                     c_item1, c_item2 = st.columns([4, 1])
                     with c_item1:
                         st.markdown(
-                            f"<div class='config-chip'>{item['cantidad']} \u00d7 {item['producto']} \u2014 {moneda(item['cantidad'] * item['precio_unitario'])}</div>",
+                            f"<div class='config-chip'>{item['cantidad']} × {item['producto']} — {moneda(item['cantidad'] * item['precio_unitario'])}</div>",
                             unsafe_allow_html=True,
                         )
                     with c_item2:
-                        if st.button("\u2715", key=f"quitar_venta_nueva_{idx}", use_container_width=True):
+                        if st.button("✕", key=f"quitar_venta_nueva_{idx}", use_container_width=True):
                             st.session_state.carrito_venta_nueva.pop(idx)
                             st.rerun()
 
-                st.markdown("<br>", unsafe_allow_html=True)
-                st.markdown("### \U0001F3F7\ufe0f Descuento y Totales")
-                c_desc1, c_desc2 = st.columns(2)
-                with c_desc1:
-                    tipo_desc = st.selectbox("Tipo de descuento", ["Sin Descuento", "% Porcentaje", "$ Monto Fijo ($)"], key="tipo_desc_vender")
-                with c_desc2:
-                    valor_desc = st.number_input("Valor del descuento", min_value=0.0, value=0.0, step=1.0, key="val_desc_vender")
-
-                monto_descuento = 0.0
-                if tipo_desc == "% Porcentaje":
-                    monto_descuento = subtotal_venta * (valor_desc / 100.0)
-                elif tipo_desc == "$ Monto Fijo ($)":
-                    monto_descuento = valor_desc
-
-                monto_descuento = min(subtotal_venta, max(0.0, monto_descuento))
-                total_venta_nueva = subtotal_venta - monto_descuento
-
-                st.markdown(
-                    f"**Subtotal:** {moneda(subtotal_venta)} | "
-                    f"**Descuento:** -{moneda(monto_descuento)} | "
-                    f"**TOTAL FINAL:** <span style='font-size:18px; color:var(--accent); font-weight:800;'>{moneda(total_venta_nueva)}</span>",
-                    unsafe_allow_html=True,
-                )
+                st.markdown(f"**Total del pedido: {moneda(total_venta_nueva)}**")
                 st.markdown("<br>", unsafe_allow_html=True)
 
                 estado_pago = st.radio(
-                    "\u00bfEsta venta fue pagada?",
-                    ["\u2705 S\u00ed, pagada de contado", "\U0001F500 Pago Mixto / Dividido", "\U0001F9FE No, queda pendiente (fiado)"],
+                    "¿Esta venta fue pagada?",
+                    ["✅ Sí, pagada", "🧾 No, queda pendiente (fiado)"],
                     horizontal=True, key="estado_pago_venta_nueva",
                 )
-                fue_pagada = not estado_pago.startswith("\U0001F9FE")
-                es_pago_mixto = estado_pago.startswith("\U0001F500")
+                fue_pagada = estado_pago.startswith("✅")
 
                 nombre_valido = True
-                cliente_nombre_recibo = ""
-                cliente_tlf_recibo = ""
-
-                if fue_pagada and not es_pago_mixto:
-                    c_cl1, c_cl2 = st.columns(2)
-                    with c_cl1:
-                        cliente_nombre_recibo = st.text_input("Nombre del cliente (opcional para recibo)", key="cli_nom_unica")
-                    with c_cl2:
-                        cliente_tlf_recibo = st.text_input("WhatsApp del cliente (opcional)", placeholder="Ej: 04141234567", key="cli_tlf_unica")
-
+                if fue_pagada:
                     medio_pago_venta = st.selectbox(
-                        "Medio de pago", ["Efectivo", "Pago M\u00f3vil", "Transferencia", "Zelle", "Otro"],
+                        "Medio de pago", ["Efectivo", "Pago Móvil", "Transferencia", "Zelle", "Otro"],
                         key="medio_pago_venta_nueva",
                     )
                     deudores_df_nv = pd.DataFrame()
                     persona_sel_nv = None
-                    tasa_venta_nv, _ = selector_tasa_cambio("venta_unica_tasa")
-
-                elif es_pago_mixto:
-                    st.markdown("#### \U0001F500 Distribuci\u00f3n de Pago Mixto")
-                    c_cl1, c_cl2 = st.columns(2)
-                    with c_cl1:
-                        cliente_nombre_recibo = st.text_input("Nombre del cliente (opcional para recibo)", key="cli_nom_mixto")
-                    with c_cl2:
-                        cliente_tlf_recibo = st.text_input("WhatsApp del cliente (opcional)", placeholder="Ej: 04141234567", key="cli_tlf_mixto")
-
-                    tasa_venta_nv, _ = selector_tasa_cambio("venta_mixta_tasa")
-                    col_m1, col_m2 = st.columns(2)
-                    with col_m1:
-                        pago_parte1_monto = st.number_input("Monto Parte 1 ($)", min_value=0.0, max_value=float(total_venta_nueva), value=float(total_venta_nueva/2), step=1.0, key="monto_mixto_1")
-                        pago_parte1_medio = st.selectbox("M\u00e9todo Parte 1", ["Efectivo", "Pago M\u00f3vil", "Zelle", "Transferencia"], key="medio_mixto_1")
-                    with col_m2:
-                        pago_parte2_monto = max(0.0, total_venta_nueva - pago_parte1_monto)
-                        st.number_input("Monto Parte 2 ($ calculada)", value=float(pago_parte2_monto), disabled=True, key="monto_mixto_2")
-                        pago_parte2_medio = st.selectbox("M\u00e9todo Parte 2", ["Pago M\u00f3vil", "Efectivo", "Zelle", "Transferencia"], key="medio_mixto_2")
-
-                    if tasa_venta_nv > 0:
-                        bs_parte2 = pago_parte2_monto * tasa_venta_nv
-                        st.caption(f"\U0001F4B1 Parte 2 equivale a: {bs_parte2:,.2f} Bs (a {tasa_venta_nv:,.2f} Bs/$)")
-
-                    medio_pago_venta = f"Mixto: ${pago_parte1_monto:.2f} ({pago_parte1_medio}) + ${pago_parte2_monto:.2f} ({pago_parte2_medio})"
-                    persona_sel_nv = None
-                    deudores_df_nv = pd.DataFrame()
-
                 else:
                     deudores_df_nv = cargar_deudores()
-                    NUEVA_PERSONA_NV = "\u2795 Persona nueva"
+                    NUEVA_PERSONA_NV = "➕ Persona nueva"
                     opciones_persona_nv = [NUEVA_PERSONA_NV] + deudores_df_nv["id"].astype(str).tolist()
                     persona_sel_nv = st.selectbox(
-                        "\u00bfA qui\u00e9n se le f\u00eda?", opciones_persona_nv,
+                        "¿A quién se le fía?", opciones_persona_nv,
                         format_func=lambda x: x if x == NUEVA_PERSONA_NV else deudores_df_nv[deudores_df_nv["id"].astype(str) == x]["nombre"].values[0],
                         key="select_persona_venta_nueva",
                     )
@@ -1877,24 +1773,16 @@ else:
                     if persona_sel_nv == NUEVA_PERSONA_NV:
                         col_np1, col_np2 = st.columns(2)
                         with col_np1:
-                            nombre_nuevo_nv = st.text_input("Nombre", placeholder="Ej: Mar\u00eda P\u00e9rez", key="nombre_nueva_persona_nv")
-                            cliente_nombre_recibo = nombre_nuevo_nv
+                            nombre_nuevo_nv = st.text_input("Nombre", placeholder="Ej: María Pérez", key="nombre_nueva_persona_nv")
                         with col_np2:
-                            telefono_nuevo_nv = st.text_input("Tel\u00e9fono (opcional)", placeholder="Ej: 0414-1234567", key="telefono_nueva_persona_nv")
-                            cliente_tlf_recibo = telefono_nuevo_nv
+                            telefono_nuevo_nv = st.text_input("Teléfono (opcional)", placeholder="Ej: 0414-1234567", key="telefono_nueva_persona_nv")
                         nombre_valido = nombre_nuevo_nv.strip() != ""
-                    else:
-                        fila_p = deudores_df_nv[deudores_df_nv["id"].astype(str) == str(persona_sel_nv)].iloc[0]
-                        cliente_nombre_recibo = str(fila_p.get("nombre", ""))
-                        cliente_tlf_recibo = str(fila_p.get("telefono", ""))
-
                     tasa_venta_nv, fuente_tasa_venta_nv = selector_tasa_cambio("venta_nueva", st.session_state.get("ultima_tasa", 0.0))
                     if tasa_venta_nv > 0:
-                        st.caption(f"\U0001F4B1 Equivalente: {total_venta_nueva * tasa_venta_nv:,.2f} Bs")
-                    medio_pago_venta = "Pendiente (Fiado)"
+                        st.caption(f"💱 Equivalente: {total_venta_nueva * tasa_venta_nv:,.2f} Bs")
+                    medio_pago_venta = ""
 
-                if st.button("\u2705 Confirmar Venta", use_container_width=True, key="btn_confirmar_venta_nueva", disabled=not nombre_valido):
-                    desc_resumen = ", ".join(f"{i['cantidad']}x {i['producto']}" for i in st.session_state.carrito_venta_nueva)
+                if st.button("✅ Confirmar Venta", use_container_width=True, key="btn_confirmar_venta_nueva", disabled=not nombre_valido):
                     for item in st.session_state.carrito_venta_nueva:
                         fila_prod_actual = df[df["ID"].astype(str) == str(item["id"])].iloc[0]
                         datos_act = fila_prod_actual.to_dict()
@@ -1907,24 +1795,12 @@ else:
                             medio_pago=medio_pago_venta,
                         )
 
-                    link_wa = generar_link_whatsapp(
-                        cliente=cliente_nombre_recibo or "Cliente",
-                        telefono=cliente_tlf_recibo,
-                        descripcion_items=desc_resumen,
-                        total_usd=total_venta_nueva,
-                        medio_pago=medio_pago_venta,
-                        tasa_bs=tasa_venta_nv,
-                    )
-                    st.session_state.ultimo_recibo_link = link_wa
-
                     if fue_pagada:
                         st.session_state.carrito_venta_nueva = []
-                        st.success(f"\u00a1Venta registrada exitosamente! Total: {moneda(total_venta_nueva)}")
-                        if link_wa:
-                            st.markdown(f"[\U0001F4F2 **Enviar Recibo por WhatsApp**]({link_wa})")
+                        st.success(f"¡Venta registrada como pagada! Total: {moneda(total_venta_nueva)}")
                         st.rerun()
                     else:
-                        if persona_sel_nv == "\u2795 Persona nueva":
+                        if persona_sel_nv == "➕ Persona nueva":
                             id_persona_final_nv = guardar_deudor(nombre_nuevo_nv, telefono_nuevo_nv)
                             nombre_persona_final_nv = nombre_nuevo_nv
                         else:
@@ -1932,6 +1808,7 @@ else:
                             nombre_persona_final_nv = deudores_df_nv[deudores_df_nv["id"].astype(str) == str(persona_sel_nv)]["nombre"].values[0]
 
                         if id_persona_final_nv:
+                            descripcion_pedido_nv = ", ".join(f"{i['cantidad']}× {i['producto']}" for i in st.session_state.carrito_venta_nueva)
                             deudores_actualizado_nv = cargar_deudores()
                             fila_persona_nv = deudores_actualizado_nv[deudores_actualizado_nv["id"].astype(str) == str(id_persona_final_nv)].iloc[0]
                             saldo_actual_nv = float(fila_persona_nv.get("saldo", 0) or 0)
@@ -1939,19 +1816,17 @@ else:
                             actualizar_saldo_deudor(id_persona_final_nv, nuevo_saldo_nv)
                             registrar_movimiento_deuda(
                                 deudor_id=id_persona_final_nv, deudor_nombre=nombre_persona_final_nv,
-                                tipo="cargo", descripcion=desc_resumen, monto=total_venta_nueva,
+                                tipo="cargo", descripcion=descripcion_pedido_nv, monto=total_venta_nueva,
                                 tasa_cambio=tasa_venta_nv,
                             )
                             if tasa_venta_nv > 0:
                                 st.session_state.ultima_tasa = tasa_venta_nv
                             st.session_state.carrito_venta_nueva = []
-                            st.success(f"\u00a1Venta registrada como pendiente! Nuevo saldo de {nombre_persona_final_nv}: {moneda(nuevo_saldo_nv)}")
-                            if link_wa:
-                                st.markdown(f"[\U0001F4F2 **Enviar Comprobante por WhatsApp**]({link_wa})")
+                            st.success(f"¡Venta registrada como pendiente! Nuevo saldo de {nombre_persona_final_nv}: {moneda(nuevo_saldo_nv)}")
                             st.rerun()
 
                 if not nombre_valido:
-                    st.caption("\u26a0\ufe0f Escribe el nombre de la persona nueva para poder confirmar.")
+                    st.caption("⚠️ Escribe el nombre de la persona nueva para poder confirmar.")
 
     # -----------------------------------------------------------------------------
     # VENTAS PAGADAS (historial de ventas cobradas de una vez)
@@ -1960,7 +1835,7 @@ else:
         st.markdown(
             """
 <div class="page-header">
-    <div class="page-title">\u2705 Ventas Pagadas</div>
+    <div class="page-title">✅ Ventas Pagadas</div>
     <div class="page-subtitle">Historial de ventas que se cobraron completas al momento (sin fiar).</div>
 </div>
 """,
@@ -1979,7 +1854,7 @@ else:
 
         st.markdown("<br>", unsafe_allow_html=True)
         if ventas_pagadas_df.empty:
-            st.info("Todav\u00eda no hay ventas pagadas registradas. Usa 'Nueva Venta' para empezar.")
+            st.info("Todavía no hay ventas pagadas registradas. Usa 'Nueva Venta' para empezar.")
         else:
             render_tabla_movimientos(ventas_pagadas_df)
 
@@ -1990,28 +1865,28 @@ else:
         st.markdown(
             """
 <div class="page-header">
-    <div class="page-title">\U0001F4E6 Registrar Compra a Proveedores</div>
-    <div class="page-subtitle">Suma unidades al stock existente y registra a qui\u00e9n le compraste y cu\u00e1nto pagaste.</div>
+    <div class="page-title">📦 Registrar Compra a Proveedores</div>
+    <div class="page-subtitle">Suma unidades al stock existente y registra a quién le compraste y cuánto pagaste.</div>
 </div>
 """,
             unsafe_allow_html=True,
         )
 
         if df.empty:
-            st.info("No hay prendas registradas. Primero registra una prenda desde el men\u00fa correspondiente.")
+            st.info("No hay prendas registradas. Primero registra una prenda desde el menú correspondiente.")
         else:
-            proveedor_nombre = st.text_input("Proveedor", placeholder="Ej: Textiles Andina, Mar\u00eda la mayorista, etc.")
+            proveedor_nombre = st.text_input("Proveedor", placeholder="Ej: Textiles Andina, María la mayorista, etc.")
 
             ids_compra = df["ID"].astype(str).tolist()
             id_compra = st.selectbox(
                 "Prenda", ids_compra,
-                format_func=lambda x: f"{x} \u2014 {df[df['ID'].astype(str) == x]['Producto'].values[0]}",
+                format_func=lambda x: f"{x} — {df[df['ID'].astype(str) == x]['Producto'].values[0]}",
             )
             fila = df[df["ID"].astype(str) == str(id_compra)].iloc[0]
 
             col1, col2 = st.columns(2)
             with col1:
-                cantidad_comprar = st.number_input("Cantidad a a\u00f1adir", min_value=1, value=1, step=1)
+                cantidad_comprar = st.number_input("Cantidad a añadir", min_value=1, value=1, step=1)
             with col2:
                 costo_unit = st.number_input("Costo por unidad", min_value=0.0, value=float(fila.get("costo", 0) or 0), step=1.0)
 
@@ -2022,7 +1897,7 @@ else:
 
             proveedor_valido = proveedor_nombre.strip() != ""
 
-            if st.button("\U0001F4E6 Confirmar Compra", use_container_width=True, disabled=not proveedor_valido):
+            if st.button("📦 Confirmar Compra", use_container_width=True, disabled=not proveedor_valido):
                 datos_act = fila.to_dict()
                 datos_act["cantidad"] = int(fila["cantidad"]) + int(cantidad_comprar)
                 if actualizar_costo:
@@ -2033,11 +1908,11 @@ else:
                         cantidad=cantidad_comprar, costo_unitario=costo_unit,
                         proveedor=proveedor_nombre,
                     )
-                    st.success(f"\u00a1Compra registrada a {proveedor_nombre}! Total: {moneda(monto_total_compra)}")
+                    st.success(f"¡Compra registrada a {proveedor_nombre}! Total: {moneda(monto_total_compra)}")
                     st.rerun()
 
             if not proveedor_valido:
-                st.caption("\u26a0\ufe0f Escribe el nombre del proveedor para poder confirmar.")
+                st.caption("⚠️ Escribe el nombre del proveedor para poder confirmar.")
 
     # -----------------------------------------------------------------------------
     # REGISTRAR PRENDA (solo admin)
@@ -2046,31 +1921,31 @@ else:
         st.markdown(
             """
 <div class="page-header">
-    <div class="page-title">\u2728 Registro de Nuevas Prendas</div>
-    <div class="page-subtitle">A\u00f1ade nuevos art\u00edculos al cat\u00e1logo, con foto, costo y precio de venta.</div>
+    <div class="page-title">✨ Registro de Nuevas Prendas</div>
+    <div class="page-subtitle">Añade nuevos artículos al catálogo, con foto, costo y precio de venta.</div>
 </div>
 """,
             unsafe_allow_html=True,
         )
 
         with st.form(f"form_ropa_{st.session_state.form_version}", clear_on_submit=True):
-            encabezado_seccion_form("\U0001F4E6", "Informaci\u00f3n B\u00e1sica")
+            encabezado_seccion_form("📦", "Información Básica")
             col1, col2 = st.columns(2)
             with col1:
                 sku = st.text_input("ID", placeholder="Ej: A1")
             with col2:
                 nombre = st.text_input("Producto", placeholder="Ej: Short")
 
-            encabezado_seccion_form("\U0001F3F7\ufe0f", "Clasificaci\u00f3n y Atributos")
+            encabezado_seccion_form("🏷️", "Clasificación y Atributos")
             col3, col4, col5 = st.columns(3)
             with col3:
-                categoria = st.selectbox("Categor\u00eda", st.session_state.categorias_maestras)
+                categoria = st.selectbox("Categoría", st.session_state.categorias_maestras)
             with col4:
                 talla = st.selectbox("Talla", st.session_state.tallas_maestras)
             with col5:
                 color = st.selectbox("Color", st.session_state.colores_maestros)
 
-            encabezado_seccion_form("\U0001F4CA", "Control de Stock, Precios y Alertas")
+            encabezado_seccion_form("📊", "Control de Stock, Precios y Alertas")
             col6, col7 = st.columns(2)
             with col6:
                 cantidad = st.number_input("Cantidad", min_value=0, value=0, step=1)
@@ -2083,11 +1958,11 @@ else:
             with col9:
                 precio_venta = st.number_input("Precio de venta", min_value=0.0, value=0.0, step=1.0)
 
-            encabezado_seccion_form("\U0001F4F7", "Foto del producto (opcional)")
+            encabezado_seccion_form("📷", "Foto del producto (opcional)")
             foto_subida = st.file_uploader("Sube una imagen", type=["png", "jpg", "jpeg", "webp"])
 
             st.markdown("<br>", unsafe_allow_html=True)
-            if st.form_submit_button("\U0001F4BE Guardar Prenda en el Sistema", use_container_width=True):
+            if st.form_submit_button("💾 Guardar Prenda en el Sistema", use_container_width=True):
                 if sku.strip() == "":
                     st.error("El campo ID es obligatorio.")
                 else:
@@ -2099,7 +1974,7 @@ else:
                         "favorito": False,
                     }
                     if guardar_prenda(nueva_prenda):
-                        st.success("\u00a1Prenda guardada con \u00e9xito!")
+                        st.success("¡Prenda guardada con éxito!")
                         st.session_state.form_version += 1
                         st.rerun()
 
@@ -2118,7 +1993,7 @@ else:
         )
 
         if not df.empty:
-            modo_seleccion = st.radio("\u00bfC\u00f3mo deseas encontrar la prenda?", ["Seleccionar de la lista", "Buscar por ID / Nombre"], horizontal=True)
+            modo_seleccion = st.radio("¿Cómo deseas encontrar la prenda?", ["Seleccionar de la lista", "Buscar por ID / Nombre"], horizontal=True)
             id_seleccionado = None
 
             if modo_seleccion == "Seleccionar de la lista":
@@ -2188,8 +2063,8 @@ else:
 
                     st.markdown("<br>", unsafe_allow_html=True)
                     col_btn1, col_btn2 = st.columns(2)
-                    actualizar = col_btn1.form_submit_button("\U0001F4BE Guardar Cambios", use_container_width=True)
-                    eliminar = col_btn2.form_submit_button("\U0001F5D1\ufe0f Eliminar Prenda", use_container_width=True)
+                    actualizar = col_btn1.form_submit_button("💾 Guardar Cambios", use_container_width=True)
+                    eliminar = col_btn2.form_submit_button("🗑️ Eliminar Prenda", use_container_width=True)
 
                     if actualizar:
                         foto_final = fila_data.get("foto_url", "")
@@ -2204,12 +2079,12 @@ else:
                             "foto_url": foto_final, "favorito": bool(fila_data.get("favorito", False)),
                         }
                         if actualizar_prenda(id_seleccionado, datos_mod):
-                            st.success("\u00a1Prenda actualizada correctamente!")
+                            st.success("¡Prenda actualizada correctamente!")
                             st.rerun()
 
                     if eliminar:
                         if eliminar_prenda(id_seleccionado):
-                            st.success("\u00a1Prenda eliminada del sistema!")
+                            st.success("¡Prenda eliminada del sistema!")
                             st.rerun()
         else:
             st.info("No hay registros disponibles para modificar.")
@@ -2221,7 +2096,7 @@ else:
         st.markdown(
             """
 <div class="page-header">
-    <div class="page-title">\U0001F4DC Historial de Movimientos</div>
+    <div class="page-title">📜 Historial de Movimientos</div>
     <div class="page-subtitle">Todas las ventas, compras y ajustes registrados en el sistema.</div>
 </div>
 """,
@@ -2230,7 +2105,7 @@ else:
 
         movs = cargar_movimientos()
         if movs.empty:
-            st.info("Todav\u00eda no hay movimientos registrados. Se ir\u00e1n guardando cuando registres ventas o compras.")
+            st.info("Todavía no hay movimientos registrados. Se irán guardando cuando registres ventas o compras.")
         else:
             col_m1, col_m2 = st.columns(2)
             with col_m1:
@@ -2250,7 +2125,7 @@ else:
             render_tabla_movimientos(movs_filtrado)
 
             csv_movs = movs_filtrado.to_csv(index=False, sep=';').encode('utf-8-sig')
-            st.download_button("\U0001F4E5 Exportar Movimientos a CSV", data=csv_movs,
+            st.download_button("📥 Exportar Movimientos a CSV", data=csv_movs,
                                 file_name="movimientos_lewin.csv", mime="text/csv")
 
     # -----------------------------------------------------------------------------
@@ -2260,8 +2135,8 @@ else:
         st.markdown(
             """
 <div class="page-header">
-    <div class="page-title">\U0001F9FE Ventas por Pagar</div>
-    <div class="page-subtitle">Lleva el control de qui\u00e9n te debe, cu\u00e1nto le fiaste y cu\u00e1nto te ha pagado.</div>
+    <div class="page-title">🧾 Ventas por Pagar</div>
+    <div class="page-subtitle">Lleva el control de quién te debe, cuánto le fiaste y cuánto te ha pagado.</div>
 </div>
 """,
             unsafe_allow_html=True,
@@ -2279,15 +2154,15 @@ else:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        with st.expander("\U0001F465 Ver todas las personas registradas"):
+        with st.expander("👥 Ver todas las personas registradas"):
             if deudores_df.empty:
-                st.info("Todav\u00eda no has agregado a nadie.")
+                st.info("Todavía no has agregado a nadie.")
             else:
                 deudores_ordenado = deudores_df.sort_values("saldo", ascending=False)
                 for _, fila in deudores_ordenado.iterrows():
                     saldo_val = float(fila.get("saldo", 0) or 0)
                     color_saldo = "#f472b6" if saldo_val > 0 else "#34d399"
-                    telefono_txt = fila.get("telefono") or "\u2014"
+                    telefono_txt = fila.get("telefono") or "—"
                     st.markdown(
                         f"<div class='config-chip' style='justify-content: space-between;'>"
                         f"<span>{fila['nombre']} <span style='color: var(--text-secondary); font-size: 11px;'>({telefono_txt})</span></span>"
@@ -2298,12 +2173,12 @@ else:
         st.markdown("<br><hr style='border-color: var(--border-color);'><br>", unsafe_allow_html=True)
 
         # =========================================================================
-        # SECCI\u00d3N 2: BUSCAR PERSONA Y COBRAR
+        # SECCIÓN 2: BUSCAR PERSONA Y COBRAR
         # =========================================================================
-        st.markdown("<div class='section-title'>\U0001F50D Buscar Persona y Cobrar</div><div class='section-subtitle'>Encuentra a alguien para ver su saldo, su historial, o registrarle un pago.</div>", unsafe_allow_html=True)
+        st.markdown("<div class='section-title'>🔍 Buscar Persona y Cobrar</div><div class='section-subtitle'>Encuentra a alguien para ver su saldo, su historial, o registrarle un pago.</div>", unsafe_allow_html=True)
 
         if deudores_df.empty:
-            st.info("Todav\u00eda no hay personas registradas. Usa la secci\u00f3n de arriba para agregar la primera.")
+            st.info("Todavía no hay personas registradas. Usa la sección de arriba para agregar la primera.")
         else:
             ids_buscar = deudores_df["id"].astype(str).tolist()
             id_buscado = st.selectbox(
@@ -2315,7 +2190,7 @@ else:
             fila_buscada = deudores_df[deudores_df["id"].astype(str) == str(id_buscado)].iloc[0]
             saldo_buscado = float(fila_buscada.get("saldo", 0) or 0)
             color_saldo_buscado = "#f472b6" if saldo_buscado > 0 else "#34d399"
-            telefono_buscado = fila_buscada.get("telefono") or "\u2014"
+            telefono_buscado = fila_buscada.get("telefono") or "—"
 
             st.markdown(
                 f"""<div class="product-card" style="border-color: var(--border-color);">
@@ -2323,7 +2198,7 @@ else:
 <div style="display: flex; justify-content: space-between; align-items: center;">
 <div>
 <div style="font-size: 18px; font-weight: 700; color: var(--text-color);">{fila_buscada['nombre']}</div>
-<div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">\U0001F4DE {telefono_buscado}</div>
+<div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">📞 {telefono_buscado}</div>
 </div>
 <div style="font-size: 24px; font-weight: 800; color: {color_saldo_buscado};">{moneda(saldo_buscado)}</div>
 </div>
@@ -2334,29 +2209,29 @@ else:
 
             col_pago1, col_pago2 = st.columns(2)
             with col_pago1:
-                moneda_pago_sel = st.radio("\u00bfEn qu\u00e9 moneda pag\u00f3?", ["D\u00f3lares ($)", "Bol\u00edvares (Bs)"], horizontal=True, key="moneda_pago_sel")
+                moneda_pago_sel = st.radio("¿En qué moneda pagó?", ["Dólares ($)", "Bolívares (Bs)"], horizontal=True, key="moneda_pago_sel")
             with col_pago2:
                 medio_pago_sel = st.selectbox(
                     "Medio de pago",
-                    ["Efectivo", "Pago M\u00f3vil", "Transferencia", "Zelle", "Otro"],
+                    ["Efectivo", "Pago Móvil", "Transferencia", "Zelle", "Otro"],
                     key="medio_pago_buscar",
                 )
 
-            if moneda_pago_sel == "Bol\u00edvares (Bs)":
+            if moneda_pago_sel == "Bolívares (Bs)":
                 tasa_cobro, fuente_tasa_cobro = selector_tasa_cambio("cobro")
                 monto_bs_ingresado = st.number_input("Monto recibido en Bs", min_value=0.0, step=1.0, key="monto_bs_cobro")
                 monto_pago_usd = (monto_bs_ingresado / tasa_cobro) if tasa_cobro > 0 else 0.0
                 if tasa_cobro > 0:
-                    st.caption(f"\U0001F4B1 Equivalente: {moneda(monto_pago_usd)}")
+                    st.caption(f"💱 Equivalente: {moneda(monto_pago_usd)}")
                 else:
-                    st.caption("\u26a0\ufe0f Elige una tasa para poder calcular el equivalente en d\u00f3lares.")
+                    st.caption("⚠️ Elige una tasa para poder calcular el equivalente en dólares.")
             else:
                 tasa_cobro = 0.0
                 monto_pago_usd = st.number_input("Monto recibido en $", min_value=0.0, step=1.0, key="monto_usd_cobro")
 
             nota_pago = st.text_input("Nota (opcional)", placeholder="Ej: abono parcial", key="nota_pago_buscar")
 
-            if st.button("\U0001F4B5 Registrar Este Pago", use_container_width=True, key="btn_registrar_pago_buscar"):
+            if st.button("💵 Registrar Este Pago", use_container_width=True, key="btn_registrar_pago_buscar"):
                 if monto_pago_usd <= 0:
                     st.error("El monto debe ser mayor a 0.")
                 else:
@@ -2367,46 +2242,46 @@ else:
                         tipo="abono", descripcion=nota_pago, monto=monto_pago_usd,
                         medio_pago=f"{medio_pago_sel} ({moneda_pago_sel})", tasa_cambio=tasa_cobro,
                     )
-                    st.success(f"\u00a1Pago registrado! Nuevo saldo de {fila_buscada['nombre']}: {moneda(nuevo_saldo_buscado)}")
+                    st.success(f"¡Pago registrado! Nuevo saldo de {fila_buscada['nombre']}: {moneda(nuevo_saldo_buscado)}")
                     st.rerun()
 
-            with st.expander(f"\U0001F4DC Historial de {fila_buscada['nombre']}"):
+            with st.expander(f"📜 Historial de {fila_buscada['nombre']}"):
                 deudas_mov_todas = cargar_deudas_movimientos()
                 historial_persona = deudas_mov_todas[deudas_mov_todas["deudor_id"].astype(str) == str(id_buscado)] if not deudas_mov_todas.empty else pd.DataFrame()
                 if historial_persona.empty:
-                    st.info("Todav\u00eda no hay movimientos con esta persona.")
+                    st.info("Todavía no hay movimientos con esta persona.")
                 else:
                     render_tabla_deudas(historial_persona)
 
             st.markdown("<br>", unsafe_allow_html=True)
-            if st.button(f"\U0001F5D1\ufe0f Eliminar a {fila_buscada['nombre']} del sistema", key="btn_eliminar_persona_buscada"):
+            if st.button(f"🗑️ Eliminar a {fila_buscada['nombre']} del sistema", key="btn_eliminar_persona_buscada"):
                 if eliminar_deudor(id_buscado):
                     st.success(f"{fila_buscada['nombre']} fue eliminada/o.")
                     st.rerun()
 
         st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("<div class='section-title'>\U0001F4DC Historial General</div><div class='section-subtitle'>Todos los cargos y abonos registrados, de todas las personas.</div>", unsafe_allow_html=True)
+        st.markdown("<div class='section-title'>📜 Historial General</div><div class='section-subtitle'>Todos los cargos y abonos registrados, de todas las personas.</div>", unsafe_allow_html=True)
         deudas_mov = cargar_deudas_movimientos()
         if deudas_mov.empty:
-            st.info("A\u00fan no hay movimientos de deudores registrados.")
+            st.info("Aún no hay movimientos de deudores registrados.")
         else:
             render_tabla_deudas(deudas_mov)
 
             st.markdown("<br>", unsafe_allow_html=True)
-            with st.expander("\U0001F5D1\ufe0f Eliminar un movimiento del historial"):
+            with st.expander("🗑️ Eliminar un movimiento del historial"):
                 opciones_mov = deudas_mov["id"].astype(str).tolist()
                 mov_a_borrar = st.selectbox(
                     "Elige el movimiento a eliminar",
                     opciones_mov,
                     format_func=lambda x: (
-                        f"{formatear_fecha_corta(deudas_mov[deudas_mov['id'].astype(str) == x]['fecha'].values[0])} \u2014 "
-                        f"{deudas_mov[deudas_mov['id'].astype(str) == x]['deudor_nombre'].values[0]} \u2014 "
-                        f"{deudas_mov[deudas_mov['id'].astype(str) == x]['tipo'].values[0]} \u2014 "
+                        f"{formatear_fecha_corta(deudas_mov[deudas_mov['id'].astype(str) == x]['fecha'].values[0])} — "
+                        f"{deudas_mov[deudas_mov['id'].astype(str) == x]['deudor_nombre'].values[0]} — "
+                        f"{deudas_mov[deudas_mov['id'].astype(str) == x]['tipo'].values[0]} — "
                         f"{moneda(deudas_mov[deudas_mov['id'].astype(str) == x]['monto'].values[0])}"
                     ),
                     key="select_borrar_deuda_mov",
                 )
-                st.caption("Al eliminarlo, el saldo de esa persona se ajusta autom\u00e1ticamente. Nota: si el movimiento borrado era un cargo de productos, el stock NO se devuelve solo \u2014 aj\u00fastalo manualmente en 'Editar / Borrar' si hace falta.")
+                st.caption("Al eliminarlo, el saldo de esa persona se ajusta automáticamente. Nota: si el movimiento borrado era un cargo de productos, el stock NO se devuelve solo — ajústalo manualmente en 'Editar / Borrar' si hace falta.")
                 if st.button("Eliminar este movimiento", key="btn_borrar_deuda_mov"):
                     fila_a_borrar = deudas_mov[deudas_mov["id"].astype(str) == str(mov_a_borrar)].iloc[0]
                     if eliminar_movimiento_deuda(
@@ -2425,8 +2300,8 @@ else:
         st.markdown(
             """
 <div class="page-header">
-    <div class="page-title">\U0001F4C8 Reportes y Rentabilidad</div>
-    <div class="page-subtitle">Ventas, productos m\u00e1s vendidos y valorizaci\u00f3n del inventario.</div>
+    <div class="page-title">📈 Reportes y Rentabilidad</div>
+    <div class="page-subtitle">Ventas, productos más vendidos y valorización del inventario.</div>
 </div>
 """,
             unsafe_allow_html=True,
@@ -2434,26 +2309,26 @@ else:
 
         col_reset1, col_reset2 = st.columns([3, 1])
         with col_reset2:
-            if st.button("\U0001F504 Restablecer Reportes", use_container_width=True):
+            if st.button("🔄 Restablecer Reportes", use_container_width=True):
                 st.session_state.confirmar_reset_reportes = True
 
         if st.session_state.get("confirmar_reset_reportes"):
             st.markdown(
-                "<div class='alert-banner'>\u26a0\ufe0f <b>\u00bfSeguro que quieres restablecer el apartado de Reportes?</b><br>"
-                "Esto borrar\u00e1 TODO el historial de ventas y compras registrado hasta ahora (tambi\u00e9n desaparecer\u00e1 de "
-                "'Movimientos'), para que puedas empezar a usar la app desde cero. Esta acci\u00f3n no se puede deshacer, "
+                "<div class='alert-banner'>⚠️ <b>¿Seguro que quieres restablecer el apartado de Reportes?</b><br>"
+                "Esto borrará TODO el historial de ventas y compras registrado hasta ahora (también desaparecerá de "
+                "'Movimientos'), para que puedas empezar a usar la app desde cero. Esta acción no se puede deshacer, "
                 "y no toca tus prendas ni el stock actual.</div>",
                 unsafe_allow_html=True,
             )
             col_c1, col_c2 = st.columns(2)
             with col_c1:
-                if st.button("\u2705 S\u00ed, restablecer todo", use_container_width=True):
+                if st.button("✅ Sí, restablecer todo", use_container_width=True):
                     if eliminar_todos_los_movimientos():
                         st.session_state.confirmar_reset_reportes = False
-                        st.success("\u00a1Listo! Los reportes y el historial de movimientos quedaron en cero.")
+                        st.success("¡Listo! Los reportes y el historial de movimientos quedaron en cero.")
                         st.rerun()
             with col_c2:
-                if st.button("\u274c Cancelar", use_container_width=True):
+                if st.button("❌ Cancelar", use_container_width=True):
                     st.session_state.confirmar_reset_reportes = False
                     st.rerun()
             st.markdown("<br>", unsafe_allow_html=True)
@@ -2475,7 +2350,7 @@ else:
 
         col1, col2, col3, col4 = st.columns(4)
         for col, label, value in [
-            (col1, "Total Vendido (hist\u00f3rico)", moneda(total_ventas)),
+            (col1, "Total Vendido (histórico)", moneda(total_ventas)),
             (col2, "Ganancia Estimada", moneda(ganancia)),
             (col3, "Valor Inventario (costo)", moneda(valor_costo_inv)),
             (col4, "Valor Inventario (venta)", moneda(valor_venta_inv)),
@@ -2492,20 +2367,20 @@ else:
             st.markdown("<div class='section-title'>Ventas por mes</div>", unsafe_allow_html=True)
             ventas_mes = ventas.groupby("mes")["monto"].sum()
             if len(ventas_mes) < 2:
-                st.caption("Con solo un mes de datos el gr\u00e1fico se ve muy simple \u2014 se vuelve m\u00e1s \u00fatil a medida que registres ventas en distintos meses.")
+                st.caption("Con solo un mes de datos el gráfico se ve muy simple — se vuelve más útil a medida que registres ventas en distintos meses.")
             st.plotly_chart(grafico_barras_vertical(ventas_mes, formato_valor=moneda), use_container_width=True, config={"displayModeBar": False})
 
-            st.markdown("<div class='section-title'>Top 5 productos m\u00e1s vendidos (unidades)</div>", unsafe_allow_html=True)
+            st.markdown("<div class='section-title'>Top 5 productos más vendidos (unidades)</div>", unsafe_allow_html=True)
             top_productos = ventas.groupby("producto")["cantidad"].sum().sort_values(ascending=False).head(5)
             st.plotly_chart(grafico_barras_horizontal(top_productos), use_container_width=True, config={"displayModeBar": False})
         else:
-            st.info("A\u00fan no hay ventas registradas para generar gr\u00e1ficas. Usa el men\u00fa 'Vender' para empezar a registrar.")
+            st.info("Aún no hay ventas registradas para generar gráficas. Usa el menú 'Vender' para empezar a registrar.")
 
         st.markdown("<br>", unsafe_allow_html=True)
         col_dona1, col_dona2 = st.columns(2)
 
         with col_dona1:
-            st.markdown("<div class='section-title'>Inventario por categor\u00eda</div>", unsafe_allow_html=True)
+            st.markdown("<div class='section-title'>Inventario por categoría</div>", unsafe_allow_html=True)
             if not df.empty:
                 inv_por_cat = df.groupby("Categoria")["cantidad"].sum()
                 inv_por_cat = inv_por_cat[inv_por_cat > 0]
@@ -2515,12 +2390,12 @@ else:
                         use_container_width=True, config={"displayModeBar": False},
                     )
                 else:
-                    st.info("No hay stock registrado todav\u00eda.")
+                    st.info("No hay stock registrado todavía.")
             else:
-                st.info("No hay prendas registradas todav\u00eda.")
+                st.info("No hay prendas registradas todavía.")
 
         with col_dona2:
-            st.markdown("<div class='section-title'>Ventas por categor\u00eda</div>", unsafe_allow_html=True)
+            st.markdown("<div class='section-title'>Ventas por categoría</div>", unsafe_allow_html=True)
             if not ventas.empty and not df.empty:
                 ventas_cat = ventas.copy()
                 ventas_cat["prenda_id"] = ventas_cat["prenda_id"].astype(str)
@@ -2534,19 +2409,19 @@ else:
                         use_container_width=True, config={"displayModeBar": False},
                     )
                 else:
-                    st.info("A\u00fan no hay suficientes ventas para mostrar por categor\u00eda.")
+                    st.info("Aún no hay suficientes ventas para mostrar por categoría.")
             else:
-                st.info("A\u00fan no hay ventas registradas.")
+                st.info("Aún no hay ventas registradas.")
 
     # -----------------------------------------------------------------------------
-    # CONFIGURACI\u00d3N (solo admin)
+    # CONFIGURACIÓN (solo admin)
     # -----------------------------------------------------------------------------
     elif menu == "configuracion":
         st.markdown(
             """
 <div class="page-header">
-    <div class="page-title">\u2699\ufe0f Configuraci\u00f3n del Sistema</div>
-    <div class="page-subtitle">Gestiona y personaliza las opciones maestras de categor\u00edas, tallas y colores.</div>
+    <div class="page-title">⚙️ Configuración del Sistema</div>
+    <div class="page-subtitle">Gestiona y personaliza las opciones maestras de categorías, tallas y colores.</div>
 </div>
 """,
             unsafe_allow_html=True,
@@ -2556,37 +2431,37 @@ else:
 
         with col_cfg1:
             with st.container(border=True):
-                encabezado_seccion_form("\U0001F4C2", "Categor\u00edas")
+                encabezado_seccion_form("📂", "Categorías")
                 for cat in list(st.session_state.edit_cats):
                     c_col1, c_col2 = st.columns([4, 1])
                     with c_col1:
                         st.markdown(f"<div class='config-chip'>{cat}</div>", unsafe_allow_html=True)
                     with c_col2:
-                        if st.button("\u2715", key=f"del_cat_{cat}", use_container_width=True):
+                        if st.button("✕", key=f"del_cat_{cat}", use_container_width=True):
                             if len(st.session_state.edit_cats) > 1:
                                 st.session_state.edit_cats.remove(cat)
                                 st.rerun()
                             else:
                                 st.error("Debe existir al menos una.")
                 st.markdown("<br>", unsafe_allow_html=True)
-                nueva_cat_input = st.text_input("Nueva Categor\u00eda", placeholder="Ej: Faldas", key="input_nueva_cat")
-                if st.button("\u2795 Agregar Categor\u00eda", key="btn_add_cat", use_container_width=True):
+                nueva_cat_input = st.text_input("Nueva Categoría", placeholder="Ej: Faldas", key="input_nueva_cat")
+                if st.button("➕ Agregar Categoría", key="btn_add_cat", use_container_width=True):
                     clean_cat = nueva_cat_input.strip().capitalize()
                     if clean_cat and clean_cat not in st.session_state.edit_cats:
                         st.session_state.edit_cats.append(clean_cat)
                         st.rerun()
                     else:
-                        st.warning("Nombre inv\u00e1lido o ya existente.")
+                        st.warning("Nombre inválido o ya existente.")
 
         with col_cfg2:
             with st.container(border=True):
-                encabezado_seccion_form("\U0001F4CF", "Tallas")
+                encabezado_seccion_form("📏", "Tallas")
                 for t in list(st.session_state.edit_tallas):
                     t_col1, t_col2 = st.columns([4, 1])
                     with t_col1:
                         st.markdown(f"<div class='config-chip'>{t}</div>", unsafe_allow_html=True)
                     with t_col2:
-                        if st.button("\u2715", key=f"del_talla_{t}", use_container_width=True):
+                        if st.button("✕", key=f"del_talla_{t}", use_container_width=True):
                             if len(st.session_state.edit_tallas) > 1:
                                 st.session_state.edit_tallas.remove(t)
                                 st.rerun()
@@ -2594,23 +2469,23 @@ else:
                                 st.error("Debe existir al menos una.")
                 st.markdown("<br>", unsafe_allow_html=True)
                 nueva_talla_input = st.text_input("Nueva Talla", placeholder="Ej: 30, XXL", key="input_nueva_talla")
-                if st.button("\u2795 Agregar Talla", key="btn_add_talla", use_container_width=True):
+                if st.button("➕ Agregar Talla", key="btn_add_talla", use_container_width=True):
                     clean_talla = nueva_talla_input.strip().upper()
                     if clean_talla and clean_talla not in st.session_state.edit_tallas:
                         st.session_state.edit_tallas.append(clean_talla)
                         st.rerun()
                     else:
-                        st.warning("Talla inv\u00e1lida o ya existente.")
+                        st.warning("Talla inválida o ya existente.")
 
         with col_cfg3:
             with st.container(border=True):
-                encabezado_seccion_form("\U0001F3A8", "Colores")
+                encabezado_seccion_form("🎨", "Colores")
                 for col_item in list(st.session_state.edit_colores):
                     col_c1, col_c2 = st.columns([4, 1])
                     with col_c1:
                         st.markdown(f"<div class='config-chip'>{col_item}</div>", unsafe_allow_html=True)
                     with col_c2:
-                        if st.button("\u2715", key=f"del_color_{col_item}", use_container_width=True):
+                        if st.button("✕", key=f"del_color_{col_item}", use_container_width=True):
                             if len(st.session_state.edit_colores) > 1:
                                 st.session_state.edit_colores.remove(col_item)
                                 st.rerun()
@@ -2618,18 +2493,18 @@ else:
                                 st.error("Debe existir al menos uno.")
                 st.markdown("<br>", unsafe_allow_html=True)
                 nuevo_color_input = st.text_input("Nuevo Color", placeholder="Ej: Dorado", key="input_nuevo_color")
-                if st.button("\u2795 Agregar Color", key="btn_add_color", use_container_width=True):
+                if st.button("➕ Agregar Color", key="btn_add_color", use_container_width=True):
                     clean_color = nuevo_color_input.strip().capitalize()
                     if clean_color and clean_color not in st.session_state.edit_colores:
                         st.session_state.edit_colores.append(clean_color)
                         st.rerun()
                     else:
-                        st.warning("Color inv\u00e1lido o ya existente.")
+                        st.warning("Color inválido o ya existente.")
 
         st.markdown("<br>", unsafe_allow_html=True)
         _, col_save_master, _ = st.columns([1, 2, 1])
         with col_save_master:
-            if st.button("\U0001F4BE Guardar configuraci\u00f3n en GitHub", use_container_width=True):
+            if st.button("💾 Guardar configuración en GitHub", use_container_width=True):
                 exito = guardar_configuracion_completa(
                     st.session_state.edit_cats, st.session_state.edit_tallas, st.session_state.edit_colores
                 )
@@ -2637,149 +2512,5 @@ else:
                     st.session_state.categorias_maestras = list(st.session_state.edit_cats)
                     st.session_state.tallas_maestras = list(st.session_state.edit_tallas)
                     st.session_state.colores_maestros = list(st.session_state.edit_colores)
-                    st.success("\u00a1Configuraci\u00f3n guardada en GitHub exitosamente!")
+                    st.success("¡Configuración guardada en GitHub exitosamente!")
                     st.rerun()
-
-    # -----------------------------------------------------------------------------
-    # ETIQUETAS DE PRECIOS PARA ROPA
-    # -----------------------------------------------------------------------------
-    elif menu == "etiquetas":
-        st.markdown(
-            """
-<div class="page-header">
-    <div class="page-title">\U0001F3F7\ufe0f Generador de Etiquetas de Precios</div>
-    <div class="page-subtitle">Crea e imprime etiquetas para colocar en las prendas f\u00edsicas con logo, talla, color, precio en $ y en Bs y c\u00f3digo QR.</div>
-</div>
-""",
-            unsafe_allow_html=True,
-        )
-
-        if df.empty:
-            st.info("No hay prendas registradas para generar etiquetas.")
-        else:
-            tasa_etiqueta, _ = selector_tasa_cambio("etiquetas_tasa")
-            cats_etiquetas = ["Todas"] + list(st.session_state.categorias_maestras)
-            cat_sel_et = st.selectbox("Filtrar por Categor\u00eda", cats_etiquetas, key="cat_sel_etiquetas")
-            
-            df_et = df.copy()
-            if cat_sel_et != "Todas":
-                df_et = df_et[df_et["Categoria"] == cat_sel_et]
-                
-            opciones_prendas_et = df_et["ID"].astype(str).tolist()
-            prendas_sel_et = st.multiselect(
-                "Seleccionar prendas a imprimir", 
-                opciones_prendas_et,
-                default=opciones_prendas_et[:6],
-                format_func=lambda x: f"ID: {x} - {df_et[df_et['ID'].astype(str) == x]['Producto'].values[0]}"
-            )
-            
-            if prendas_sel_et:
-                st.markdown("<br>", unsafe_allow_html=True)
-                st.markdown("<div class='section-title'>\U0001F4CB Vista Previa de Etiquetas Imprimibles</div>", unsafe_allow_html=True)
-                
-                cols_et = st.columns(3)
-                for idx, pid in enumerate(prendas_sel_et):
-                    fila_p = df[df["ID"].astype(str) == str(pid)].iloc[0]
-                    precio_usd = float(fila_p.get("precio_venta", 0) or 0)
-                    precio_bs = precio_usd * tasa_etiqueta if tasa_etiqueta > 0 else 0.0
-                    bs_txt = f"<br><span style='font-size:11px; color:#666;'>{precio_bs:,.2f} Bs</span>" if precio_bs > 0 else ""
-                    
-                    card_html = f"""<div style="background: #ffffff; color: #1a1a1a; padding: 16px; border-radius: 12px; border: 2px dashed #db2777; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
-<div style="text-align: center; border-bottom: 1px solid #eee; padding-bottom: 6px; margin-bottom: 8px;">
-<div style="font-family: 'Cinzel', serif; font-weight: 800; font-size: 11px; letter-spacing: 2px; color: #db2777;">LEWIN BOUTIQUE</div>
-<div style="font-weight: 700; font-size: 13px; color: #111;">{fila_p['Producto']}</div>
-</div>
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-<div style="font-size: 11px; color: #444;">
-<div>ID: <b>{fila_p['ID']}</b></div>
-<div>Talla: <b>{fila_p['talla']}</b></div>
-<div>Color: <b>{fila_p['color']}</b></div>
-</div>
-<div style="font-size: 10px; font-weight:700; text-align: center; background: #fdf2f8; color: #db2777; padding: 6px; border-radius: 6px;">
-QR
-</div>
-</div>
-<div style="border-top: 1px solid #eee; padding-top: 6px; display: flex; justify-content: space-between; align-items: center;">
-<span style="font-size: 18px; font-weight: 800; color: #db2777;">{moneda(precio_usd)}</span>
-{bs_txt}
-</div>
-</div>"""
-                    with cols_et[idx % 3]:
-                        st.markdown(card_html, unsafe_allow_html=True)
-            else:
-                st.info("Selecciona al menos una prenda de la lista arriba.")
-
-    # -----------------------------------------------------------------------------
-    # CIERRE Y ARQUEO DE CAJA DIARIO
-    # -----------------------------------------------------------------------------
-    elif menu == "caja":
-        st.markdown(
-            """
-<div class="page-header">
-    <div class="page-title">\U0001F4B5 Arqueo y Cierre de Caja Diario</div>
-    <div class="page-subtitle">Cuadre de ingresos por m\u00e9todo de pago (Efectivo, Pago M\u00f3vil, Zelle, etc.) y total del d\u00eda.</div>
-</div>
-""",
-            unsafe_allow_html=True,
-        )
-
-        col_fecha, _ = st.columns([1, 2])
-        with col_fecha:
-            fecha_caja = st.date_input("Seleccionar Fecha de Cierre", value=datetime.now().date(), key="fecha_cierre_caja")
-
-        movs_caja = cargar_movimientos()
-        deudas_caja = cargar_deudas_movimientos()
-
-        movs_dia = pd.DataFrame()
-        if not movs_caja.empty and "fecha" in movs_caja.columns:
-            movs_caja["fecha_dt"] = pd.to_datetime(movs_caja["fecha"], errors="coerce")
-            movs_dia = movs_caja[movs_caja["fecha_dt"].dt.date == fecha_caja]
-
-        abonos_dia = pd.DataFrame()
-        if not deudas_caja.empty and "fecha" in deudas_caja.columns:
-            deudas_caja["fecha_dt"] = pd.to_datetime(deudas_caja["fecha"], errors="coerce")
-            abonos_dia = deudas_caja[(deudas_caja["fecha_dt"].dt.date == fecha_caja) & (deudas_caja["tipo"] == "abono")]
-
-        ventas_dia = movs_dia[movs_dia["tipo"] == "venta"] if not movs_dia.empty else pd.DataFrame()
-        total_ventas_dia = float((ventas_dia["cantidad"] * ventas_dia["precio_unitario"]).sum()) if not ventas_dia.empty else 0.0
-        total_abonos_dia = float(abonos_dia["monto"].sum()) if not abonos_dia.empty else 0.0
-        ingreso_total_dia = total_ventas_dia + total_abonos_dia
-
-        efectivo_dia = 0.0
-        pago_movil_dia = 0.0
-        zelle_dia = 0.0
-        otros_dia = 0.0
-
-        if not ventas_dia.empty:
-            for _, r in ventas_dia.iterrows():
-                m_str = str(r.get("medio_pago", "")).lower()
-                monto_op = float(r.get("cantidad", 0)) * float(r.get("precio_unitario", 0))
-                if "efectivo" in m_str:
-                    efectivo_dia += monto_op
-                elif "m\u00f3vil" in m_str or "movil" in m_str:
-                    pago_movil_dia += monto_op
-                elif "zelle" in m_str:
-                    zelle_dia += monto_op
-                else:
-                    otros_dia += monto_op
-
-        col1, col2, col3, col4 = st.columns(4)
-        for col, label, value in [
-            (col1, "Ingreso Total del D\u00eda", moneda(ingreso_total_dia)),
-            (col2, "Efectivo $", moneda(efectivo_dia)),
-            (col3, "Pago M\u00f3vil / Transf.", moneda(pago_movil_dia)),
-            (col4, "Zelle / Otros", moneda(zelle_dia + otros_dia)),
-        ]:
-            with col:
-                st.markdown(f"""<div class="metric-card"><div class="metric-label">{label}</div><div class="metric-value">{value}</div></div>""", unsafe_allow_html=True)
-
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("<div class='section-title'>\U0001F4CB Operaciones del D\u00eda Seleccionado</div>", unsafe_allow_html=True)
-        if movs_dia.empty and abonos_dia.empty:
-            st.info(f"No hay movimientos ni cobros registrados para la fecha {fecha_caja.strftime('%d/%m/%Y')}.")
-        else:
-            if not movs_dia.empty:
-                render_tabla_movimientos(movs_dia)
-            if not abonos_dia.empty:
-                st.markdown("<div class='section-title' style='margin-top:15px;'>\U0001F4B5 Abonos Recibidos de Deudores Hoy</div>", unsafe_allow_html=True)
-                render_tabla_deudas(abonos_dia)
