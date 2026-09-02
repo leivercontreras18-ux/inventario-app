@@ -941,7 +941,7 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
     font-weight: 700; margin: 14px 0 6px 4px; opacity: 0.75;
 }}
 
-section[data-testid="stSidebar"] div.stButton > button {
+section[data-testid="stSidebar"] div.stButton > button {{
     background: transparent !important;
     border: 1px solid transparent !important;
     color: var(--text-color) !important;
@@ -954,14 +954,14 @@ section[data-testid="stSidebar"] div.stButton > button {
     box-shadow: none !important;
     margin-bottom: 3px !important;
     transition: all 0.2s ease !important;
-}
-section[data-testid="stSidebar"] div.stButton > button:hover {
+}}
+section[data-testid="stSidebar"] div.stButton > button:hover {{
     background: rgba(219, 39, 119, 0.08) !important;
     color: #f472b6 !important;
     border-color: rgba(219, 39, 119, 0.15) !important;
     transform: translateX(2px) !important;
-}
-section[data-testid="stSidebar"] div.stButton > button[kind="primary"] {
+}}
+section[data-testid="stSidebar"] div.stButton > button[kind="primary"] {{
     background: linear-gradient(90deg, rgba(219, 39, 119, 0.16) 0%, rgba(219, 39, 119, 0.03) 100%) !important;
     color: #f472b6 !important;
     border: none !important;
@@ -969,10 +969,10 @@ section[data-testid="stSidebar"] div.stButton > button[kind="primary"] {
     border-radius: 8px !important;
     font-weight: 700 !important;
     box-shadow: none !important;
-}
+}}
 
 /* Sub-opciones dentro de los desplegables */
-section[data-testid="stSidebar"] div.stButton > button[aria-label*="â€¢"] {
+section[data-testid="stSidebar"] div.stButton > button[aria-label*="â€¢"] {{
     font-size: 12px !important;
     color: var(--text-secondary) !important;
     border: none !important;
@@ -985,20 +985,20 @@ section[data-testid="stSidebar"] div.stButton > button[aria-label*="â€¢"] {
     background: transparent !important;
     width: calc(100% - 16px) !important;
     transition: all 0.2s ease !important;
-}
-section[data-testid="stSidebar"] div.stButton > button[aria-label*="â€¢"]:hover {
+}}
+section[data-testid="stSidebar"] div.stButton > button[aria-label*="â€¢"]:hover {{
     background: rgba(219, 39, 119, 0.08) !important;
     color: #f472b6 !important;
     border-left-color: #f472b6 !important;
     transform: translateX(2px) !important;
-}
-section[data-testid="stSidebar"] div.stButton > button[kind="primary"][aria-label*="â€¢"] {
+}}
+section[data-testid="stSidebar"] div.stButton > button[kind="primary"][aria-label*="â€¢"] {{
     color: #f472b6 !important;
     border-left: 3px solid #db2777 !important;
     background: rgba(219, 39, 119, 0.12) !important;
     box-shadow: none !important;
     font-weight: 700 !important;
-}
+}}
 
 .product-card {{
     background: var(--card-bg); backdrop-filter: blur(20px);
