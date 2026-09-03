@@ -1455,10 +1455,11 @@ else:
 
     render_grupo_acordeon("🛍️", "Ventas", [
         ("vender", "Nueva Venta"), ("ventas_pagadas", "Ventas Pagadas"), ("deudores", "Ventas por Pagar"),
+        ("facturas", "Facturas"),
     ], "acc_ventas")
 
     render_grupo_acordeon("📦", "Compras", [
-        ("comprar", "Registrar Compra"), ("movimientos", "Movimientos"), ("facturas", "Facturas"),
+        ("comprar", "Registrar Compra"), ("movimientos", "Movimientos"),
     ], "acc_compras")
 
     if not compacto:
