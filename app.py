@@ -2728,4 +2728,4 @@ else:
                     st.session_state.tallas_maestras = list(st.session_state.edit_tallas)
                     st.session_state.colores_maestros = list(st.session_state.edit_colores)
                     st.success("¡Configuración guardada en GitHub exitosamente!")
-                    st.rerun() 
+                    st.rerun()
