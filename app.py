@@ -18,6 +18,12 @@ try:
 except ImportError:
     QR_DISPONIBLE = False
 
+try:
+    from fpdf import FPDF
+    PDF_DISPONIBLE = True
+except ImportError:
+    PDF_DISPONIBLE = False
+
 st.set_page_config(
     page_title="Lewin // Inventario Boutique", page_icon="👕", layout="wide"
 )
@@ -70,7 +76,8 @@ COLUMNAS_INVENTARIO = [
 
 COLUMNAS_MOVIMIENTOS = [
     "id", "prenda_id", "producto", "tipo", "cantidad",
-    "precio_unitario", "costo_unitario", "pagado", "medio_pago", "proveedor", "fecha", "usuario",
+    "precio_unitario", "costo_unitario", "pagado", "medio_pago", "proveedor",
+    "venta_id", "cliente", "fecha", "usuario",
 ]
 
 COLUMNAS_DEUDORES = ["id", "nombre", "telefono", "saldo", "notas"]
@@ -136,13 +143,21 @@ def cargar_movimientos():
                 df_mov["proveedor"] = ""
             else:
                 df_mov["proveedor"] = df_mov["proveedor"].fillna("")
+            if "venta_id" not in df_mov.columns:
+                df_mov["venta_id"] = ""
+            else:
+                df_mov["venta_id"] = df_mov["venta_id"].fillna("")
+            if "cliente" not in df_mov.columns:
+                df_mov["cliente"] = ""
+            else:
+                df_mov["cliente"] = df_mov["cliente"].fillna("")
             return df_mov
     except Exception as e:
         st.warning(f"No se pudieron cargar los movimientos: {e}")
     return pd.DataFrame(columns=COLUMNAS_MOVIMIENTOS)
 
 
-def registrar_movimiento(prenda_id, producto, tipo, cantidad, precio_unitario=0, costo_unitario=0, pagado=True, medio_pago="", proveedor=""):
+def registrar_movimiento(prenda_id, producto, tipo, cantidad, precio_unitario=0, costo_unitario=0, pagado=True, medio_pago="", proveedor="", venta_id="", cliente=""):
     if not supabase:
         st.warning("No hay conexión a la base de datos para registrar el movimiento.")
         return False
@@ -158,6 +173,8 @@ def registrar_movimiento(prenda_id, producto, tipo, cantidad, precio_unitario=0,
             "pagado": bool(pagado),
             "medio_pago": str(medio_pago or ""),
             "proveedor": str(proveedor or ""),
+            "venta_id": str(venta_id or ""),
+            "cliente": str(cliente or ""),
             "fecha": datetime.now().isoformat(),
             "usuario": st.session_state.get("usuario_actual", ""),
         }
@@ -635,6 +652,60 @@ def grafico_dona(serie, texto_centro_arriba="", texto_centro_abajo="", altura=34
         )],
     )
     return fig
+
+
+def generar_factura_pdf(venta_id, cliente, fecha_texto, items_factura, total_factura):
+    """Arma un PDF de factura simple con los productos de una venta. Devuelve bytes o None si fpdf2 no está instalado."""
+    if not PDF_DISPONIBLE:
+        return None
+    pdf = FPDF(format="A4")
+    pdf.add_page()
+
+    pdf.set_font("Helvetica", "B", 20)
+    pdf.set_text_color(219, 39, 119)
+    pdf.cell(0, 12, "LEWIN BOUTIQUE", ln=True)
+
+    pdf.set_font("Helvetica", "", 11)
+    pdf.set_text_color(90, 90, 90)
+    pdf.cell(0, 7, "Factura de venta", ln=True)
+    pdf.ln(4)
+
+    pdf.set_text_color(30, 30, 30)
+    pdf.set_font("Helvetica", "", 10)
+    pdf.cell(0, 6, f"N. de factura: {str(venta_id)[:8].upper()}", ln=True)
+    pdf.cell(0, 6, f"Fecha: {fecha_texto}", ln=True)
+    pdf.cell(0, 6, f"Cliente: {cliente or 'Consumidor final'}", ln=True)
+    pdf.ln(6)
+
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_fill_color(244, 114, 182)
+    pdf.set_text_color(255, 255, 255)
+    pdf.cell(80, 8, "Producto", border=1, fill=True)
+    pdf.cell(30, 8, "Cantidad", border=1, fill=True, align="C")
+    pdf.cell(35, 8, "Precio Unit.", border=1, fill=True, align="R")
+    pdf.cell(35, 8, "Subtotal", border=1, fill=True, align="R", ln=True)
+
+    pdf.set_font("Helvetica", "", 10)
+    pdf.set_text_color(20, 20, 20)
+    for item in items_factura:
+        subtotal_item = float(item["cantidad"]) * float(item["precio_unitario"])
+        pdf.cell(80, 8, str(item["producto"])[:42], border=1)
+        pdf.cell(30, 8, str(int(item["cantidad"])), border=1, align="C")
+        pdf.cell(35, 8, moneda(item["precio_unitario"]), border=1, align="R")
+        pdf.cell(35, 8, moneda(subtotal_item), border=1, align="R", ln=True)
+
+    pdf.ln(4)
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.set_text_color(20, 20, 20)
+    pdf.cell(145, 9, "TOTAL", align="R")
+    pdf.cell(35, 9, moneda(total_factura), align="R", ln=True)
+
+    pdf.ln(16)
+    pdf.set_font("Helvetica", "I", 9)
+    pdf.set_text_color(130, 130, 130)
+    pdf.cell(0, 6, "Gracias por tu compra", ln=True, align="C")
+
+    return bytes(pdf.output())
 
 
 def generar_qr_bytes(texto):
@@ -1333,8 +1404,18 @@ else:
 
     st.sidebar.markdown("<div class='menu-divider'></div>", unsafe_allow_html=True)
 
+    GRUPOS_CLAVES_MENU = {
+        "acc_inventario": ["existencias", "registrar", "modificar"],
+        "acc_ventas": ["vender", "ventas_pagadas", "deudores"],
+        "acc_compras": ["comprar", "movimientos", "facturas"],
+    }
+    if "grupo_menu_abierto" not in st.session_state:
+        st.session_state.grupo_menu_abierto = next(
+            (k for k, claves in GRUPOS_CLAVES_MENU.items() if menu_actual in claves), None
+        )
+
     def render_grupo_acordeon(icono_grupo, titulo_grupo, items, session_key):
-        """Botón principal con flechita (▼/▶) que expande/colapsa sub-opciones con puntito."""
+        """Botón principal con flechita (▼/▶). Solo un grupo puede estar abierto a la vez."""
         claves_grupo = [c for c, _ in items]
         activo_grupo = menu_actual in claves_grupo
         tipo_grupo = "primary" if activo_grupo else "secondary"
@@ -1345,12 +1426,10 @@ else:
                 st.rerun()
             return
 
-        if session_key not in st.session_state:
-            st.session_state[session_key] = False
-        expandido = st.session_state[session_key] or activo_grupo
+        expandido = st.session_state.grupo_menu_abierto == session_key
         chevron = "▼" if expandido else "▶"
         if st.sidebar.button(f"{icono_grupo}  {titulo_grupo}  {chevron}", use_container_width=True, key=f"grupo_{session_key}", type=tipo_grupo):
-            st.session_state[session_key] = not st.session_state[session_key]
+            st.session_state.grupo_menu_abierto = None if expandido else session_key
             st.rerun()
         if expandido:
             for clave, etiqueta in items:
@@ -1359,6 +1438,7 @@ else:
                 tipo_item = "primary" if menu_actual == clave else "secondary"
                 if st.sidebar.button(f"•  {etiqueta}", use_container_width=True, key=f"item_{clave}", type=tipo_item):
                     st.session_state.menu_activo = clave
+                    st.session_state.grupo_menu_abierto = session_key
                     st.rerun()
 
     # --- Inicio (ítem plano, sin acordeón) ---
@@ -1378,7 +1458,7 @@ else:
     ], "acc_ventas")
 
     render_grupo_acordeon("📦", "Compras", [
-        ("comprar", "Registrar Compra"), ("movimientos", "Movimientos"),
+        ("comprar", "Registrar Compra"), ("movimientos", "Movimientos"), ("facturas", "Facturas"),
     ], "acc_compras")
 
     if not compacto:
@@ -1758,6 +1838,10 @@ else:
                         "Medio de pago", ["Efectivo", "Pago Móvil", "Transferencia", "Zelle", "Otro"],
                         key="medio_pago_venta_nueva",
                     )
+                    cliente_pagada_nv = st.text_input(
+                        "Nombre del cliente (opcional, para la factura)", placeholder="Ej: Consumidor final",
+                        key="cliente_pagada_nv",
+                    )
                     deudores_df_nv = pd.DataFrame()
                     persona_sel_nv = None
                 else:
@@ -1783,6 +1867,18 @@ else:
                     medio_pago_venta = ""
 
                 if st.button("✅ Confirmar Venta", use_container_width=True, key="btn_confirmar_venta_nueva", disabled=not nombre_valido):
+                    venta_id_nv = str(uuid.uuid4())
+                    id_persona_final_nv = None
+                    if fue_pagada:
+                        cliente_final_nv = cliente_pagada_nv.strip() or "Consumidor final"
+                    else:
+                        if persona_sel_nv == "➕ Persona nueva":
+                            id_persona_final_nv = guardar_deudor(nombre_nuevo_nv, telefono_nuevo_nv)
+                            cliente_final_nv = nombre_nuevo_nv
+                        else:
+                            id_persona_final_nv = persona_sel_nv
+                            cliente_final_nv = deudores_df_nv[deudores_df_nv["id"].astype(str) == str(persona_sel_nv)]["nombre"].values[0]
+
                     for item in st.session_state.carrito_venta_nueva:
                         fila_prod_actual = df[df["ID"].astype(str) == str(item["id"])].iloc[0]
                         datos_act = fila_prod_actual.to_dict()
@@ -1792,7 +1888,7 @@ else:
                             prenda_id=item["id"], producto=item["producto"], tipo="venta",
                             cantidad=item["cantidad"], precio_unitario=item["precio_unitario"],
                             costo_unitario=item["costo_unitario"], pagado=fue_pagada,
-                            medio_pago=medio_pago_venta,
+                            medio_pago=medio_pago_venta, venta_id=venta_id_nv, cliente=cliente_final_nv,
                         )
 
                     if fue_pagada:
@@ -1800,13 +1896,7 @@ else:
                         st.success(f"¡Venta registrada como pagada! Total: {moneda(total_venta_nueva)}")
                         st.rerun()
                     else:
-                        if persona_sel_nv == "➕ Persona nueva":
-                            id_persona_final_nv = guardar_deudor(nombre_nuevo_nv, telefono_nuevo_nv)
-                            nombre_persona_final_nv = nombre_nuevo_nv
-                        else:
-                            id_persona_final_nv = persona_sel_nv
-                            nombre_persona_final_nv = deudores_df_nv[deudores_df_nv["id"].astype(str) == str(persona_sel_nv)]["nombre"].values[0]
-
+                        nombre_persona_final_nv = cliente_final_nv
                         if id_persona_final_nv:
                             descripcion_pedido_nv = ", ".join(f"{i['cantidad']}× {i['producto']}" for i in st.session_state.carrito_venta_nueva)
                             deudores_actualizado_nv = cargar_deudores()
@@ -2127,6 +2217,88 @@ else:
             csv_movs = movs_filtrado.to_csv(index=False, sep=';').encode('utf-8-sig')
             st.download_button("📥 Exportar Movimientos a CSV", data=csv_movs,
                                 file_name="movimientos_lewin.csv", mime="text/csv")
+
+    # -----------------------------------------------------------------------------
+    # FACTURAS
+    # -----------------------------------------------------------------------------
+    elif menu == "facturas":
+        st.markdown(
+            """
+<div class="page-header">
+    <div class="page-title">🧾 Facturas</div>
+    <div class="page-subtitle">Elige una venta y descarga su factura en PDF.</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        if not PDF_DISPONIBLE:
+            st.warning("Falta instalar la librería para generar PDF. Agrega `fpdf2` a tu requirements.txt para activar esta función.")
+
+        movs_fact = cargar_movimientos()
+        ventas_con_id = movs_fact[(movs_fact["tipo"] == "venta") & (movs_fact["venta_id"] != "")] if not movs_fact.empty else pd.DataFrame()
+
+        if ventas_con_id.empty:
+            st.info("Todavía no hay ventas con factura disponible. A partir de ahora, cada venta que registres desde 'Nueva Venta' generará su propia factura automáticamente.")
+        else:
+            ventas_con_id = ventas_con_id.copy()
+            ventas_con_id["subtotal"] = ventas_con_id["cantidad"] * ventas_con_id["precio_unitario"]
+            resumen_facturas = ventas_con_id.groupby("venta_id").agg(
+                fecha=("fecha", "first"), cliente=("cliente", "first"),
+                pagado=("pagado", "first"), total=("subtotal", "sum"),
+            ).reset_index().sort_values("fecha", ascending=False)
+
+            opciones_venta_id = resumen_facturas["venta_id"].tolist()
+            venta_sel = st.selectbox(
+                "Elige la venta",
+                opciones_venta_id,
+                format_func=lambda x: (
+                    f"{formatear_fecha_corta(resumen_facturas[resumen_facturas['venta_id'] == x]['fecha'].values[0])} — "
+                    f"{resumen_facturas[resumen_facturas['venta_id'] == x]['cliente'].values[0]} — "
+                    f"{moneda(resumen_facturas[resumen_facturas['venta_id'] == x]['total'].values[0])}"
+                    + ("" if resumen_facturas[resumen_facturas['venta_id'] == x]['pagado'].values[0] else " (pendiente)")
+                ),
+            )
+
+            items_venta_sel = ventas_con_id[ventas_con_id["venta_id"] == venta_sel]
+            fila_resumen = resumen_facturas[resumen_facturas["venta_id"] == venta_sel].iloc[0]
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown("<div class='section-title'>Vista previa</div>", unsafe_allow_html=True)
+
+            filas_preview = ""
+            for _, r in items_venta_sel.iterrows():
+                filas_preview += f"""<tr>
+<td>{r['producto']}</td>
+<td style="text-align:center;">{int(r['cantidad'])}</td>
+<td style="text-align:right;">{moneda(r['precio_unitario'])}</td>
+<td style="text-align:right;">{moneda(r['cantidad'] * r['precio_unitario'])}</td>
+</tr>"""
+            st.markdown(
+                f"""<div class="tabla-movimientos-wrapper"><table class="tabla-movimientos">
+<thead><tr><th>Producto</th><th>Cant.</th><th>Precio Unit.</th><th>Subtotal</th></tr></thead>
+<tbody>{filas_preview}</tbody></table></div>""",
+                unsafe_allow_html=True,
+            )
+
+            st.markdown(
+                f"**Cliente:** {fila_resumen['cliente']}  \n"
+                f"**Fecha:** {formatear_fecha_corta(fila_resumen['fecha'])}  \n"
+                f"**Total: {moneda(fila_resumen['total'])}**"
+            )
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            if PDF_DISPONIBLE:
+                items_para_pdf = items_venta_sel[["producto", "cantidad", "precio_unitario"]].to_dict("records")
+                pdf_bytes = generar_factura_pdf(
+                    venta_sel, fila_resumen["cliente"], formatear_fecha_corta(fila_resumen["fecha"]),
+                    items_para_pdf, fila_resumen["total"],
+                )
+                st.download_button(
+                    "📄 Descargar Factura en PDF", data=pdf_bytes,
+                    file_name=f"factura_{str(venta_sel)[:8]}.pdf", mime="application/pdf",
+                    use_container_width=True,
+                )
 
     # -----------------------------------------------------------------------------
     # DEUDORES (cuentas por cobrar)
