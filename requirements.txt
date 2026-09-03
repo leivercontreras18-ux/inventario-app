@@ -8,3 +8,4 @@ pygithub
 qrcode[pil]
 plotly
 requests
+fpdf2
