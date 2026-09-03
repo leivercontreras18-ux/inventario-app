@@ -927,23 +927,23 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
     font-size: 13px; color: var(--text-color); display: flex; align-items: center; height: 38px;
 }}
 
-.dashboard-card {{
+.kpi-card {{
     background: var(--card-bg); backdrop-filter: blur(20px);
     border: 1px solid var(--border-color); border-radius: 16px;
-    padding: 20px; display: flex; justify-content: space-between; align-items: flex-start;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); margin-bottom: 16px; animation: fadeInUp 0.35s ease;
+    padding: 18px 20px; margin-bottom: 12px; animation: fadeInUp 0.35s ease;
+    box-shadow: 0 8px 24px rgba(106, 95, 240, 0.08);
 }}
-.dashboard-card-value {{ font-size: 28px; font-weight: 800; color: var(--text-color); }}
-.dashboard-card-label {{ font-size: 12px; color: var(--text-secondary); margin-top: 4px; }}
-.dashboard-card-icon {{ font-size: 26px; opacity: 0.85; }}
-.dashboard-total-banner {{
-    background: linear-gradient(135deg, #6a5ff0 0%, #5aa7f7 100%); border-radius: 18px;
-    padding: 26px 32px; display: flex; justify-content: space-between; align-items: center;
-    box-shadow: 0 15px 35px rgba(106, 95, 240, 0.35); margin-top: 8px;
+.kpi-icon-box {{
+    width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center;
+    justify-content: center; font-size: 16px; margin-bottom: 10px;
 }}
-.dashboard-total-value {{ font-size: 32px; font-weight: 800; color: #ffffff; }}
-.dashboard-total-label {{ font-size: 13px; color: rgba(255,255,255,0.85); margin-top: 4px; }}
-.dashboard-total-icon {{ font-size: 34px; color: #ffffff; opacity: 0.9; }}
+.kpi-label {{ font-size: 12.5px; color: var(--text-secondary); font-weight: 600; }}
+.kpi-value {{ font-size: 22px; font-weight: 800; color: var(--text-color); margin-top: 2px; }}
+.mov-reciente-item {{
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; border-bottom: 1px solid var(--border-color);
+}}
+.mov-reciente-item:last-child {{ border-bottom: none; }}
 
 .page-header {{ margin-bottom: 25px; padding-bottom: 10px; }}
 .page-title {{ font-size: 32px; font-weight: 700; color: var(--text-color) !important; letter-spacing: 0.5px; }}
@@ -1509,41 +1509,116 @@ else:
 
         total_prendas_inicio = len(df) if not df.empty else 0
         alertas_inicio = int((df["cantidad"] <= df["alerta"]).sum()) if not df.empty else 0
-        compras_inicio = int((movs_inicio["tipo"] == "compra").sum()) if not movs_inicio.empty else 0
-        ventas_inicio = int((movs_inicio["tipo"] == "venta").sum()) if not movs_inicio.empty else 0
+        valor_inventario_inicio = float((df["cantidad"] * df["precio_venta"]).sum()) if not df.empty else 0.0
         deudores_count_inicio = int((deudores_inicio["saldo"] > 0).sum()) if not deudores_inicio.empty else 0
-        total_usuarios_inicio = len(USUARIOS)
 
-        ventas_df_inicio = movs_inicio[movs_inicio["tipo"] == "venta"] if not movs_inicio.empty else pd.DataFrame()
-        total_ventas_monto = float((ventas_df_inicio["cantidad"] * ventas_df_inicio["precio_unitario"]).sum()) if not ventas_df_inicio.empty else 0.0
+        ventas_df_inicio = movs_inicio[movs_inicio["tipo"] == "venta"].copy() if not movs_inicio.empty else pd.DataFrame()
+        if not ventas_df_inicio.empty:
+            ventas_df_inicio["monto"] = ventas_df_inicio["cantidad"] * ventas_df_inicio["precio_unitario"]
+        total_ventas_monto = float(ventas_df_inicio["monto"].sum()) if not ventas_df_inicio.empty else 0.0
 
-        tarjetas_inicio = [
-            ("👕", total_prendas_inicio, "Prendas"),
-            ("📦", compras_inicio, "Compras"),
-            ("🛍️", ventas_inicio, "Ventas"),
-            ("⚠️", alertas_inicio, "Reposición"),
-            ("🧾", deudores_count_inicio, "Clientes por Cobrar"),
-            ("👤", total_usuarios_inicio, "Usuarios"),
+        # --- 3 tarjetas KPI con ícono cuadrado y enlace de acción ---
+        tarjetas_kpi = [
+            ("📦", "6a5ff0", total_prendas_inicio, "prendas", "Total Prendas", "existencias", "Ver inventario"),
+            ("$", "5aa7f7", moneda(valor_inventario_inicio), "", "Valor del Inventario", "reportes", "Ver detalle"),
+            ("⚠️", "ef4444", alertas_inicio, "prendas", "Stock Bajo", "existencias", "Ver productos"),
         ]
-
-        cols_inicio = st.columns(3)
-        for idx, (icono_t, valor_t, etiqueta_t) in enumerate(tarjetas_inicio):
-            with cols_inicio[idx % 3]:
+        cols_kpi = st.columns(3)
+        for idx, (icono_k, color_k, valor_k, sufijo_k, label_k, destino_k, texto_link_k) in enumerate(tarjetas_kpi):
+            with cols_kpi[idx]:
                 st.markdown(
-                    f"""<div class="dashboard-card">
-<div><div class="dashboard-card-value">{valor_t}</div><div class="dashboard-card-label">{etiqueta_t}</div></div>
-<div class="dashboard-card-icon">{icono_t}</div>
+                    f"""<div class="kpi-card">
+<div class="kpi-icon-box" style="background: #{color_k}22; color: #{color_k};">{icono_k}</div>
+<div class="kpi-label">{label_k}</div>
+<div class="kpi-value">{valor_k} <span style="font-size:13px; font-weight:500; color:var(--text-secondary);">{sufijo_k}</span></div>
 </div>""",
                     unsafe_allow_html=True,
                 )
+                if st.button(f"{texto_link_k} →", key=f"kpi_link_{idx}", use_container_width=True):
+                    st.session_state.menu_activo = destino_k
+                    st.rerun()
 
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # --- Tarjeta ancha: Total Ventas con tendencia ---
+        st.markdown("<div class='kpi-card' style='padding-bottom: 4px;'>", unsafe_allow_html=True)
         st.markdown(
-            f"""<div class="dashboard-total-banner">
-<div><div class="dashboard-total-value">{moneda(total_ventas_monto)}</div><div class="dashboard-total-label">Total Ventas</div></div>
-<div class="dashboard-total-icon">$</div>
-</div>""",
+            f"""<div class="kpi-label">Total Ventas (histórico)</div>
+<div class="kpi-value" style="font-size: 26px;">{moneda(total_ventas_monto)}</div>""",
             unsafe_allow_html=True,
         )
+        if not ventas_df_inicio.empty:
+            ventas_df_inicio["fecha_dt"] = pd.to_datetime(ventas_df_inicio["fecha"], errors="coerce")
+            ventas_df_inicio["mes"] = ventas_df_inicio["fecha_dt"].dt.to_period("M").astype(str)
+            tendencia_mensual = ventas_df_inicio.groupby("mes")["monto"].sum().sort_index()
+            if len(tendencia_mensual) >= 2:
+                cambio_pct = ((tendencia_mensual.iloc[-1] - tendencia_mensual.iloc[-2]) / tendencia_mensual.iloc[-2] * 100) if tendencia_mensual.iloc[-2] > 0 else 0
+                flecha = "↑" if cambio_pct >= 0 else "↓"
+                color_cambio = "#22c55e" if cambio_pct >= 0 else "#ef4444"
+                st.markdown(f"<div style='color:{color_cambio}; font-size:12px; font-weight:700;'>{flecha} {abs(cambio_pct):.1f}% vs mes anterior</div>", unsafe_allow_html=True)
+            fig_tendencia = go.Figure(data=[go.Scatter(
+                x=list(tendencia_mensual.index), y=tendencia_mensual.values,
+                mode="lines", line=dict(color="#6a5ff0", width=3, shape="spline"),
+                fill="tozeroy", fillcolor="rgba(106, 95, 240, 0.12)",
+            )])
+            fig_tendencia.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                margin=dict(l=0, r=0, t=10, b=0), height=140, showlegend=False,
+                xaxis=dict(visible=False), yaxis=dict(visible=False),
+            )
+            st.plotly_chart(fig_tendencia, use_container_width=True, config={"displayModeBar": False})
+        else:
+            st.caption("Todavía no hay ventas para mostrar la tendencia.")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # --- Dona de categorías + Movimientos recientes ---
+        col_izq_inicio, col_der_inicio = st.columns([1, 1.2])
+        with col_izq_inicio:
+            st.markdown("<div class='kpi-card'>", unsafe_allow_html=True)
+            st.markdown("<div class='kpi-label' style='margin-bottom: 10px;'>Ventas por categoría</div>", unsafe_allow_html=True)
+            if not ventas_df_inicio.empty and not df.empty:
+                ventas_cat_inicio = ventas_df_inicio.copy()
+                ventas_cat_inicio["prenda_id"] = ventas_cat_inicio["prenda_id"].astype(str)
+                mapa_cat_inicio = df.set_index(df["ID"].astype(str))["Categoria"]
+                ventas_cat_inicio["Categoria"] = ventas_cat_inicio["prenda_id"].map(mapa_cat_inicio)
+                agrupado_cat_inicio = ventas_cat_inicio.dropna(subset=["Categoria"]).groupby("Categoria")["cantidad"].sum()
+                agrupado_cat_inicio = agrupado_cat_inicio[agrupado_cat_inicio > 0]
+                if not agrupado_cat_inicio.empty:
+                    st.plotly_chart(grafico_dona(agrupado_cat_inicio, altura=240), use_container_width=True, config={"displayModeBar": False})
+                else:
+                    st.caption("Sin datos suficientes todavía.")
+            else:
+                st.caption("Sin ventas registradas todavía.")
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        with col_der_inicio:
+            st.markdown("<div class='kpi-card'>", unsafe_allow_html=True)
+            st.markdown("<div class='kpi-label' style='margin-bottom: 10px;'>Movimientos recientes</div>", unsafe_allow_html=True)
+            if not movs_inicio.empty:
+                recientes = movs_inicio.sort_values("fecha", ascending=False).head(5)
+                for _, mov_r in recientes.iterrows():
+                    es_venta_r = mov_r["tipo"] == "venta"
+                    color_r = "#22c55e" if es_venta_r else "#ef4444"
+                    signo_r = "↑" if es_venta_r else "↓"
+                    monto_r = float(mov_r["cantidad"]) * float(mov_r["precio_unitario"] if es_venta_r else mov_r["costo_unitario"])
+                    st.markdown(
+                        f"""<div class="mov-reciente-item">
+<div>
+<div style="font-size:9.5px; font-weight:700; color:{color_r}; letter-spacing:0.5px;">{mov_r['tipo'].upper()}</div>
+<div style="font-size:13px; font-weight:600; color:var(--text-color);">{mov_r['producto']}</div>
+</div>
+<div style="text-align:right;">
+<div style="font-size:13px; font-weight:700; color:{color_r};">{signo_r} {moneda(monto_r)}</div>
+<div style="font-size:10.5px; color:var(--text-secondary);">{formatear_fecha_corta(mov_r['fecha'])}</div>
+</div>
+</div>""",
+                        unsafe_allow_html=True,
+                    )
+            else:
+                st.caption("Todavía no hay movimientos registrados.")
+            st.markdown("</div>", unsafe_allow_html=True)
 
     # -----------------------------------------------------------------------------
     # EXISTENCIAS
