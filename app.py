@@ -478,6 +478,16 @@ def selector_tasa_cambio(key_prefix, valor_por_defecto=0.0):
     return tasa_valor, fuente_sel
 
 
+def logo_svg_markup(size=30):
+    return f"""<svg width="{size}" height="{size}" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg">
+<defs><linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0%" stop-color="#7c4dfc"/><stop offset="100%" stop-color="#63b8fe"/>
+</linearGradient></defs>
+<path d="M7 27 C6 18, 9 9, 19 6 C13 12, 13 20, 21 24 C15 28, 10 29, 7 27 Z" fill="url(#logoGrad)"/>
+<circle cx="23" cy="8" r="3" fill="#63b8fe"/>
+</svg>"""
+
+
 def moneda(valor):
     try:
         return f"${float(valor):,.2f}"
@@ -506,7 +516,7 @@ def render_tabla_deudas(df_deudas):
     for _, fila in df_deudas.iterrows():
         tipo = str(fila.get("tipo", ""))
         if tipo == "cargo":
-            badge = "<span style='background: rgba(244,114,182,0.15); color:#5aa7f7; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>Cargo (le fié)</span>"
+            badge = "<span style='background: rgba(244,114,182,0.15); color:#63b8fe; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>Cargo (le fié)</span>"
         elif tipo == "abono":
             badge = "<span style='background: rgba(52,211,153,0.15); color:#34d399; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>Abono (pagó)</span>"
         else:
@@ -575,8 +585,8 @@ def render_tabla_movimientos(df_mov):
 
 def colores_grafico():
     if st.session_state.get("tema") == "claro":
-        return {"texto": "#2b1f26", "grid": "rgba(106, 95, 240, 0.15)"}
-    return {"texto": "#f9f6f8", "grid": "rgba(106, 95, 240, 0.15)"}
+        return {"texto": "#2b1f26", "grid": "rgba(124, 77, 252, 0.15)"}
+    return {"texto": "#f9f6f8", "grid": "rgba(124, 77, 252, 0.15)"}
 
 
 def grafico_barras_vertical(serie, formato_valor=None, altura=300):
@@ -588,7 +598,7 @@ def grafico_barras_vertical(serie, formato_valor=None, altura=300):
         x=x_valores, y=serie.values,
         marker=dict(
             color=serie.values,
-            colorscale=[[0, "#4c3fb0"], [0.5, "#6a5ff0"], [1, "#5aa7f7"]],
+            colorscale=[[0, "#4c3fb0"], [0.5, "#7c4dfc"], [1, "#63b8fe"]],
             line=dict(width=0),
         ),
         text=etiquetas, textposition="outside", textfont=dict(color=c["texto"], size=12),
@@ -612,7 +622,7 @@ def grafico_barras_horizontal(serie, altura=300):
         x=serie.values, y=list(serie.index), orientation="h",
         marker=dict(
             color=serie.values,
-            colorscale=[[0, "#4c3fb0"], [0.5, "#6a5ff0"], [1, "#5aa7f7"]],
+            colorscale=[[0, "#4c3fb0"], [0.5, "#7c4dfc"], [1, "#63b8fe"]],
             line=dict(width=0),
         ),
         text=[str(int(v)) for v in serie.values], textposition="outside", textfont=dict(color=c["texto"], size=12),
@@ -632,7 +642,7 @@ def grafico_barras_horizontal(serie, altura=300):
 def grafico_dona(serie, texto_centro_arriba="", texto_centro_abajo="", altura=340):
     """Gráfica de dona (pastel) con la paleta rosa/oro, con un total destacado en el centro."""
     c = colores_grafico()
-    paleta = ["#4c3fb0", "#6a5ff0", "#5aa7f7", "#c7bdf5", "#a78bfa", "#5c50d6", "#8b7ff0", "#5347c9"]
+    paleta = ["#4c3fb0", "#7c4dfc", "#63b8fe", "#c7bdf5", "#a78bfa", "#5c50d6", "#8b7ff0", "#5347c9"]
     colores_segmentos = [paleta[i % len(paleta)] for i in range(len(serie))]
     fig = go.Figure(data=[go.Pie(
         labels=list(serie.index), values=list(serie.values), hole=0.62,
@@ -662,7 +672,7 @@ def generar_factura_pdf(venta_id, cliente, fecha_texto, items_factura, total_fac
     pdf.add_page()
 
     pdf.set_font("Helvetica", "B", 20)
-    pdf.set_text_color(106, 95, 240)
+    pdf.set_text_color(124, 77, 252)
     pdf.cell(0, 12, "LEWIN BOUTIQUE", ln=True)
 
     pdf.set_font("Helvetica", "", 11)
@@ -678,7 +688,7 @@ def generar_factura_pdf(venta_id, cliente, fecha_texto, items_factura, total_fac
     pdf.ln(6)
 
     pdf.set_font("Helvetica", "B", 10)
-    pdf.set_fill_color(90, 167, 247)
+    pdf.set_fill_color(99, 184, 254)
     pdf.set_text_color(255, 255, 255)
     pdf.cell(80, 8, "Producto", border=1, fill=True)
     pdf.cell(30, 8, "Cantidad", border=1, fill=True, align="C")
@@ -724,9 +734,9 @@ def render_copy_button(text_to_copy: str, label: str = "Copiar Código"):
     component_code = f"""
     <div style="display: inline-block; width: 100%;">
         <button id="copy-btn" onclick="copyText()" style="
-            background: rgba(106, 95, 240, 0.12);
-            color: #5aa7f7;
-            border: 1px solid rgba(106, 95, 240, 0.35);
+            background: rgba(124, 77, 252, 0.12);
+            color: #63b8fe;
+            border: 1px solid rgba(124, 77, 252, 0.35);
             padding: 6px 12px;
             border-radius: 8px;
             cursor: pointer;
@@ -741,7 +751,7 @@ def render_copy_button(text_to_copy: str, label: str = "Copiar Código"):
         ">
             📋 {label}
         </button>
-        <div id="feedback" style="text-align: center; font-size: 11px; color: #5aa7f7; opacity: 0; transition: opacity 0.3s; margin-top: 4px;">¡Copiado con éxito!</div>
+        <div id="feedback" style="text-align: center; font-size: 11px; color: #63b8fe; opacity: 0; transition: opacity 0.3s; margin-top: 4px;">¡Copiado con éxito!</div>
     </div>
     <script>
     function copyText() {{
@@ -764,28 +774,28 @@ def get_css(tema: str, compacto: bool = False) -> str:
     ancho_sidebar = "84px" if compacto else "260px"
     if tema == "claro":
         variables = """
-            --bg-gradient: radial-gradient(circle at 20% 20%, rgba(106, 95, 240, 0.06) 0%, transparent 40%),
-                           radial-gradient(circle at 80% 80%, rgba(90, 167, 247, 0.05) 0%, transparent 40%),
+            --bg-gradient: radial-gradient(circle at 20% 20%, rgba(124, 77, 252, 0.06) 0%, transparent 40%),
+                           radial-gradient(circle at 80% 80%, rgba(99, 184, 254, 0.05) 0%, transparent 40%),
                            linear-gradient(160deg, #f3f0fb 0%, #eef2fb 50%, #f6f0fb 100%);
             --text-color: #2c2450;
             --text-secondary: #7d76a0;
-            --accent: #6a5ff0;
-            --accent-light: #5aa7f7;
+            --accent: #7c4dfc;
+            --accent-light: #63b8fe;
             --accent-neon: #22c55e;
             --card-bg: rgba(255, 255, 255, 0.92);
-            --border-color: rgba(106, 95, 240, 0.14);
+            --border-color: rgba(124, 77, 252, 0.14);
             --sidebar-bg: rgba(255, 255, 255, 0.97);
             --input-bg: rgba(246, 244, 255, 0.9);
         """
     else:
         variables = """
-            --bg-gradient: radial-gradient(circle at 20% 20%, rgba(106, 95, 240, 0.14) 0%, transparent 40%),
-                           radial-gradient(circle at 80% 80%, rgba(90, 167, 247, 0.09) 0%, transparent 40%),
+            --bg-gradient: radial-gradient(circle at 20% 20%, rgba(124, 77, 252, 0.14) 0%, transparent 40%),
+                           radial-gradient(circle at 80% 80%, rgba(99, 184, 254, 0.09) 0%, transparent 40%),
                            linear-gradient(135deg, #14121f 0%, #1a1730 50%, #15131f 100%);
             --text-color: #f1eefc;
             --text-secondary: #a89fd1;
             --accent: #8b7ff0;
-            --accent-light: #5aa7f7;
+            --accent-light: #63b8fe;
             --accent-neon: #34d399;
             --card-bg: rgba(26, 23, 42, 0.85);
             --border-color: rgba(139, 127, 240, 0.2);
@@ -838,7 +848,7 @@ div[data-baseweb="input"], div[data-baseweb="select"] > div {{
 }}
 div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-within {{
     border-color: var(--accent) !important;
-    box-shadow: 0 0 10px rgba(106, 95, 240, 0.3) !important;
+    box-shadow: 0 0 10px rgba(124, 77, 252, 0.3) !important;
 }}
 div[data-baseweb="input"] input {{ color: var(--text-color) !important; font-size: 13px !important; }}
 
@@ -855,10 +865,10 @@ div.stButton > button, div[data-testid="stFormSubmitButton"] > button {{
     width: 100% !important;
 }}
 div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {{
-    background: linear-gradient(135deg, #6a5ff0 0%, #5aa7f7 100%) !important;
-    border-color: #5aa7f7 !important;
+    background: linear-gradient(135deg, #7c4dfc 0%, #63b8fe 100%) !important;
+    border-color: #63b8fe !important;
     color: #ffffff !important;
-    box-shadow: 0 8px 25px rgba(106, 95, 240, 0.4) !important;
+    box-shadow: 0 8px 25px rgba(124, 77, 252, 0.4) !important;
     transform: translateY(-2px);
 }}
 
@@ -879,9 +889,9 @@ div[data-testid="stForm"] {{
 .form-section-header:first-of-type {{ margin-top: 2px; }}
 .form-section-icon {{
     width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
-    background: linear-gradient(135deg, #6a5ff0 0%, #5aa7f7 100%);
+    background: linear-gradient(135deg, #7c4dfc 0%, #63b8fe 100%);
     display: flex; align-items: center; justify-content: center;
-    font-size: 13px; box-shadow: 0 0 10px rgba(106, 95, 240, 0.45);
+    font-size: 13px; box-shadow: 0 0 10px rgba(124, 77, 252, 0.45);
 }}
 .form-section-title {{
     font-size: 13px; font-weight: 700; color: var(--text-color);
@@ -894,7 +904,7 @@ section[data-testid="stFileUploaderDropzone"] {{
     border-radius: 14px !important;
 }}
 section[data-testid="stFileUploaderDropzone"] button {{
-    background: rgba(106, 95, 240, 0.15) !important;
+    background: rgba(124, 77, 252, 0.15) !important;
     color: var(--text-color) !important;
     border: 1px solid var(--border-color) !important;
 }}
@@ -905,14 +915,14 @@ section[data-testid="stFileUploaderDropzone"] button {{
 }}
 .tabla-movimientos {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
 .tabla-movimientos thead th {{
-    position: sticky; top: 0; background: rgba(106, 95, 240, 0.15); color: var(--text-color);
+    position: sticky; top: 0; background: rgba(124, 77, 252, 0.15); color: var(--text-color);
     text-align: left; padding: 12px 14px; font-size: 11px; text-transform: uppercase;
     letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); z-index: 1;
 }}
 .tabla-movimientos tbody td {{
     padding: 10px 14px; color: var(--text-color); border-bottom: 1px solid var(--border-color);
 }}
-.tabla-movimientos tbody tr:hover {{ background: rgba(106, 95, 240, 0.06); }}
+.tabla-movimientos tbody tr:hover {{ background: rgba(124, 77, 252, 0.06); }}
 .tabla-movimientos tbody tr:last-child td {{ border-bottom: none; }}
 
 div[data-testid="stVerticalBlockBorderWrapper"] {{
@@ -922,7 +932,7 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
     backdrop-filter: blur(20px);
 }}
 .config-chip {{
-    background: rgba(106, 95, 240, 0.07); border: 1px solid var(--border-color);
+    background: rgba(124, 77, 252, 0.07); border: 1px solid var(--border-color);
     border-radius: 10px; padding: 8px 14px; margin-bottom: 6px;
     font-size: 13px; color: var(--text-color); display: flex; align-items: center; height: 38px;
 }}
@@ -931,7 +941,7 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
     background: var(--card-bg); backdrop-filter: blur(20px);
     border: 1px solid var(--border-color); border-radius: 16px;
     padding: 18px 20px; margin-bottom: 12px; animation: fadeInUp 0.35s ease;
-    box-shadow: 0 8px 24px rgba(106, 95, 240, 0.08);
+    box-shadow: 0 8px 24px rgba(124, 77, 252, 0.08);
 }}
 .kpi-icon-box {{
     width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center;
@@ -944,6 +954,13 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
     padding: 10px 0; border-bottom: 1px solid var(--border-color);
 }}
 .mov-reciente-item:last-child {{ border-bottom: none; }}
+
+.logo-brand-row {{
+    display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+    padding-bottom: 14px; border-bottom: 1px solid var(--border-color);
+}}
+.logo-brand-name {{ font-size: 15px; font-weight: 800; color: var(--text-color); letter-spacing: 1px; line-height: 1.1; }}
+.logo-brand-sub {{ font-size: 9px; font-weight: 600; color: var(--text-secondary); letter-spacing: 2px; }}
 
 .page-header {{ margin-bottom: 25px; padding-bottom: 10px; }}
 .page-title {{ font-size: 32px; font-weight: 700; color: var(--text-color) !important; letter-spacing: 0.5px; }}
@@ -963,14 +980,14 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
 .metric-label {{ font-size: 11px; color: var(--text-secondary) !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }}
 
 .user-profile-compact {{
-    background: rgba(106, 95, 240, 0.08); padding: 10px 12px; border-radius: 12px;
+    background: rgba(124, 77, 252, 0.08); padding: 10px 12px; border-radius: 12px;
     border: 1px solid var(--border-color); margin-bottom: 10px;
     display: flex; align-items: center; gap: 10px;
 }}
 .user-avatar {{
-    width: 32px; height: 32px; background: linear-gradient(135deg, #6a5ff0 0%, #5aa7f7 100%); color: #ffffff;
+    width: 32px; height: 32px; background: linear-gradient(135deg, #7c4dfc 0%, #63b8fe 100%); color: #ffffff;
     font-weight: 800; border-radius: 50%; display: flex; align-items: center;
-    justify-content: center; font-size: 13px; box-shadow: 0 0 15px rgba(106, 95, 240, 0.5); flex-shrink: 0;
+    justify-content: center; font-size: 13px; box-shadow: 0 0 15px rgba(124, 77, 252, 0.5); flex-shrink: 0;
 }}
 .user-info-name {{ font-size: 13px; font-weight: 700; color: var(--text-color); line-height: 1.2; }}
 .user-info-rol {{ font-size: 9px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }}
@@ -1023,7 +1040,7 @@ section[data-testid="stSidebar"] button[kind="primary"]:hover {{
 .product-photo {{ width: 100%; height: 160px; object-fit: cover; display: block; }}
 .product-photo-placeholder {{
     width: 100%; height: 160px; display: flex; align-items: center; justify-content: center;
-    background: rgba(106, 95, 240, 0.08); font-size: 34px; color: var(--accent);
+    background: rgba(124, 77, 252, 0.08); font-size: 34px; color: var(--accent);
 }}
 div[data-testid="stCode"] {{
     width: 100% !important;
@@ -1048,7 +1065,7 @@ div[data-testid="stTextArea"] textarea {{
 }}
 
 .alert-banner {{
-    background: rgba(90, 167, 247, 0.12); border: 1px solid var(--accent);
+    background: rgba(99, 184, 254, 0.12); border: 1px solid var(--accent);
     border-radius: 14px; padding: 14px 18px; margin-bottom: 20px; color: var(--text-color);
 }}
 
@@ -1155,8 +1172,8 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             100% { transform: translateY(0px) translateX(0px); opacity: 0.25; }
         }
         @keyframes pulseGlowHero {
-            0%, 100% { box-shadow: 0 8px 25px rgba(106, 95, 240, 0.35); }
-            50% { box-shadow: 0 8px 40px rgba(90, 167, 247, 0.65); }
+            0%, 100% { box-shadow: 0 8px 25px rgba(124, 77, 252, 0.35); }
+            50% { box-shadow: 0 8px 40px rgba(99, 184, 254, 0.65); }
         }
         @keyframes kenBurnsHero {
             0% { transform: scale(1) translate(0,0); }
@@ -1164,12 +1181,12 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         }
         .bg-photo-hero {
             position: absolute; top: -10%; right: -15%; width: 55%; height: 130%;
-            background: radial-gradient(circle at 30% 30%, rgba(106, 95, 240, 0.30), transparent 60%);
+            background: radial-gradient(circle at 30% 30%, rgba(124, 77, 252, 0.30), transparent 60%);
             border-radius: 50%; filter: blur(10px);
             animation: kenBurnsHero 14s ease-in-out infinite alternate; z-index: 0;
         }
         .particle-hero {
-            position: absolute; border-radius: 50%; background: #5aa7f7; filter: blur(1px); z-index: 0;
+            position: absolute; border-radius: 50%; background: #63b8fe; filter: blur(1px); z-index: 0;
         }
         .stitch-line-hero { position: absolute; border-top: 1.5px dashed rgba(167, 139, 250, 0.4); z-index: 0; }
         .hero-inner { position: relative; z-index: 1; }
@@ -1180,10 +1197,10 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         .hero-brand { display: flex; align-items: center; gap: 12px; }
         .brand-icon-hero {
             width: 30px; height: 30px; border-radius: 50%;
-            background: linear-gradient(135deg, #6a5ff0 0%, #5aa7f7 60%, #a78bfa 100%);
+            background: linear-gradient(135deg, #7c4dfc 0%, #63b8fe 60%, #a78bfa 100%);
             display: flex; align-items: center; justify-content: center;
             font-family: 'Poppins', sans-serif !important; font-weight: 800; font-size: 14px; color: #0c0b0e;
-            box-shadow: 0 0 14px rgba(90, 167, 247, 0.6);
+            box-shadow: 0 0 14px rgba(99, 184, 254, 0.6);
         }
         .hero-brand-name {
             font-family: 'Poppins', sans-serif !important; font-size: 15px; font-weight: 700; color: var(--text-color); letter-spacing: 2px;
@@ -1199,7 +1216,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         .hero-desc { color: var(--text-secondary); font-size: 15px; line-height: 1.6; max-width: 650px; margin-bottom: 35px; }
         .feature-pills-container { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 32px; }
         .feature-pill {
-            background: rgba(106, 95, 240, 0.1); border: 1px solid var(--border-color); color: var(--accent);
+            background: rgba(124, 77, 252, 0.1); border: 1px solid var(--border-color); color: var(--accent);
             padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
         }
         .stats-row-hero { display: flex; gap: 40px; }
@@ -1215,7 +1232,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         }
         div[data-testid="stButton"] { max-width: 340px; margin: 0 auto; }
         div[data-testid="stButton"] > button {
-            background: linear-gradient(135deg, #6a5ff0 0%, #5aa7f7 100%) !important;
+            background: linear-gradient(135deg, #7c4dfc 0%, #63b8fe 100%) !important;
             color: #ffffff !important; border: none !important;
             animation: pulseGlowHero 2.6s ease-in-out infinite !important;
         }
@@ -1232,7 +1249,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             <div class="hero-inner">
                 <div class="hero-topbar">
                     <div class="hero-brand">
-                        <div class="brand-icon-hero">L</div>
+                        <div class="brand-icon-hero">LOGO_SVG_PLACEHOLDER</div>
                         <div class="hero-brand-name">LEWIN BOUTIQUE</div>
                     </div>
                 </div>
@@ -1257,7 +1274,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         </div>
         <div class="hero-cta-box">
         """
-    hero_html = hero_html.replace("PLACEHOLDER_TOTAL", str(total_prendas_hero)).replace("PLACEHOLDER_PORC", str(porcentaje_ok_hero))
+    hero_html = hero_html.replace("PLACEHOLDER_TOTAL", str(total_prendas_hero)).replace("PLACEHOLDER_PORC", str(porcentaje_ok_hero)).replace("LOGO_SVG_PLACEHOLDER", logo_svg_markup(20))
 
     st.markdown(hero_html, unsafe_allow_html=True)
 
@@ -1282,11 +1299,11 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
             100% { transform: translateY(0px) translateX(0px); opacity: 0.2; }
         }
         @keyframes pulseGlowLogin {
-            0%, 100% { box-shadow: 0 8px 25px rgba(106, 95, 240, 0.35); }
-            50% { box-shadow: 0 8px 40px rgba(90, 167, 247, 0.65); }
+            0%, 100% { box-shadow: 0 8px 25px rgba(124, 77, 252, 0.35); }
+            50% { box-shadow: 0 8px 40px rgba(99, 184, 254, 0.65); }
         }
         .particle-login {
-            position: fixed; border-radius: 50%; background: #5aa7f7; filter: blur(1px);
+            position: fixed; border-radius: 50%; background: #63b8fe; filter: blur(1px);
             z-index: 0; pointer-events: none;
         }
         .login-welcome-tag {
@@ -1295,10 +1312,10 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
         }
         .login-brand-icon {
             width: 42px; height: 42px; border-radius: 50%; margin: 0 auto 12px auto;
-            background: linear-gradient(135deg, #6a5ff0 0%, #5aa7f7 60%, #a78bfa 100%);
+            background: linear-gradient(135deg, #7c4dfc 0%, #63b8fe 60%, #a78bfa 100%);
             display: flex; align-items: center; justify-content: center;
             font-family: 'Poppins', sans-serif !important; font-weight: 800; font-size: 18px; color: #0c0b0e;
-            box-shadow: 0 0 18px rgba(90, 167, 247, 0.6);
+            box-shadow: 0 0 18px rgba(99, 184, 254, 0.6);
         }
         .login-title-text {
             font-family: 'Poppins', sans-serif !important; font-size: 22px; font-weight: 700 !important;
@@ -1308,7 +1325,7 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
             font-size: 12px; color: var(--text-secondary); text-align: center; margin-top: 4px; margin-bottom: 14px;
         }
         div[data-testid="stForm"] div[data-testid="stFormSubmitButton"] > button {
-            background: linear-gradient(135deg, #6a5ff0 0%, #5aa7f7 100%) !important;
+            background: linear-gradient(135deg, #7c4dfc 0%, #63b8fe 100%) !important;
             color: #ffffff !important; border: none !important;
             animation: pulseGlowLogin 2.6s ease-in-out infinite !important;
         }
@@ -1332,7 +1349,7 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("<div class='login-welcome-tag'>Bienvenida de vuelta</div>", unsafe_allow_html=True)
         with st.form("form_login"):
-            st.markdown("<div class='login-brand-icon'>L</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='login-brand-icon'>{logo_svg_markup(20)}</div>", unsafe_allow_html=True)
             st.markdown("<div class='login-title-text'>Lewin Boutique Access</div>", unsafe_allow_html=True)
             st.markdown("<div class='login-subtitle-text'>Ingresa tus credenciales para continuar</div>", unsafe_allow_html=True)
 
@@ -1369,6 +1386,19 @@ else:
     rol_formateado = st.session_state.rol_actual.capitalize()
     menu_actual = st.session_state.get("menu_activo", "inicio")
     compacto = st.session_state.sidebar_compacto
+
+    LOGO_SVG = logo_svg_markup(30)
+
+    if compacto:
+        st.sidebar.markdown(f"<div style='display:flex; justify-content:center; margin-bottom:6px;'>{LOGO_SVG}</div>", unsafe_allow_html=True)
+    else:
+        st.sidebar.markdown(
+            f"""<div class="logo-brand-row">
+{LOGO_SVG}
+<div><div class="logo-brand-name">LEWIN</div><div class="logo-brand-sub">BOUTIQUE</div></div>
+</div>""",
+            unsafe_allow_html=True,
+        )
 
     col_collapse1, col_collapse2 = st.sidebar.columns([3, 1])
     with col_collapse2:
@@ -1541,70 +1571,68 @@ else:
         st.markdown("<br>", unsafe_allow_html=True)
 
         # --- Tarjeta ancha: Total Ventas con tendencia ---
-        st.markdown("<div class='kpi-card' style='padding-bottom: 4px;'>", unsafe_allow_html=True)
-        st.markdown(
-            f"""<div class="kpi-label">Total Ventas (histórico)</div>
+        with st.container(border=True):
+            st.markdown(
+                f"""<div class="kpi-label">Total Ventas (histórico)</div>
 <div class="kpi-value" style="font-size: 26px;">{moneda(total_ventas_monto)}</div>""",
-            unsafe_allow_html=True,
-        )
-        if not ventas_df_inicio.empty:
-            ventas_df_inicio["fecha_dt"] = pd.to_datetime(ventas_df_inicio["fecha"], errors="coerce")
-            ventas_df_inicio["mes"] = ventas_df_inicio["fecha_dt"].dt.to_period("M").astype(str)
-            tendencia_mensual = ventas_df_inicio.groupby("mes")["monto"].sum().sort_index()
-            if len(tendencia_mensual) >= 2:
-                cambio_pct = ((tendencia_mensual.iloc[-1] - tendencia_mensual.iloc[-2]) / tendencia_mensual.iloc[-2] * 100) if tendencia_mensual.iloc[-2] > 0 else 0
-                flecha = "↑" if cambio_pct >= 0 else "↓"
-                color_cambio = "#22c55e" if cambio_pct >= 0 else "#ef4444"
-                st.markdown(f"<div style='color:{color_cambio}; font-size:12px; font-weight:700;'>{flecha} {abs(cambio_pct):.1f}% vs mes anterior</div>", unsafe_allow_html=True)
-            fig_tendencia = go.Figure(data=[go.Scatter(
-                x=list(tendencia_mensual.index), y=tendencia_mensual.values,
-                mode="lines", line=dict(color="#6a5ff0", width=3, shape="spline"),
-                fill="tozeroy", fillcolor="rgba(106, 95, 240, 0.12)",
-            )])
-            fig_tendencia.update_layout(
-                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                margin=dict(l=0, r=0, t=10, b=0), height=140, showlegend=False,
-                xaxis=dict(visible=False), yaxis=dict(visible=False),
+                unsafe_allow_html=True,
             )
-            st.plotly_chart(fig_tendencia, use_container_width=True, config={"displayModeBar": False})
-        else:
-            st.caption("Todavía no hay ventas para mostrar la tendencia.")
-        st.markdown("</div>", unsafe_allow_html=True)
+            if not ventas_df_inicio.empty:
+                ventas_df_inicio["fecha_dt"] = pd.to_datetime(ventas_df_inicio["fecha"], errors="coerce")
+                ventas_df_inicio["mes"] = ventas_df_inicio["fecha_dt"].dt.to_period("M").astype(str)
+                tendencia_mensual = ventas_df_inicio.groupby("mes")["monto"].sum().sort_index()
+                if len(tendencia_mensual) >= 2:
+                    cambio_pct = ((tendencia_mensual.iloc[-1] - tendencia_mensual.iloc[-2]) / tendencia_mensual.iloc[-2] * 100) if tendencia_mensual.iloc[-2] > 0 else 0
+                    flecha = "↑" if cambio_pct >= 0 else "↓"
+                    color_cambio = "#22c55e" if cambio_pct >= 0 else "#ef4444"
+                    st.markdown(f"<div style='color:{color_cambio}; font-size:12px; font-weight:700;'>{flecha} {abs(cambio_pct):.1f}% vs mes anterior</div>", unsafe_allow_html=True)
+                fig_tendencia = go.Figure(data=[go.Scatter(
+                    x=list(tendencia_mensual.index), y=tendencia_mensual.values,
+                    mode="lines", line=dict(color="#7c4dfc", width=3, shape="spline"),
+                    fill="tozeroy", fillcolor="rgba(124, 77, 252, 0.12)",
+                )])
+                fig_tendencia.update_layout(
+                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                    margin=dict(l=0, r=0, t=10, b=0), height=140, showlegend=False,
+                    xaxis=dict(visible=False), yaxis=dict(visible=False),
+                )
+                st.plotly_chart(fig_tendencia, use_container_width=True, config={"displayModeBar": False})
+            else:
+                st.caption("Todavía no hay ventas para mostrar la tendencia.")
 
         st.markdown("<br>", unsafe_allow_html=True)
 
         # --- Dona de categorías + Movimientos recientes ---
         col_izq_inicio, col_der_inicio = st.columns([1, 1.2])
         with col_izq_inicio:
-            st.markdown("<div class='kpi-card'>", unsafe_allow_html=True)
-            st.markdown("<div class='kpi-label' style='margin-bottom: 10px;'>Ventas por categoría</div>", unsafe_allow_html=True)
-            if not ventas_df_inicio.empty and not df.empty:
-                ventas_cat_inicio = ventas_df_inicio.copy()
-                ventas_cat_inicio["prenda_id"] = ventas_cat_inicio["prenda_id"].astype(str)
-                mapa_cat_inicio = df.set_index(df["ID"].astype(str))["Categoria"]
-                ventas_cat_inicio["Categoria"] = ventas_cat_inicio["prenda_id"].map(mapa_cat_inicio)
-                agrupado_cat_inicio = ventas_cat_inicio.dropna(subset=["Categoria"]).groupby("Categoria")["cantidad"].sum()
-                agrupado_cat_inicio = agrupado_cat_inicio[agrupado_cat_inicio > 0]
-                if not agrupado_cat_inicio.empty:
-                    st.plotly_chart(grafico_dona(agrupado_cat_inicio, altura=240), use_container_width=True, config={"displayModeBar": False})
+            with st.container(border=True):
+                st.markdown("<div class='kpi-label' style='margin-bottom: 10px;'>Ventas por categoría</div>", unsafe_allow_html=True)
+                if not ventas_df_inicio.empty and not df.empty:
+                    ventas_cat_inicio = ventas_df_inicio.copy()
+                    ventas_cat_inicio["prenda_id"] = ventas_cat_inicio["prenda_id"].astype(str)
+                    mapa_cat_inicio = df.set_index(df["ID"].astype(str))["Categoria"]
+                    ventas_cat_inicio["Categoria"] = ventas_cat_inicio["prenda_id"].map(mapa_cat_inicio)
+                    agrupado_cat_inicio = ventas_cat_inicio.dropna(subset=["Categoria"]).groupby("Categoria")["cantidad"].sum()
+                    agrupado_cat_inicio = agrupado_cat_inicio[agrupado_cat_inicio > 0]
+                    if not agrupado_cat_inicio.empty:
+                        st.plotly_chart(grafico_dona(agrupado_cat_inicio, altura=240), use_container_width=True, config={"displayModeBar": False})
+                    else:
+                        st.caption("Sin datos suficientes todavía.")
                 else:
-                    st.caption("Sin datos suficientes todavía.")
-            else:
-                st.caption("Sin ventas registradas todavía.")
-            st.markdown("</div>", unsafe_allow_html=True)
+                    st.caption("Sin ventas registradas todavía.")
 
         with col_der_inicio:
-            st.markdown("<div class='kpi-card'>", unsafe_allow_html=True)
-            st.markdown("<div class='kpi-label' style='margin-bottom: 10px;'>Movimientos recientes</div>", unsafe_allow_html=True)
-            if not movs_inicio.empty:
-                recientes = movs_inicio.sort_values("fecha", ascending=False).head(5)
-                for _, mov_r in recientes.iterrows():
-                    es_venta_r = mov_r["tipo"] == "venta"
-                    color_r = "#22c55e" if es_venta_r else "#ef4444"
-                    signo_r = "↑" if es_venta_r else "↓"
-                    monto_r = float(mov_r["cantidad"]) * float(mov_r["precio_unitario"] if es_venta_r else mov_r["costo_unitario"])
-                    st.markdown(
-                        f"""<div class="mov-reciente-item">
+            with st.container(border=True):
+                st.markdown("<div class='kpi-label' style='margin-bottom: 10px;'>Movimientos recientes</div>", unsafe_allow_html=True)
+                if not movs_inicio.empty:
+                    recientes = movs_inicio.sort_values("fecha", ascending=False).head(5)
+                    for _, mov_r in recientes.iterrows():
+                        es_venta_r = mov_r["tipo"] == "venta"
+                        color_r = "#22c55e" if es_venta_r else "#ef4444"
+                        signo_r = "↑" if es_venta_r else "↓"
+                        monto_r = float(mov_r["cantidad"]) * float(mov_r["precio_unitario"] if es_venta_r else mov_r["costo_unitario"])
+                        st.markdown(
+                            f"""<div class="mov-reciente-item">
 <div>
 <div style="font-size:9.5px; font-weight:700; color:{color_r}; letter-spacing:0.5px;">{mov_r['tipo'].upper()}</div>
 <div style="font-size:13px; font-weight:600; color:var(--text-color);">{mov_r['producto']}</div>
@@ -1614,11 +1642,10 @@ else:
 <div style="font-size:10.5px; color:var(--text-secondary);">{formatear_fecha_corta(mov_r['fecha'])}</div>
 </div>
 </div>""",
-                        unsafe_allow_html=True,
-                    )
-            else:
-                st.caption("Todavía no hay movimientos registrados.")
-            st.markdown("</div>", unsafe_allow_html=True)
+                            unsafe_allow_html=True,
+                        )
+                else:
+                    st.caption("Todavía no hay movimientos registrados.")
 
     # -----------------------------------------------------------------------------
     # EXISTENCIAS
@@ -1776,7 +1803,7 @@ else:
                     is_alerta = int(row["cantidad"]) <= int(row["alerta"])
                     borde_color = "var(--accent)" if is_alerta else "var(--border-color)"
                     badge_stock = (
-                        f"<span style='color: #5aa7f7; font-weight: 700;'>Stock Bajo ({row['cantidad']})</span>"
+                        f"<span style='color: #63b8fe; font-weight: 700;'>Stock Bajo ({row['cantidad']})</span>"
                         if is_alerta else
                         f"<span style='color: #34d399; font-weight: 700;'>Stock: {row['cantidad']}</span>"
                     )
@@ -1794,7 +1821,7 @@ else:
 {foto_html}
 <div class="product-card-body">
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-<span style="background: rgba(106, 95, 240, 0.15); color: var(--accent); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">ID: {row['ID']}</span>
+<span style="background: rgba(124, 77, 252, 0.15); color: var(--accent); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">ID: {row['ID']}</span>
 <span style="font-size: 12px; color: var(--text-secondary);">{row['Categoria']}</span>
 </div>
 <div style="font-size: 16px; font-weight: 700; color: var(--text-color); margin-bottom: 8px;">{estrella} {row['Producto']}</div>
@@ -2408,7 +2435,7 @@ else:
                 deudores_ordenado = deudores_df.sort_values("saldo", ascending=False)
                 for _, fila in deudores_ordenado.iterrows():
                     saldo_val = float(fila.get("saldo", 0) or 0)
-                    color_saldo = "#5aa7f7" if saldo_val > 0 else "#34d399"
+                    color_saldo = "#63b8fe" if saldo_val > 0 else "#34d399"
                     telefono_txt = fila.get("telefono") or "—"
                     st.markdown(
                         f"<div class='config-chip' style='justify-content: space-between;'>"
@@ -2436,7 +2463,7 @@ else:
             )
             fila_buscada = deudores_df[deudores_df["id"].astype(str) == str(id_buscado)].iloc[0]
             saldo_buscado = float(fila_buscada.get("saldo", 0) or 0)
-            color_saldo_buscado = "#5aa7f7" if saldo_buscado > 0 else "#34d399"
+            color_saldo_buscado = "#63b8fe" if saldo_buscado > 0 else "#34d399"
             telefono_buscado = fila_buscada.get("telefono") or "—"
 
             st.markdown(
