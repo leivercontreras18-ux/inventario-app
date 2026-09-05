@@ -479,13 +479,15 @@ def selector_tasa_cambio(key_prefix, valor_por_defecto=0.0):
 
 
 def logo_svg_markup(size=30):
-    return f"""<svg width="{size}" height="{size}" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg">
-<defs><linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
-<stop offset="0%" stop-color="#7c4dfc"/><stop offset="100%" stop-color="#63b8fe"/>
-</linearGradient></defs>
-<path d="M7 27 C6 18, 9 9, 19 6 C13 12, 13 20, 21 24 C15 28, 10 29, 7 27 Z" fill="url(#logoGrad)"/>
-<circle cx="23" cy="8" r="3" fill="#63b8fe"/>
-</svg>"""
+    return (
+        f'<svg width="{size}" height="{size}" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg">'
+        f'<defs><linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">'
+        f'<stop offset="0%" stop-color="#7c4dfc"/><stop offset="100%" stop-color="#63b8fe"/>'
+        f'</linearGradient></defs>'
+        f'<path d="M7 27 C6 18, 9 9, 19 6 C13 12, 13 20, 21 24 C15 28, 10 29, 7 27 Z" fill="url(#logoGrad)"/>'
+        f'<circle cx="23" cy="8" r="3" fill="#63b8fe"/>'
+        f'</svg>'
+    )
 
 
 def moneda(valor):
@@ -1275,6 +1277,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         <div class="hero-cta-box">
         """
     hero_html = hero_html.replace("PLACEHOLDER_TOTAL", str(total_prendas_hero)).replace("PLACEHOLDER_PORC", str(porcentaje_ok_hero)).replace("LOGO_SVG_PLACEHOLDER", logo_svg_markup(20))
+    hero_html = textwrap.dedent(hero_html)
 
     st.markdown(hero_html, unsafe_allow_html=True)
 
@@ -1290,7 +1293,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
 # =====================================================================================
 
 elif not st.session_state.autenticado and st.session_state.etapa == "login":
-    st.markdown(
+    login_style_html = textwrap.dedent(
         """
         <style>
         @keyframes floatParticleLogin {
@@ -1336,9 +1339,9 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
         <div class="particle-login" style="width:3px; height:3px; top:80%; left:85%; animation: floatParticleLogin 10s ease-in-out infinite 2s;"></div>
         <div class="particle-login" style="width:6px; height:6px; top:50%; left:6%; animation: floatParticleLogin 11s ease-in-out infinite 1.5s;"></div>
         <div class="particle-login" style="width:4px; height:4px; top:45%; left:94%; animation: floatParticleLogin 9.5s ease-in-out infinite 0.8s;"></div>
-        """,
-        unsafe_allow_html=True,
+        """
     )
+    st.markdown(login_style_html, unsafe_allow_html=True)
 
     if st.button("← Volver a la portada"):
         st.session_state.etapa = "bienvenida"
