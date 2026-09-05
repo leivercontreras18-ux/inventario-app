@@ -1084,6 +1084,56 @@ section[data-testid="stSidebar"] button[kind="primary"][aria-label^="•"] {{
     background: transparent !important; box-shadow: none !important; font-weight: 700 !important;
     animation: none !important;
 }}
+
+/* -------------------------------------------------------------------------
+   CONTRASTE FINAL — MODO CLARO / MODO OSCURO
+   ------------------------------------------------------------------------- */
+section[data-testid="stSidebar"] button,
+section[data-testid="stSidebar"] button p,
+section[data-testid="stSidebar"] button span,
+section[data-testid="stSidebar"] button div {
+    color: var(--text-color) !important;
+    -webkit-text-fill-color: var(--text-color) !important;
+    opacity: 1 !important;
+}
+
+section[data-testid="stSidebar"] button[kind="primary"],
+section[data-testid="stSidebar"] button[kind="primary"] p,
+section[data-testid="stSidebar"] button[kind="primary"] span,
+section[data-testid="stSidebar"] button[kind="primary"] div {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    opacity: 1 !important;
+}
+
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] label p,
+section[data-testid="stSidebar"] label span {
+    color: var(--text-color) !important;
+    -webkit-text-fill-color: var(--text-color) !important;
+    opacity: 1 !important;
+}
+
+.page-title,
+.section-title {
+    color: var(--text-color) !important;
+    opacity: 1 !important;
+}
+
+.page-subtitle,
+.section-subtitle {
+    color: var(--text-secondary) !important;
+    opacity: 1 !important;
+}
+
+div[data-baseweb="input"] input,
+div[data-baseweb="select"] input,
+div[data-baseweb="select"] span,
+textarea {
+    color: var(--text-color) !important;
+    -webkit-text-fill-color: var(--text-color) !important;
+}
+
 </style>
 """
 
@@ -1434,78 +1484,69 @@ else:
 
     st.sidebar.markdown("<div class='menu-divider'></div>", unsafe_allow_html=True)
 
-    GRUPOS_CLAVES_MENU = {
-        "acc_inventario": ["existencias", "registrar", "modificar"],
-        "acc_ventas": ["vender", "ventas_pagadas", "deudores"],
-        "acc_compras": ["comprar", "movimientos", "facturas"],
-    }
-    if "grupo_menu_abierto" not in st.session_state:
-        st.session_state.grupo_menu_abierto = next(
-            (k for k, claves in GRUPOS_CLAVES_MENU.items() if menu_actual in claves), None
-        )
-
-    def render_grupo_acordeon(icono_grupo, titulo_grupo, items, session_key):
-        """Botón principal con flechita (▼/▶). Solo un grupo puede estar abierto a la vez."""
-        claves_grupo = [c for c, _ in items]
-        activo_grupo = menu_actual in claves_grupo
-        tipo_grupo = "primary" if activo_grupo else "secondary"
-
-        if compacto:
-            if st.sidebar.button(icono_grupo, use_container_width=True, key=f"grupo_{session_key}", type=tipo_grupo, help=titulo_grupo):
-                st.session_state.menu_activo = claves_grupo[0]
-                st.rerun()
-            return
-
-        expandido = st.session_state.grupo_menu_abierto == session_key
-        chevron = "▼" if expandido else "▶"
-        if st.sidebar.button(f"{icono_grupo}  {titulo_grupo}  {chevron}", use_container_width=True, key=f"grupo_{session_key}", type=tipo_grupo):
-            st.session_state.grupo_menu_abierto = None if expandido else session_key
-            st.rerun()
-        if expandido:
-            for clave, etiqueta in items:
-                if clave in ("registrar", "modificar", "configuracion") and not ES_ADMIN:
-                    continue
-                tipo_item = "primary" if menu_actual == clave else "secondary"
-                if st.sidebar.button(f"•  {etiqueta}", use_container_width=True, key=f"item_{clave}", type=tipo_item):
-                    st.session_state.menu_activo = clave
-                    st.session_state.grupo_menu_abierto = session_key
-                    st.rerun()
-
-    # --- Inicio (ítem plano, sin acordeón) ---
-    etiqueta_inicio = "🏠" if compacto else "🏠  Inicio"
-    if st.sidebar.button(etiqueta_inicio, use_container_width=True, key="menu_inicio", type=("primary" if menu_actual == "inicio" else "secondary"), help="Inicio" if compacto else None):
-        st.session_state.menu_activo = "inicio"
-        st.rerun()
-
-    st.sidebar.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
-
-    render_grupo_acordeon("📊", "Prendas", [
-        ("existencias", "Prendas"), ("registrar", "Registrar Prenda"), ("modificar", "Eliminar Prenda"),
-    ], "acc_inventario")
-
-    render_grupo_acordeon("🛍️", "Ventas", [
-        ("vender", "Nueva Venta"), ("ventas_pagadas", "Ventas Pagadas"), ("deudores", "Ventas por Pagar"),
-    ], "acc_ventas")
-
-    render_grupo_acordeon("📦", "Compras", [
-        ("comprar", "Registrar Compra"), ("movimientos", "Movimientos"), ("facturas", "Facturas"),
-    ], "acc_compras")
-
-    if not compacto:
-        st.sidebar.markdown("<p class='menu-group-title'>Negocio</p>", unsafe_allow_html=True)
-    for clave, icono, etiqueta in [("reportes", "📈", "Reportes"), ("configuracion", "⚙️", "Configuración")]:
-        if clave == "configuracion" and not ES_ADMIN:
-            continue
+    # -------------------------------------------------------------------------
+    # MENÚ LATERAL — opciones visibles
+    # -------------------------------------------------------------------------
+    def menu_button(clave, icono, etiqueta):
         tipo_boton = "primary" if menu_actual == clave else "secondary"
-        label_boton = icono if compacto else f"{icono}  {etiqueta}"
-        if st.sidebar.button(label_boton, use_container_width=True, key=f"menu_{clave}", type=tipo_boton, help=etiqueta if compacto else None):
+        texto = icono if compacto else f"{icono}  {etiqueta}"
+        if st.sidebar.button(
+            texto,
+            use_container_width=True,
+            key=f"menu_directo_{clave}",
+            type=tipo_boton,
+            help=etiqueta if compacto else None,
+        ):
             st.session_state.menu_activo = clave
             st.rerun()
 
-    st.sidebar.markdown("<hr style='margin: 20px 0 15px 0; border-color: var(--border-color);'>", unsafe_allow_html=True)
+    menu_button("inicio", "▦", "Dashboard")
 
-    etiqueta_salir = "🚪" if compacto else "🚪 Cerrar Sesión"
-    if st.sidebar.button(etiqueta_salir, use_container_width=True, help="Cerrar Sesión" if compacto else None):
+    # INVENTARIO
+    menu_button("existencias", "♧", "Inventario")
+    if not compacto and ES_ADMIN:
+        menu_button("registrar", "＋", "Registrar Prenda")
+        menu_button("modificar", "✎", "Eliminar Prenda")
+
+    # VENTAS
+    menu_button("vender", "🛒", "Ventas")
+    if not compacto:
+        menu_button("ventas_pagadas", "✓", "Ventas Pagadas")
+        menu_button("deudores", "♧", "Ventas por Pagar")
+        # Las facturas son documentos para entregar al cliente después de la venta.
+        menu_button("facturas", "▤", "Facturas")
+
+    # COMPRAS
+    menu_button("comprar", "▣", "Compras")
+    if not compacto:
+        menu_button("movimientos", "⇄", "Movimientos")
+
+    if not compacto:
+        st.sidebar.markdown(
+            "<p class='menu-group-title'>Negocio</p>",
+            unsafe_allow_html=True,
+        )
+
+    for clave, icono, etiqueta in [
+        ("reportes", "▥", "Reportes"),
+        ("configuracion", "⚙", "Configuración"),
+    ]:
+        if clave == "configuracion" and not ES_ADMIN:
+            continue
+        menu_button(clave, icono, etiqueta)
+
+    st.sidebar.markdown(
+        "<hr style='margin: 20px 0 15px 0; border-color: var(--border-color);'>",
+        unsafe_allow_html=True,
+    )
+
+    etiqueta_salir = "→" if compacto else "→  Cerrar Sesión"
+    if st.sidebar.button(
+        etiqueta_salir,
+        use_container_width=True,
+        key="menu_directo_logout",
+        help="Cerrar Sesión" if compacto else None,
+    ):
         st.session_state.autenticado = False
         st.session_state.usuario_actual = ""
         st.session_state.rol_actual = ""
