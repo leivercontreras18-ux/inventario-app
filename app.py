@@ -479,15 +479,13 @@ def selector_tasa_cambio(key_prefix, valor_por_defecto=0.0):
 
 
 def logo_svg_markup(size=30):
-    return (
-        f'<svg width="{size}" height="{size}" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg">'
-        f'<defs><linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">'
-        f'<stop offset="0%" stop-color="#7c4dfc"/><stop offset="100%" stop-color="#63b8fe"/>'
-        f'</linearGradient></defs>'
-        f'<path d="M7 27 C6 18, 9 9, 19 6 C13 12, 13 20, 21 24 C15 28, 10 29, 7 27 Z" fill="url(#logoGrad)"/>'
-        f'<circle cx="23" cy="8" r="3" fill="#63b8fe"/>'
-        f'</svg>'
-    )
+    return f"""<svg width="{size}" height="{size}" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg">
+<defs><linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0%" stop-color="#7c4dfc"/><stop offset="100%" stop-color="#63b8fe"/>
+</linearGradient></defs>
+<path d="M7 27 C6 18, 9 9, 19 6 C13 12, 13 20, 21 24 C15 28, 10 29, 7 27 Z" fill="url(#logoGrad)"/>
+<circle cx="23" cy="8" r="3" fill="#63b8fe"/>
+</svg>"""
 
 
 def moneda(valor):
@@ -1086,6 +1084,56 @@ section[data-testid="stSidebar"] button[kind="primary"][aria-label^="•"] {{
     background: transparent !important; box-shadow: none !important; font-weight: 700 !important;
     animation: none !important;
 }}
+
+/* -------------------------------------------------------------------------
+   CONTRASTE FINAL — MODO CLARO / MODO OSCURO
+   ------------------------------------------------------------------------- */
+section[data-testid="stSidebar"] button,
+section[data-testid="stSidebar"] button p,
+section[data-testid="stSidebar"] button span,
+section[data-testid="stSidebar"] button div {
+    color: var(--text-color) !important;
+    -webkit-text-fill-color: var(--text-color) !important;
+    opacity: 1 !important;
+}
+
+section[data-testid="stSidebar"] button[kind="primary"],
+section[data-testid="stSidebar"] button[kind="primary"] p,
+section[data-testid="stSidebar"] button[kind="primary"] span,
+section[data-testid="stSidebar"] button[kind="primary"] div {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    opacity: 1 !important;
+}
+
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] label p,
+section[data-testid="stSidebar"] label span {
+    color: var(--text-color) !important;
+    -webkit-text-fill-color: var(--text-color) !important;
+    opacity: 1 !important;
+}
+
+.page-title,
+.section-title {
+    color: var(--text-color) !important;
+    opacity: 1 !important;
+}
+
+.page-subtitle,
+.section-subtitle {
+    color: var(--text-secondary) !important;
+    opacity: 1 !important;
+}
+
+div[data-baseweb="input"] input,
+div[data-baseweb="select"] input,
+div[data-baseweb="select"] span,
+textarea {
+    color: var(--text-color) !important;
+    -webkit-text-fill-color: var(--text-color) !important;
+}
+
 </style>
 """
 
@@ -1277,7 +1325,6 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         <div class="hero-cta-box">
         """
     hero_html = hero_html.replace("PLACEHOLDER_TOTAL", str(total_prendas_hero)).replace("PLACEHOLDER_PORC", str(porcentaje_ok_hero)).replace("LOGO_SVG_PLACEHOLDER", logo_svg_markup(20))
-    hero_html = textwrap.dedent(hero_html)
 
     st.markdown(hero_html, unsafe_allow_html=True)
 
@@ -1293,7 +1340,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
 # =====================================================================================
 
 elif not st.session_state.autenticado and st.session_state.etapa == "login":
-    login_style_html = textwrap.dedent(
+    st.markdown(
         """
         <style>
         @keyframes floatParticleLogin {
@@ -1339,9 +1386,9 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
         <div class="particle-login" style="width:3px; height:3px; top:80%; left:85%; animation: floatParticleLogin 10s ease-in-out infinite 2s;"></div>
         <div class="particle-login" style="width:6px; height:6px; top:50%; left:6%; animation: floatParticleLogin 11s ease-in-out infinite 1.5s;"></div>
         <div class="particle-login" style="width:4px; height:4px; top:45%; left:94%; animation: floatParticleLogin 9.5s ease-in-out infinite 0.8s;"></div>
-        """
+        """,
+        unsafe_allow_html=True,
     )
-    st.markdown(login_style_html, unsafe_allow_html=True)
 
     if st.button("← Volver a la portada"):
         st.session_state.etapa = "bienvenida"
@@ -1437,78 +1484,69 @@ else:
 
     st.sidebar.markdown("<div class='menu-divider'></div>", unsafe_allow_html=True)
 
-    GRUPOS_CLAVES_MENU = {
-        "acc_inventario": ["existencias", "registrar", "modificar"],
-        "acc_ventas": ["vender", "ventas_pagadas", "deudores"],
-        "acc_compras": ["comprar", "movimientos", "facturas"],
-    }
-    if "grupo_menu_abierto" not in st.session_state:
-        st.session_state.grupo_menu_abierto = next(
-            (k for k, claves in GRUPOS_CLAVES_MENU.items() if menu_actual in claves), None
-        )
-
-    def render_grupo_acordeon(icono_grupo, titulo_grupo, items, session_key):
-        """Botón principal con flechita (▼/▶). Solo un grupo puede estar abierto a la vez."""
-        claves_grupo = [c for c, _ in items]
-        activo_grupo = menu_actual in claves_grupo
-        tipo_grupo = "primary" if activo_grupo else "secondary"
-
-        if compacto:
-            if st.sidebar.button(icono_grupo, use_container_width=True, key=f"grupo_{session_key}", type=tipo_grupo, help=titulo_grupo):
-                st.session_state.menu_activo = claves_grupo[0]
-                st.rerun()
-            return
-
-        expandido = st.session_state.grupo_menu_abierto == session_key
-        chevron = "▼" if expandido else "▶"
-        if st.sidebar.button(f"{icono_grupo}  {titulo_grupo}  {chevron}", use_container_width=True, key=f"grupo_{session_key}", type=tipo_grupo):
-            st.session_state.grupo_menu_abierto = None if expandido else session_key
-            st.rerun()
-        if expandido:
-            for clave, etiqueta in items:
-                if clave in ("registrar", "modificar", "configuracion") and not ES_ADMIN:
-                    continue
-                tipo_item = "primary" if menu_actual == clave else "secondary"
-                if st.sidebar.button(f"•  {etiqueta}", use_container_width=True, key=f"item_{clave}", type=tipo_item):
-                    st.session_state.menu_activo = clave
-                    st.session_state.grupo_menu_abierto = session_key
-                    st.rerun()
-
-    # --- Inicio (ítem plano, sin acordeón) ---
-    etiqueta_inicio = "🏠" if compacto else "🏠  Inicio"
-    if st.sidebar.button(etiqueta_inicio, use_container_width=True, key="menu_inicio", type=("primary" if menu_actual == "inicio" else "secondary"), help="Inicio" if compacto else None):
-        st.session_state.menu_activo = "inicio"
-        st.rerun()
-
-    st.sidebar.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
-
-    render_grupo_acordeon("📊", "Prendas", [
-        ("existencias", "Prendas"), ("registrar", "Registrar Prenda"), ("modificar", "Eliminar Prenda"),
-    ], "acc_inventario")
-
-    render_grupo_acordeon("🛍️", "Ventas", [
-        ("vender", "Nueva Venta"), ("ventas_pagadas", "Ventas Pagadas"), ("deudores", "Ventas por Pagar"),
-    ], "acc_ventas")
-
-    render_grupo_acordeon("📦", "Compras", [
-        ("comprar", "Registrar Compra"), ("movimientos", "Movimientos"), ("facturas", "Facturas"),
-    ], "acc_compras")
-
-    if not compacto:
-        st.sidebar.markdown("<p class='menu-group-title'>Negocio</p>", unsafe_allow_html=True)
-    for clave, icono, etiqueta in [("reportes", "📈", "Reportes"), ("configuracion", "⚙️", "Configuración")]:
-        if clave == "configuracion" and not ES_ADMIN:
-            continue
+    # -------------------------------------------------------------------------
+    # MENÚ LATERAL — opciones visibles
+    # -------------------------------------------------------------------------
+    def menu_button(clave, icono, etiqueta):
         tipo_boton = "primary" if menu_actual == clave else "secondary"
-        label_boton = icono if compacto else f"{icono}  {etiqueta}"
-        if st.sidebar.button(label_boton, use_container_width=True, key=f"menu_{clave}", type=tipo_boton, help=etiqueta if compacto else None):
+        texto = icono if compacto else f"{icono}  {etiqueta}"
+        if st.sidebar.button(
+            texto,
+            use_container_width=True,
+            key=f"menu_directo_{clave}",
+            type=tipo_boton,
+            help=etiqueta if compacto else None,
+        ):
             st.session_state.menu_activo = clave
             st.rerun()
 
-    st.sidebar.markdown("<hr style='margin: 20px 0 15px 0; border-color: var(--border-color);'>", unsafe_allow_html=True)
+    menu_button("inicio", "▦", "Dashboard")
 
-    etiqueta_salir = "🚪" if compacto else "🚪 Cerrar Sesión"
-    if st.sidebar.button(etiqueta_salir, use_container_width=True, help="Cerrar Sesión" if compacto else None):
+    # INVENTARIO
+    menu_button("existencias", "♧", "Inventario")
+    if not compacto and ES_ADMIN:
+        menu_button("registrar", "＋", "Registrar Prenda")
+        menu_button("modificar", "✎", "Eliminar Prenda")
+
+    # VENTAS
+    menu_button("vender", "🛒", "Ventas")
+    if not compacto:
+        menu_button("ventas_pagadas", "✓", "Ventas Pagadas")
+        menu_button("deudores", "♧", "Ventas por Pagar")
+        # Las facturas son documentos para entregar al cliente después de la venta.
+        menu_button("facturas", "▤", "Facturas")
+
+    # COMPRAS
+    menu_button("comprar", "▣", "Compras")
+    if not compacto:
+        menu_button("movimientos", "⇄", "Movimientos")
+
+    if not compacto:
+        st.sidebar.markdown(
+            "<p class='menu-group-title'>Negocio</p>",
+            unsafe_allow_html=True,
+        )
+
+    for clave, icono, etiqueta in [
+        ("reportes", "▥", "Reportes"),
+        ("configuracion", "⚙", "Configuración"),
+    ]:
+        if clave == "configuracion" and not ES_ADMIN:
+            continue
+        menu_button(clave, icono, etiqueta)
+
+    st.sidebar.markdown(
+        "<hr style='margin: 20px 0 15px 0; border-color: var(--border-color);'>",
+        unsafe_allow_html=True,
+    )
+
+    etiqueta_salir = "→" if compacto else "→  Cerrar Sesión"
+    if st.sidebar.button(
+        etiqueta_salir,
+        use_container_width=True,
+        key="menu_directo_logout",
+        help="Cerrar Sesión" if compacto else None,
+    ):
         st.session_state.autenticado = False
         st.session_state.usuario_actual = ""
         st.session_state.rol_actual = ""
