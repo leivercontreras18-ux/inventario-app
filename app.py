@@ -818,6 +818,11 @@ def get_css(tema: str, compacto: bool = False) -> str:
     50% {{ box-shadow: 0 0 16px rgba(236, 106, 168, 0.55), inset 3px 0 0 var(--accent); }}
 }}
 
+@keyframes menuSlideDown {{
+    from {{ opacity: 0; transform: translateY(-8px); }}
+    to {{ opacity: 1; transform: translateY(0); }}
+}}
+
 .stApp {{
     background: var(--bg-gradient);
     background-attachment: fixed;
@@ -1073,7 +1078,8 @@ section[data-testid="stSidebar"] button[aria-label^="•"] {{
     font-size: 12.5px !important; color: var(--text-secondary) !important;
     border-left: 1.5px solid var(--border-color) !important; border-radius: 0 !important;
     margin-left: 16px !important; padding: 7px 10px 7px 14px !important; font-weight: 500 !important;
-    box-shadow: none !important; background: transparent !important; animation: none !important;
+    box-shadow: none !important; background: transparent !important;
+    animation: menuSlideDown 0.28s ease !important;
 }}
 section[data-testid="stSidebar"] button[aria-label^="•"]:hover {{
     background: rgba(236, 106, 168, 0.06) !important; color: var(--text-color) !important;
@@ -1081,7 +1087,7 @@ section[data-testid="stSidebar"] button[aria-label^="•"]:hover {{
 section[data-testid="stSidebar"] button[kind="primary"][aria-label^="•"] {{
     color: var(--accent) !important; border-left: 2px solid var(--accent) !important;
     background: transparent !important; box-shadow: none !important; font-weight: 700 !important;
-    animation: none !important;
+    animation: menuSlideDown 0.28s ease !important;
 }}
 
 /* --- Forzar contraste completo en TODOS los botones del sidebar (máxima prioridad) --- */
