@@ -2620,14 +2620,68 @@ else:
                 if monto_pago_usd <= 0:
                     st.error("El monto debe ser mayor a 0.")
                 else:
-                    nuevo_saldo_buscado = saldo_buscado - monto_pago_usd
-                    actualizar_saldo_deudor(id_buscado, nuevo_saldo_buscado)
-                    registrar_movimiento_deuda(
-                        deudor_id=id_buscado, deudor_nombre=fila_buscada["nombre"],
-                        tipo="abono", descripcion=nota_pago, monto=monto_pago_usd,
-                        medio_pago=f"{medio_pago_sel} ({moneda_pago_sel})", tasa_cambio=tasa_cobro,
+                    # El saldo nunca queda negativo.
+                    nuevo_saldo_buscado = max(0.0, saldo_buscado - monto_pago_usd)
+
+                    saldo_actualizado = actualizar_saldo_deudor(
+                        id_buscado,
+                        nuevo_saldo_buscado,
                     )
-                    st.success(f"¡Pago registrado! Nuevo saldo de {fila_buscada['nombre']}: {moneda(nuevo_saldo_buscado)}")
+
+                    pago_registrado = registrar_movimiento_deuda(
+                        deudor_id=id_buscado,
+                        deudor_nombre=fila_buscada["nombre"],
+                        tipo="abono",
+                        descripcion=nota_pago,
+                        monto=monto_pago_usd,
+                        medio_pago=f"{medio_pago_sel} ({moneda_pago_sel})",
+                        tasa_cambio=tasa_cobro,
+                    )
+
+                    # Cuando la deuda llega a cero, las ventas pendientes
+                    # de ese cliente pasan automáticamente a Ventas Pagadas.
+                    ventas_movidas = 0
+                    if saldo_actualizado and pago_registrado and nuevo_saldo_buscado <= 0 and supabase:
+                        try:
+                            resultado = (
+                                supabase
+                                .table("movimientos")
+                                .update({"pagado": True})
+                                .eq("tipo", "venta")
+                                .eq("cliente", str(fila_buscada["nombre"]))
+                                .eq("pagado", False)
+                                .execute()
+                            )
+
+                            if resultado.data:
+                                ventas_movidas = len(resultado.data)
+
+                            cargar_movimientos.clear()
+                        except Exception as e:
+                            st.warning(
+                                f"El pago quedó registrado, pero no se pudieron "
+                                f"actualizar las ventas pendientes: {e}"
+                            )
+
+                    if nuevo_saldo_buscado <= 0:
+                        if ventas_movidas > 0:
+                            st.success(
+                                f"✅ ¡Pago completado! La deuda de "
+                                f"{fila_buscada['nombre']} quedó en cero y "
+                                f"{ventas_movidas} venta(s) pasaron a Ventas Pagadas."
+                            )
+                        else:
+                            st.success(
+                                f"✅ ¡Pago completado! La deuda de "
+                                f"{fila_buscada['nombre']} quedó en cero."
+                            )
+                    else:
+                        st.success(
+                            f"💰 ¡Pago registrado! Nuevo saldo de "
+                            f"{fila_buscada['nombre']}: "
+                            f"{moneda(nuevo_saldo_buscado)}"
+                        )
+
                     st.rerun()
 
             with st.expander(f"📜 Historial de {fila_buscada['nombre']}"):
