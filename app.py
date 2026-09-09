@@ -1,3 +1,4 @@
+import base64
 import json
 import textwrap
 import uuid
@@ -664,55 +665,90 @@ def grafico_dona(serie, texto_centro_arriba="", texto_centro_abajo="", altura=34
 
 
 def generar_factura_pdf(venta_id, cliente, fecha_texto, items_factura, total_factura):
-    """Arma un PDF de factura simple con los productos de una venta. Devuelve bytes o None si fpdf2 no está instalado."""
+    """Arma un PDF de factura con diseño profesional (banda de color, logo, filas alternadas)."""
     if not PDF_DISPONIBLE:
         return None
     pdf = FPDF(format="A4")
     pdf.add_page()
+    ancho_pagina = pdf.w - 2 * pdf.l_margin
 
-    pdf.set_font("Helvetica", "B", 20)
-    pdf.set_text_color(124, 77, 252)
-    pdf.cell(0, 12, "LEWIN BOUTIQUE", ln=True)
-
-    pdf.set_font("Helvetica", "", 11)
-    pdf.set_text_color(90, 90, 90)
-    pdf.cell(0, 7, "Factura de venta", ln=True)
-    pdf.ln(4)
-
-    pdf.set_text_color(30, 30, 30)
+    # --- Banda superior de color con logo y datos de la marca ---
+    pdf.set_fill_color(124, 77, 252)
+    pdf.rect(0, 0, pdf.w, 32, style="F")
+    try:
+        logo_bytes = base64.b64decode(LOGO_LEWIN_BASE64)
+        pdf.image(BytesIO(logo_bytes), x=12, y=6, w=14, type="PNG")
+    except Exception:
+        pass
+    pdf.set_xy(30, 9)
+    pdf.set_font("Helvetica", "B", 18)
+    pdf.set_text_color(255, 255, 255)
+    pdf.cell(0, 8, "LEWIN BOUTIQUE", ln=True)
+    pdf.set_xy(30, 18)
     pdf.set_font("Helvetica", "", 10)
-    pdf.cell(0, 6, f"N. de factura: {str(venta_id)[:8].upper()}", ln=True)
-    pdf.cell(0, 6, f"Fecha: {fecha_texto}", ln=True)
-    pdf.cell(0, 6, f"Cliente: {cliente or 'Consumidor final'}", ln=True)
+    pdf.set_text_color(235, 230, 255)
+    pdf.cell(0, 6, "Factura de venta", ln=True)
+
+    pdf.set_font("Helvetica", "B", 11)
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_xy(pdf.w - 90, 9)
+    pdf.cell(78, 6, f"N. {str(venta_id)[:8].upper()}", align="R", ln=True)
+    pdf.set_font("Helvetica", "", 9)
+    pdf.set_xy(pdf.w - 90, 16)
+    pdf.cell(78, 6, fecha_texto, align="R", ln=True)
+
+    pdf.set_y(42)
+
+    # --- Datos del cliente ---
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_text_color(90, 80, 130)
+    pdf.cell(0, 6, "FACTURAR A", ln=True)
+    pdf.set_font("Helvetica", "B", 13)
+    pdf.set_text_color(30, 30, 30)
+    pdf.cell(0, 8, cliente or "Consumidor final", ln=True)
     pdf.ln(6)
 
+    # --- Tabla de productos ---
+    anchos = [ancho_pagina * 0.44, ancho_pagina * 0.16, ancho_pagina * 0.20, ancho_pagina * 0.20]
     pdf.set_font("Helvetica", "B", 10)
-    pdf.set_fill_color(99, 184, 254)
+    pdf.set_fill_color(124, 77, 252)
     pdf.set_text_color(255, 255, 255)
-    pdf.cell(80, 8, "Producto", border=1, fill=True)
-    pdf.cell(30, 8, "Cantidad", border=1, fill=True, align="C")
-    pdf.cell(35, 8, "Precio Unit.", border=1, fill=True, align="R")
-    pdf.cell(35, 8, "Subtotal", border=1, fill=True, align="R", ln=True)
+    pdf.cell(anchos[0], 9, "  Producto", fill=True)
+    pdf.cell(anchos[1], 9, "Cantidad", fill=True, align="C")
+    pdf.cell(anchos[2], 9, "Precio Unit.", fill=True, align="R")
+    pdf.cell(anchos[3], 9, "Subtotal  ", fill=True, align="R", ln=True)
 
     pdf.set_font("Helvetica", "", 10)
-    pdf.set_text_color(20, 20, 20)
-    for item in items_factura:
+    for idx, item in enumerate(items_factura):
         subtotal_item = float(item["cantidad"]) * float(item["precio_unitario"])
-        pdf.cell(80, 8, str(item["producto"])[:42], border=1)
-        pdf.cell(30, 8, str(int(item["cantidad"])), border=1, align="C")
-        pdf.cell(35, 8, moneda(item["precio_unitario"]), border=1, align="R")
-        pdf.cell(35, 8, moneda(subtotal_item), border=1, align="R", ln=True)
+        if idx % 2 == 0:
+            pdf.set_fill_color(245, 243, 255)
+        else:
+            pdf.set_fill_color(255, 255, 255)
+        pdf.set_text_color(40, 35, 60)
+        pdf.cell(anchos[0], 9, "  " + str(item["producto"])[:40], fill=True)
+        pdf.cell(anchos[1], 9, str(int(item["cantidad"])), fill=True, align="C")
+        pdf.cell(anchos[2], 9, moneda(item["precio_unitario"]), fill=True, align="R")
+        pdf.cell(anchos[3], 9, moneda(subtotal_item) + "  ", fill=True, align="R", ln=True)
 
-    pdf.ln(4)
+    pdf.ln(8)
+
+    # --- Total destacado ---
+    ancho_total = 80
+    pdf.set_x(pdf.w - pdf.r_margin - ancho_total)
+    pdf.set_fill_color(124, 77, 252)
+    pdf.set_text_color(255, 255, 255)
     pdf.set_font("Helvetica", "B", 12)
-    pdf.set_text_color(20, 20, 20)
-    pdf.cell(145, 9, "TOTAL", align="R")
-    pdf.cell(35, 9, moneda(total_factura), align="R", ln=True)
+    pdf.cell(ancho_total * 0.45, 11, "  TOTAL", fill=True, align="L")
+    pdf.cell(ancho_total * 0.55, 11, moneda(total_factura) + "  ", fill=True, align="R", ln=True)
 
-    pdf.ln(16)
+    # --- Pie de página ---
+    pdf.ln(20)
     pdf.set_font("Helvetica", "I", 9)
-    pdf.set_text_color(130, 130, 130)
+    pdf.set_text_color(140, 140, 140)
     pdf.cell(0, 6, "Gracias por tu compra", ln=True, align="C")
+    pdf.set_font("Helvetica", "", 8)
+    pdf.cell(0, 5, "Lewin Boutique", ln=True, align="C")
 
     return bytes(pdf.output())
 
@@ -2410,25 +2446,59 @@ else:
             st.markdown("<div class='section-title'>Vista previa</div>", unsafe_allow_html=True)
 
             filas_preview = ""
-            for _, r in items_venta_sel.iterrows():
-                filas_preview += f"""<tr>
-<td>{r['producto']}</td>
-<td style="text-align:center;">{int(r['cantidad'])}</td>
-<td style="text-align:right;">{moneda(r['precio_unitario'])}</td>
-<td style="text-align:right;">{moneda(r['cantidad'] * r['precio_unitario'])}</td>
+            for idx, (_, r) in enumerate(items_venta_sel.iterrows()):
+                bg_fila = "#f5f3ff" if idx % 2 == 0 else "#ffffff"
+                filas_preview += f"""<tr style="background:{bg_fila};">
+<td style="padding:10px 14px;">{r['producto']}</td>
+<td style="padding:10px 14px; text-align:center;">{int(r['cantidad'])}</td>
+<td style="padding:10px 14px; text-align:right;">{moneda(r['precio_unitario'])}</td>
+<td style="padding:10px 14px; text-align:right;">{moneda(r['cantidad'] * r['precio_unitario'])}</td>
 </tr>"""
-            st.markdown(
-                f"""<div class="tabla-movimientos-wrapper"><table class="tabla-movimientos">
-<thead><tr><th>Producto</th><th>Cant.</th><th>Precio Unit.</th><th>Subtotal</th></tr></thead>
-<tbody>{filas_preview}</tbody></table></div>""",
-                unsafe_allow_html=True,
+
+            estado_badge = (
+                "<span style='background:#dcfce7; color:#16a34a; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700;'>PAGADA</span>"
+                if fila_resumen["pagado"] else
+                "<span style='background:#fef3c7; color:#b45309; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700;'>PENDIENTE</span>"
             )
 
-            st.markdown(
-                f"**Cliente:** {fila_resumen['cliente']}  \n"
-                f"**Fecha:** {formatear_fecha_corta(fila_resumen['fecha'])}  \n"
-                f"**Total: {moneda(fila_resumen['total'])}**"
-            )
+            factura_preview_html = f"""<div style="background:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 15px 40px rgba(0,0,0,0.18); max-width:640px; margin:0 auto; font-family:'Poppins',sans-serif;">
+<div style="background:linear-gradient(135deg,#7c4dfc,#63b8fe); padding:22px 26px; display:flex; justify-content:space-between; align-items:center;">
+<div style="display:flex; align-items:center; gap:12px;">
+{logo_svg_markup(32)}
+<div>
+<div style="color:#fff; font-weight:800; font-size:17px; letter-spacing:0.5px;">LEWIN BOUTIQUE</div>
+<div style="color:#eae6ff; font-size:11px;">Factura de venta</div>
+</div>
+</div>
+<div style="text-align:right;">
+<div style="color:#fff; font-weight:700; font-size:13px;">N. {str(venta_sel)[:8].upper()}</div>
+<div style="color:#eae6ff; font-size:11px;">{formatear_fecha_corta(fila_resumen['fecha'])}</div>
+</div>
+</div>
+<div style="padding:20px 26px 6px 26px; display:flex; justify-content:space-between; align-items:flex-start;">
+<div>
+<div style="color:#8b83ad; font-size:10px; font-weight:700; letter-spacing:1px;">FACTURAR A</div>
+<div style="color:#211c3d; font-size:16px; font-weight:700; margin-top:2px;">{fila_resumen['cliente']}</div>
+</div>
+<div>{estado_badge}</div>
+</div>
+<table style="width:100%; border-collapse:collapse; margin-top:14px; font-size:13px;">
+<thead><tr style="background:#7c4dfc;">
+<th style="padding:10px 14px; text-align:left; color:#fff; font-size:11px;">PRODUCTO</th>
+<th style="padding:10px 14px; text-align:center; color:#fff; font-size:11px;">CANT.</th>
+<th style="padding:10px 14px; text-align:right; color:#fff; font-size:11px;">PRECIO UNIT.</th>
+<th style="padding:10px 14px; text-align:right; color:#fff; font-size:11px;">SUBTOTAL</th>
+</tr></thead>
+<tbody style="color:#3a3355;">{filas_preview}</tbody>
+</table>
+<div style="display:flex; justify-content:flex-end; padding:16px 26px;">
+<div style="background:#7c4dfc; color:#fff; padding:10px 24px; border-radius:10px; font-weight:800; font-size:15px; display:flex; gap:18px;">
+<span>TOTAL</span><span>{moneda(fila_resumen['total'])}</span>
+</div>
+</div>
+<div style="text-align:center; padding:8px 20px 22px 20px; color:#9a93b8; font-size:11px; font-style:italic;">Gracias por tu compra</div>
+</div>"""
+            st.markdown(factura_preview_html, unsafe_allow_html=True)
 
             st.markdown("<br>", unsafe_allow_html=True)
             if PDF_DISPONIBLE:
