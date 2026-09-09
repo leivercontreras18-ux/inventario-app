@@ -2528,8 +2528,24 @@ else:
         )
 
         deudores_df = cargar_deudores()
-        total_por_cobrar = float(deudores_df["saldo"].sum()) if not deudores_df.empty else 0.0
-        cantidad_deudores = int((deudores_df["saldo"] > 0).sum()) if not deudores_df.empty else 0
+
+        # Solo se consideran deudores activos quienes realmente tienen saldo pendiente.
+        # El registro del cliente se conserva en Supabase para no perder su historial,
+        # pero deja de aparecer en "Ventas por Pagar" cuando su saldo llega a 0.
+        deudores_activos_df = (
+            deudores_df[
+                pd.to_numeric(deudores_df["saldo"], errors="coerce").fillna(0) > 0
+            ].copy()
+            if not deudores_df.empty
+            else pd.DataFrame(columns=COLUMNAS_DEUDORES)
+        )
+
+        total_por_cobrar = (
+            float(pd.to_numeric(deudores_activos_df["saldo"], errors="coerce").fillna(0).sum())
+            if not deudores_activos_df.empty
+            else 0.0
+        )
+        cantidad_deudores = len(deudores_activos_df)
 
         col1, col2 = st.columns(2)
         with col1:
@@ -2539,11 +2555,11 @@ else:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        with st.expander("👥 Ver todas las personas registradas"):
-            if deudores_df.empty:
-                st.info("Todavía no has agregado a nadie.")
+        with st.expander("👥 Ver personas que tienen saldo pendiente"):
+            if deudores_activos_df.empty:
+                st.success("✅ No hay personas con pagos pendientes.")
             else:
-                deudores_ordenado = deudores_df.sort_values("saldo", ascending=False)
+                deudores_ordenado = deudores_activos_df.sort_values("saldo", ascending=False)
                 for _, fila in deudores_ordenado.iterrows():
                     saldo_val = float(fila.get("saldo", 0) or 0)
                     color_saldo = "#63b8fe" if saldo_val > 0 else "#34d399"
@@ -2562,17 +2578,21 @@ else:
         # =========================================================================
         st.markdown("<div class='section-title'>🔍 Buscar Persona y Cobrar</div><div class='section-subtitle'>Encuentra a alguien para ver su saldo, su historial, o registrarle un pago.</div>", unsafe_allow_html=True)
 
-        if deudores_df.empty:
-            st.info("Todavía no hay personas registradas. Usa la sección de arriba para agregar la primera.")
+        if deudores_activos_df.empty:
+            st.info("No hay personas con saldo pendiente. Cuando registres una venta a crédito aparecerá aquí.")
         else:
-            ids_buscar = deudores_df["id"].astype(str).tolist()
+            ids_buscar = deudores_activos_df["id"].astype(str).tolist()
             id_buscado = st.selectbox(
                 "Escribe o selecciona el nombre",
                 ids_buscar,
-                format_func=lambda x: deudores_df[deudores_df["id"].astype(str) == x]["nombre"].values[0],
+                format_func=lambda x: deudores_activos_df[
+                    deudores_activos_df["id"].astype(str) == x
+                ]["nombre"].values[0],
                 key="select_buscar_persona",
             )
-            fila_buscada = deudores_df[deudores_df["id"].astype(str) == str(id_buscado)].iloc[0]
+            fila_buscada = deudores_activos_df[
+                deudores_activos_df["id"].astype(str) == str(id_buscado)
+            ].iloc[0]
             saldo_buscado = float(fila_buscada.get("saldo", 0) or 0)
             color_saldo_buscado = "#63b8fe" if saldo_buscado > 0 else "#34d399"
             telefono_buscado = fila_buscada.get("telefono") or "—"
@@ -2620,7 +2640,6 @@ else:
                 if monto_pago_usd <= 0:
                     st.error("El monto debe ser mayor a 0.")
                 else:
-                    # El saldo nunca queda negativo.
                     nuevo_saldo_buscado = max(0.0, saldo_buscado - monto_pago_usd)
 
                     saldo_actualizado = actualizar_saldo_deudor(
@@ -2638,12 +2657,13 @@ else:
                         tasa_cambio=tasa_cobro,
                     )
 
-                    # Cuando la deuda llega a cero, las ventas pendientes
-                    # de ese cliente pasan automáticamente a Ventas Pagadas.
                     ventas_movidas = 0
+
+                    # Pago completo: las ventas de ese cliente que estaban
+                    # pendientes pasan a Ventas Pagadas.
                     if saldo_actualizado and pago_registrado and nuevo_saldo_buscado <= 0 and supabase:
                         try:
-                            resultado = (
+                            resultado_pago = (
                                 supabase
                                 .table("movimientos")
                                 .update({"pagado": True})
@@ -2653,33 +2673,31 @@ else:
                                 .execute()
                             )
 
-                            if resultado.data:
-                                ventas_movidas = len(resultado.data)
+                            if resultado_pago.data:
+                                ventas_movidas = len(resultado_pago.data)
 
                             cargar_movimientos.clear()
+                            cargar_deudores.clear()
                         except Exception as e:
                             st.warning(
-                                f"El pago quedó registrado, pero no se pudieron "
+                                f"El pago fue registrado, pero no se pudieron "
                                 f"actualizar las ventas pendientes: {e}"
                             )
 
                     if nuevo_saldo_buscado <= 0:
-                        if ventas_movidas > 0:
-                            st.success(
-                                f"✅ ¡Pago completado! La deuda de "
-                                f"{fila_buscada['nombre']} quedó en cero y "
-                                f"{ventas_movidas} venta(s) pasaron a Ventas Pagadas."
-                            )
-                        else:
-                            st.success(
-                                f"✅ ¡Pago completado! La deuda de "
-                                f"{fila_buscada['nombre']} quedó en cero."
+                        st.success(
+                            f"✅ ¡Pago completado! La deuda de "
+                            f"{fila_buscada['nombre']} quedó en cero."
+                        )
+                        if ventas_movidas:
+                            st.info(
+                                f"🧾 {ventas_movidas} venta(s) pasaron automáticamente "
+                                f"a Ventas Pagadas."
                             )
                     else:
                         st.success(
                             f"💰 ¡Pago registrado! Nuevo saldo de "
-                            f"{fila_buscada['nombre']}: "
-                            f"{moneda(nuevo_saldo_buscado)}"
+                            f"{fila_buscada['nombre']}: {moneda(nuevo_saldo_buscado)}"
                         )
 
                     st.rerun()
