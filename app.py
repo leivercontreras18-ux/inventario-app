@@ -1059,6 +1059,18 @@ div[data-testid="stCode"] * {{
     overflow-x: hidden !important;
 }}
 
+div[data-testid="stWidgetLabel"], div[data-testid="stWidgetLabel"] * {{
+    color: var(--text-color) !important;
+    opacity: 1 !important;
+}}
+label, .stMarkdown p {{
+    color: var(--text-color) !important;
+}}
+.stCaption, div[data-testid="stCaptionContainer"] * {{
+    color: var(--text-secondary) !important;
+    opacity: 1 !important;
+}}
+
 div[data-testid="stTextArea"] textarea {{
     background-color: var(--input-bg) !important;
     color: var(--text-secondary) !important;
