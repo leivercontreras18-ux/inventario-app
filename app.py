@@ -1,6 +1,7 @@
 import base64
 import json
 import textwrap
+import urllib.parse
 import uuid
 from datetime import datetime
 from io import BytesIO
@@ -662,6 +663,28 @@ def grafico_dona(serie, texto_centro_arriba="", texto_centro_abajo="", altura=34
         )],
     )
     return fig
+
+
+def generar_texto_whatsapp_factura(venta_id, cliente, fecha_texto, items_factura, total_factura, pagado):
+    """Arma un mensaje de texto con formato de WhatsApp (negritas con *, emojis) listo para enviar."""
+    lineas = [
+        "🧾 *LEWIN BOUTIQUE*",
+        f"Factura N° {str(venta_id)[:8].upper()}",
+        f"📅 {fecha_texto}",
+        f"👤 Cliente: {cliente or 'Consumidor final'}",
+        "",
+        "*Productos:*",
+    ]
+    for item in items_factura:
+        cantidad_i = int(item["cantidad"])
+        subtotal_i = cantidad_i * float(item["precio_unitario"])
+        lineas.append(f"• {cantidad_i}x {item['producto']} — {moneda(item['precio_unitario'])} c/u = {moneda(subtotal_i)}")
+    lineas.append("")
+    lineas.append(f"💰 *TOTAL: {moneda(total_factura)}*")
+    lineas.append("✅ Pagada" if pagado else "🕒 Pendiente de pago")
+    lineas.append("")
+    lineas.append("¡Gracias por tu compra! 💜")
+    return "\n".join(lineas)
 
 
 def generar_factura_pdf(venta_id, cliente, fecha_texto, items_factura, total_factura):
@@ -2501,17 +2524,30 @@ else:
             st.markdown(factura_preview_html, unsafe_allow_html=True)
 
             st.markdown("<br>", unsafe_allow_html=True)
-            if PDF_DISPONIBLE:
-                items_para_pdf = items_venta_sel[["producto", "cantidad", "precio_unitario"]].to_dict("records")
-                pdf_bytes = generar_factura_pdf(
+            items_para_pdf = items_venta_sel[["producto", "cantidad", "precio_unitario"]].to_dict("records")
+
+            col_pdf, col_wa = st.columns(2)
+            with col_pdf:
+                if PDF_DISPONIBLE:
+                    pdf_bytes = generar_factura_pdf(
+                        venta_sel, fila_resumen["cliente"], formatear_fecha_corta(fila_resumen["fecha"]),
+                        items_para_pdf, fila_resumen["total"],
+                    )
+                    st.download_button(
+                        "📄 Descargar en PDF", data=pdf_bytes,
+                        file_name=f"factura_{str(venta_sel)[:8]}.pdf", mime="application/pdf",
+                        use_container_width=True,
+                    )
+            with col_wa:
+                texto_wa = generar_texto_whatsapp_factura(
                     venta_sel, fila_resumen["cliente"], formatear_fecha_corta(fila_resumen["fecha"]),
-                    items_para_pdf, fila_resumen["total"],
+                    items_para_pdf, fila_resumen["total"], bool(fila_resumen["pagado"]),
                 )
-                st.download_button(
-                    "📄 Descargar Factura en PDF", data=pdf_bytes,
-                    file_name=f"factura_{str(venta_sel)[:8]}.pdf", mime="application/pdf",
-                    use_container_width=True,
-                )
+                link_wa = "https://wa.me/?text=" + urllib.parse.quote(texto_wa)
+                st.link_button("💬 Enviar por WhatsApp", url=link_wa, use_container_width=True)
+
+            with st.expander("Ver / copiar el texto del mensaje"):
+                st.text_area("Mensaje", value=texto_wa, height=220, label_visibility="collapsed", key=f"texto_wa_{venta_sel}")
 
     # -----------------------------------------------------------------------------
     # DEUDORES (cuentas por cobrar)
@@ -2528,24 +2564,8 @@ else:
         )
 
         deudores_df = cargar_deudores()
-
-        # Solo se consideran deudores activos quienes realmente tienen saldo pendiente.
-        # El registro del cliente se conserva en Supabase para no perder su historial,
-        # pero deja de aparecer en "Ventas por Pagar" cuando su saldo llega a 0.
-        deudores_activos_df = (
-            deudores_df[
-                pd.to_numeric(deudores_df["saldo"], errors="coerce").fillna(0) > 0
-            ].copy()
-            if not deudores_df.empty
-            else pd.DataFrame(columns=COLUMNAS_DEUDORES)
-        )
-
-        total_por_cobrar = (
-            float(pd.to_numeric(deudores_activos_df["saldo"], errors="coerce").fillna(0).sum())
-            if not deudores_activos_df.empty
-            else 0.0
-        )
-        cantidad_deudores = len(deudores_activos_df)
+        total_por_cobrar = float(deudores_df["saldo"].sum()) if not deudores_df.empty else 0.0
+        cantidad_deudores = int((deudores_df["saldo"] > 0).sum()) if not deudores_df.empty else 0
 
         col1, col2 = st.columns(2)
         with col1:
@@ -2555,11 +2575,11 @@ else:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        with st.expander("👥 Ver personas que tienen saldo pendiente"):
-            if deudores_activos_df.empty:
-                st.success("✅ No hay personas con pagos pendientes.")
+        with st.expander("👥 Ver todas las personas registradas"):
+            if deudores_df.empty:
+                st.info("Todavía no has agregado a nadie.")
             else:
-                deudores_ordenado = deudores_activos_df.sort_values("saldo", ascending=False)
+                deudores_ordenado = deudores_df.sort_values("saldo", ascending=False)
                 for _, fila in deudores_ordenado.iterrows():
                     saldo_val = float(fila.get("saldo", 0) or 0)
                     color_saldo = "#63b8fe" if saldo_val > 0 else "#34d399"
@@ -2578,21 +2598,17 @@ else:
         # =========================================================================
         st.markdown("<div class='section-title'>🔍 Buscar Persona y Cobrar</div><div class='section-subtitle'>Encuentra a alguien para ver su saldo, su historial, o registrarle un pago.</div>", unsafe_allow_html=True)
 
-        if deudores_activos_df.empty:
-            st.info("No hay personas con saldo pendiente. Cuando registres una venta a crédito aparecerá aquí.")
+        if deudores_df.empty:
+            st.info("Todavía no hay personas registradas. Usa la sección de arriba para agregar la primera.")
         else:
-            ids_buscar = deudores_activos_df["id"].astype(str).tolist()
+            ids_buscar = deudores_df["id"].astype(str).tolist()
             id_buscado = st.selectbox(
                 "Escribe o selecciona el nombre",
                 ids_buscar,
-                format_func=lambda x: deudores_activos_df[
-                    deudores_activos_df["id"].astype(str) == x
-                ]["nombre"].values[0],
+                format_func=lambda x: deudores_df[deudores_df["id"].astype(str) == x]["nombre"].values[0],
                 key="select_buscar_persona",
             )
-            fila_buscada = deudores_activos_df[
-                deudores_activos_df["id"].astype(str) == str(id_buscado)
-            ].iloc[0]
+            fila_buscada = deudores_df[deudores_df["id"].astype(str) == str(id_buscado)].iloc[0]
             saldo_buscado = float(fila_buscada.get("saldo", 0) or 0)
             color_saldo_buscado = "#63b8fe" if saldo_buscado > 0 else "#34d399"
             telefono_buscado = fila_buscada.get("telefono") or "—"
@@ -2640,66 +2656,14 @@ else:
                 if monto_pago_usd <= 0:
                     st.error("El monto debe ser mayor a 0.")
                 else:
-                    nuevo_saldo_buscado = max(0.0, saldo_buscado - monto_pago_usd)
-
-                    saldo_actualizado = actualizar_saldo_deudor(
-                        id_buscado,
-                        nuevo_saldo_buscado,
+                    nuevo_saldo_buscado = saldo_buscado - monto_pago_usd
+                    actualizar_saldo_deudor(id_buscado, nuevo_saldo_buscado)
+                    registrar_movimiento_deuda(
+                        deudor_id=id_buscado, deudor_nombre=fila_buscada["nombre"],
+                        tipo="abono", descripcion=nota_pago, monto=monto_pago_usd,
+                        medio_pago=f"{medio_pago_sel} ({moneda_pago_sel})", tasa_cambio=tasa_cobro,
                     )
-
-                    pago_registrado = registrar_movimiento_deuda(
-                        deudor_id=id_buscado,
-                        deudor_nombre=fila_buscada["nombre"],
-                        tipo="abono",
-                        descripcion=nota_pago,
-                        monto=monto_pago_usd,
-                        medio_pago=f"{medio_pago_sel} ({moneda_pago_sel})",
-                        tasa_cambio=tasa_cobro,
-                    )
-
-                    ventas_movidas = 0
-
-                    # Pago completo: las ventas de ese cliente que estaban
-                    # pendientes pasan a Ventas Pagadas.
-                    if saldo_actualizado and pago_registrado and nuevo_saldo_buscado <= 0 and supabase:
-                        try:
-                            resultado_pago = (
-                                supabase
-                                .table("movimientos")
-                                .update({"pagado": True})
-                                .eq("tipo", "venta")
-                                .eq("cliente", str(fila_buscada["nombre"]))
-                                .eq("pagado", False)
-                                .execute()
-                            )
-
-                            if resultado_pago.data:
-                                ventas_movidas = len(resultado_pago.data)
-
-                            cargar_movimientos.clear()
-                            cargar_deudores.clear()
-                        except Exception as e:
-                            st.warning(
-                                f"El pago fue registrado, pero no se pudieron "
-                                f"actualizar las ventas pendientes: {e}"
-                            )
-
-                    if nuevo_saldo_buscado <= 0:
-                        st.success(
-                            f"✅ ¡Pago completado! La deuda de "
-                            f"{fila_buscada['nombre']} quedó en cero."
-                        )
-                        if ventas_movidas:
-                            st.info(
-                                f"🧾 {ventas_movidas} venta(s) pasaron automáticamente "
-                                f"a Ventas Pagadas."
-                            )
-                    else:
-                        st.success(
-                            f"💰 ¡Pago registrado! Nuevo saldo de "
-                            f"{fila_buscada['nombre']}: {moneda(nuevo_saldo_buscado)}"
-                        )
-
+                    st.success(f"¡Pago registrado! Nuevo saldo de {fila_buscada['nombre']}: {moneda(nuevo_saldo_buscado)}")
                     st.rerun()
 
             with st.expander(f"📜 Historial de {fila_buscada['nombre']}"):
