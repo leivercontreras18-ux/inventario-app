@@ -26,6 +26,12 @@ try:
 except ImportError:
     PDF_DISPONIBLE = False
 
+try:
+    import fitz  # PyMuPDF
+    IMAGEN_FACTURA_DISPONIBLE = True
+except ImportError:
+    IMAGEN_FACTURA_DISPONIBLE = False
+
 st.set_page_config(
     page_title="Lewin // Inventario Boutique", page_icon="👕", layout="wide"
 )
@@ -663,6 +669,23 @@ def grafico_dona(serie, texto_centro_arriba="", texto_centro_abajo="", altura=34
         )],
     )
     return fig
+
+
+def generar_factura_imagen(pdf_bytes, cantidad_items):
+    """Convierte el PDF de la factura en una imagen PNG (recortada, sin el espacio en blanco sobrante)."""
+    if not IMAGEN_FACTURA_DISPONIBLE or not pdf_bytes:
+        return None
+    try:
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        pagina = doc[0]
+        alto_mm = 42 + 20 + 9 + (cantidad_items * 9) + 45
+        alto_pt = min(alto_mm * 2.83465, pagina.rect.height)
+        recorte = fitz.Rect(0, 0, pagina.rect.width, alto_pt)
+        pix = pagina.get_pixmap(matrix=fitz.Matrix(2.5, 2.5), clip=recorte)
+        return pix.tobytes("png")
+    except Exception as e:
+        st.warning(f"No se pudo generar la imagen: {e}")
+        return None
 
 
 def generar_texto_whatsapp_factura(venta_id, cliente, fecha_texto, items_factura, total_factura, pagado):
@@ -2526,13 +2549,28 @@ else:
             st.markdown("<br>", unsafe_allow_html=True)
             items_para_pdf = items_venta_sel[["producto", "cantidad", "precio_unitario"]].to_dict("records")
 
-            col_pdf, col_wa = st.columns(2)
+            pdf_bytes = None
+            if PDF_DISPONIBLE:
+                pdf_bytes = generar_factura_pdf(
+                    venta_sel, fila_resumen["cliente"], formatear_fecha_corta(fila_resumen["fecha"]),
+                    items_para_pdf, fila_resumen["total"],
+                )
+
+            col_img, col_pdf, col_wa = st.columns(3)
+            with col_img:
+                if IMAGEN_FACTURA_DISPONIBLE and pdf_bytes:
+                    imagen_bytes = generar_factura_imagen(pdf_bytes, len(items_para_pdf))
+                    if imagen_bytes:
+                        st.download_button(
+                            "🖼️ Descargar como Imagen", data=imagen_bytes,
+                            file_name=f"factura_{str(venta_sel)[:8]}.png", mime="image/png",
+                            use_container_width=True,
+                        )
+                        st.caption("Ideal para enviar como foto por WhatsApp.")
+                else:
+                    st.caption("⚠️ Falta instalar `pymupdf` en tu requirements.txt para esta opción.")
             with col_pdf:
                 if PDF_DISPONIBLE:
-                    pdf_bytes = generar_factura_pdf(
-                        venta_sel, fila_resumen["cliente"], formatear_fecha_corta(fila_resumen["fecha"]),
-                        items_para_pdf, fila_resumen["total"],
-                    )
                     st.download_button(
                         "📄 Descargar en PDF", data=pdf_bytes,
                         file_name=f"factura_{str(venta_sel)[:8]}.pdf", mime="application/pdf",
@@ -2544,7 +2582,9 @@ else:
                     items_para_pdf, fila_resumen["total"], bool(fila_resumen["pagado"]),
                 )
                 link_wa = "https://wa.me/?text=" + urllib.parse.quote(texto_wa)
-                st.link_button("💬 Enviar por WhatsApp", url=link_wa, use_container_width=True)
+                st.link_button("💬 Enviar Texto por WhatsApp", url=link_wa, use_container_width=True)
+
+            st.caption("Para enviar la imagen por WhatsApp: descárgala con el primer botón y adjúntala como foto en el chat (WhatsApp no permite adjuntar archivos directo desde aquí).")
 
             with st.expander("Ver / copiar el texto del mensaje"):
                 st.text_area("Mensaje", value=texto_wa, height=220, label_visibility="collapsed", key=f"texto_wa_{venta_sel}")
