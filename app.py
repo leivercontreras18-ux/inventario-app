@@ -1267,6 +1267,10 @@ if not st.session_state.autenticado and "recuerdame_user" in query_params:
         st.session_state.usuario_actual = saved_user
         st.session_state.rol_actual = USUARIOS[saved_user]["rol"]
 
+if query_params.get("ir") == "login" and st.session_state.etapa == "bienvenida":
+    st.session_state.etapa = "login"
+    del st.query_params["ir"]
+
 ES_ADMIN = True  # Todos los usuarios (leiver y winderly) tienen acceso completo por igual
 
 # =====================================================================================
@@ -1285,7 +1289,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         .block-container { padding: 3.5rem 2rem 2rem 2rem !important; max-width: 100% !important; }
         .full-hero-wrapper {
             background: var(--card-bg); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
-            border: 1px solid var(--border-color); border-radius: 32px 32px 0 0; padding: 50px 70px 35px 70px;
+            border: 1px solid var(--border-color); border-radius: 32px; padding: 50px 70px 55px 70px;
             display: flex; flex-direction: column; position: relative;
             overflow: hidden; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.08);
             margin: 0 auto; max-width: 1450px;
@@ -1350,6 +1354,13 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 32px 32px;
             padding: 25px 70px 30px 70px;
         }
+        .hero-inicio-link {
+            background: linear-gradient(135deg, #7c4dfc 0%, #63b8fe 100%);
+            color: #ffffff !important; text-decoration: none !important;
+            padding: 10px 26px; border-radius: 10px; font-weight: 700; font-size: 13px;
+            letter-spacing: 0.5px; animation: pulseGlowHero 2.6s ease-in-out infinite;
+            display: inline-block;
+        }
         div[data-testid="stButton"] { max-width: 340px; margin: 0 auto; }
         div[data-testid="stButton"] > button {
             background: linear-gradient(135deg, #7c4dfc 0%, #63b8fe 100%) !important;
@@ -1372,12 +1383,12 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                         <div class="brand-icon-hero">LOGO_SVG_PLACEHOLDER</div>
                         <div class="hero-brand-name">LEWIN BOUTIQUE</div>
                     </div>
+                    <a class="hero-inicio-link" href="?ir=login">INICIO</a>
                 </div>
                 <div class="hero-subtitle-tag">Inventario Boutique</div>
                 <h1 class="hero-title">Lewin Boutique<br>Control Center</h1>
                 <p class="hero-desc">
-                    Gestión completa de inventario, ventas, reportes y catálogo visual en una sola plataforma,
-                    con una interfaz de lujo en pantalla negra y oro rosa.
+                    Gestión completa de inventario, ventas, reportes y catálogo visual en una sola plataforma.
                 </p>
                 <div class="feature-pills-container">
                     <span class="feature-pill">📷 Fotos de productos</span>
@@ -1390,20 +1401,14 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                     <div><div class="stat-value-hero">PLACEHOLDER_PORC%</div><div class="stat-label-hero">Stock por encima del mínimo</div></div>
                     <div><div class="stat-value-hero">24/7</div><div class="stat-label-hero">Acceso en la nube</div></div>
                 </div>
+                <div class="footer-signature-hero">Diseñado con ♥ para Lewin Boutique</div>
             </div>
         </div>
-        <div class="hero-cta-box">
         """
     hero_html = hero_html.replace("PLACEHOLDER_TOTAL", str(total_prendas_hero)).replace("PLACEHOLDER_PORC", str(porcentaje_ok_hero)).replace("LOGO_SVG_PLACEHOLDER", logo_svg_markup(38))
     hero_html = textwrap.dedent(hero_html)
 
     st.markdown(hero_html, unsafe_allow_html=True)
-
-    if st.button("INICIO", use_container_width=True):
-        st.session_state.etapa = "login"
-        st.rerun()
-
-    st.markdown("<div class='footer-signature-hero'>Diseñado con ♥ para Lewin Boutique</div></div>", unsafe_allow_html=True)
     st.stop()
 
 # =====================================================================================
