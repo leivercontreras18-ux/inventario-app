@@ -820,14 +820,18 @@ header[data-testid="stHeader"] {{ background: transparent !important; }}
 .block-container {{ max-width: 100% !important; padding: 3.5rem 2rem 2rem 2rem !important; }}
 
 section[data-testid="stSidebar"] {{
-    width: {ancho_sidebar} !important;
-    min-width: {ancho_sidebar} !important;
+    width: 270px !important;
+    min-width: 270px !important;
     background: var(--sidebar-bg) !important;
     border-right: 1px solid var(--border-color);
     backdrop-filter: blur(30px);
-    transition: width 0.25s ease;
 }}
 section[data-testid="stSidebar"] * {{ color: var(--text-color) !important; }}
+
+section[data-testid="stSidebar"] [data-testid="stSidebarContent"],
+section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {{
+    padding-top: 1rem !important;
+}}
 
 section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {{
     gap: 4px !important;
@@ -1023,11 +1027,11 @@ div[data-testid="stForm"] {{
 .kpi-value {{ font-size: 22px; font-weight: 800; color: var(--text-color); margin-top: 2px; }}
 
 .logo-brand-row {{
-    display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
-    padding-bottom: 14px; border-bottom: 1px solid var(--border-color);
+    display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+    padding: 2px 2px 10px 2px; border-bottom: 1px solid var(--border-color);
 }}
-.logo-brand-name {{ font-size: 15px; font-weight: 800; color: var(--text-color); letter-spacing: 1px; line-height: 1.1; }}
-.logo-brand-sub {{ font-size: 9px; font-weight: 600; color: var(--text-secondary); letter-spacing: 2px; }}
+.logo-brand-name {{ font-size: 16px; font-weight: 800; color: var(--text-color); letter-spacing: 1.5px; line-height: 1.1; }}
+.logo-brand-sub {{ font-size: 9px; font-weight: 700; color: var(--accent); letter-spacing: 2px; }}
 
 .page-header {{ margin-bottom: 25px; padding-bottom: 10px; }}
 .page-title {{ font-size: 32px; font-weight: 700; color: var(--text-color) !important; letter-spacing: 0.5px; }}
@@ -1047,16 +1051,17 @@ div[data-testid="stForm"] {{
 .metric-label {{ font-size: 11px; color: var(--text-secondary) !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }}
 
 .user-profile-compact {{
-    background: rgba(219, 39, 119, 0.08); padding: 10px 12px; border-radius: 14px;
-    border: 1px solid var(--border-color); margin-bottom: 10px;
-    display: flex; align-items: center; gap: 10px;
+    background: rgba(219, 39, 119, 0.09); padding: 10px 14px; border-radius: 14px;
+    border: 1px solid var(--border-color); margin-bottom: 8px;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }}
 .user-avatar {{
-    width: 34px; height: 34px; background: linear-gradient(135deg, #db2777 0%, #ec4899 100%); color: #ffffff;
+    width: 36px; height: 36px; background: linear-gradient(135deg, #db2777 0%, #ec4899 100%); color: #ffffff;
     font-weight: 800; border-radius: 50%; display: flex; align-items: center;
-    justify-content: center; font-size: 13px; box-shadow: 0 0 15px rgba(219, 39, 119, 0.5); flex-shrink: 0;
+    justify-content: center; font-size: 14px; box-shadow: 0 0 15px rgba(219, 39, 119, 0.5); flex-shrink: 0;
 }}
-.user-info-name {{ font-size: 13px; font-weight: 700; color: var(--text-color); line-height: 1.2; }}
+.user-info-name {{ font-size: 14px; font-weight: 700; color: var(--text-color); line-height: 1.2; }}
 
 .menu-divider {{ height: 1px; background: var(--border-color); margin: 12px 0 10px 0; }}
 
@@ -1120,7 +1125,7 @@ for k, v in defaults_sesion.items():
 if "inventario_local" not in st.session_state:
     st.session_state.inventario_local = pd.DataFrame(columns=COLUMNAS_INVENTARIO)
 
-st.markdown(get_css(st.session_state.tema, st.session_state.sidebar_compacto), unsafe_allow_html=True)
+st.markdown(get_css(st.session_state.tema), unsafe_allow_html=True)
 
 df, cats_init, tallas_init, colores_init = cargar_datos_completos()
 
@@ -1331,35 +1336,14 @@ else:
     inicial_usuario = usuario_formateado[0]
     rol_formateado = st.session_state.rol_actual.capitalize()
     menu_actual = st.session_state.get("menu_activo", "inicio")
-    compacto = st.session_state.sidebar_compacto
 
     LOGO_SVG = logo_svg_markup(34)
 
-    if compacto:
-        st.sidebar.markdown(f"<div style='display:flex; justify-content:center; margin-bottom:6px;'>{LOGO_SVG}</div>", unsafe_allow_html=True)
-    else:
-        st.sidebar.markdown(
-            f"""<div class="logo-brand-row">
+    st.sidebar.markdown(
+        f"""<div class="logo-brand-row">
 {LOGO_SVG}
 <div><div class="logo-brand-name">LEWIN</div><div class="logo-brand-sub">BOUTIQUE</div></div>
-</div>""",
-            unsafe_allow_html=True,
-        )
-
-    col_collapse1, col_collapse2 = st.sidebar.columns([3, 1])
-    with col_collapse2:
-        if st.button("\u2630", key="btn_toggle_compacto", help="Colapsar / expandir men\u00fa"):
-            st.session_state.sidebar_compacto = not st.session_state.sidebar_compacto
-            st.rerun()
-
-    if compacto:
-        st.sidebar.markdown(
-            f"""<div class="user-profile-compact" style="justify-content: center;"><div class="user-avatar">{inicial_usuario}</div></div>""",
-            unsafe_allow_html=True,
-        )
-    else:
-        st.sidebar.markdown(
-            f"""
+</div>
 <div class="user-profile-compact">
     <div class="user-avatar">{inicial_usuario}</div>
     <div>
@@ -1368,15 +1352,14 @@ else:
     </div>
 </div>
 """,
-            unsafe_allow_html=True,
-        )
+        unsafe_allow_html=True,
+    )
 
-    if not compacto:
-        tema_claro = st.sidebar.toggle("\u2600\ufe0f Modo claro", value=(st.session_state.tema == "claro"))
-        nuevo_tema = "claro" if tema_claro else "oscuro"
-        if nuevo_tema != st.session_state.tema:
-            st.session_state.tema = nuevo_tema
-            st.rerun()
+    tema_claro = st.sidebar.toggle("\u2600\ufe0f Modo claro", value=(st.session_state.tema == "claro"), key="toggle_tema_sidebar")
+    nuevo_tema = "claro" if tema_claro else "oscuro"
+    if nuevo_tema != st.session_state.tema:
+        st.session_state.tema = nuevo_tema
+        st.rerun()
 
     st.sidebar.markdown("<div class='menu-divider'></div>", unsafe_allow_html=True)
 
@@ -1396,12 +1379,6 @@ else:
         """Botón principal con flechita (▾/▸) y sub-ítems jerárquicos alineados."""
         claves_grupo = [c for c, _ in items]
         expandido = (st.session_state.grupo_menu_abierto == session_key)
-
-        if compacto:
-            if st.sidebar.button(icono_grupo, use_container_width=True, key=f"grupo_{session_key}", type=("primary" if menu_actual in claves_grupo else "secondary"), help=titulo_grupo):
-                st.session_state.menu_activo = claves_grupo[0]
-                st.rerun()
-            return
 
         chevron = "\u25be" if expandido else "\u25b8"
         tipo_grupo = "primary" if (menu_actual in claves_grupo and not expandido) else "secondary"
@@ -1424,8 +1401,7 @@ else:
                     st.rerun()
 
     # --- Inicio (ítem plano, sin acordeón) ---
-    etiqueta_inicio = "\U0001f3e0" if compacto else "\U0001f3e0  Inicio"
-    if st.sidebar.button(etiqueta_inicio, use_container_width=True, key="menu_inicio", type=("primary" if menu_actual == "inicio" else "secondary"), help="Inicio" if compacto else None):
+    if st.sidebar.button("\U0001f3e0  Inicio", use_container_width=True, key="menu_inicio", type=("primary" if menu_actual == "inicio" else "secondary")):
         st.session_state.menu_activo = "inicio"
         st.rerun()
 
@@ -1443,21 +1419,18 @@ else:
         ("comprar", "Registrar Compra"), ("movimientos", "Movimientos"), ("facturas", "Facturas"),
     ], "acc_compras")
 
-    if not compacto:
-        st.sidebar.markdown("<p class='menu-group-title'>Negocio</p>", unsafe_allow_html=True)
+    st.sidebar.markdown("<p class='menu-group-title'>Negocio</p>", unsafe_allow_html=True)
     for clave, icono, etiqueta in [("reportes", "\U0001f4c8", "Reportes"), ("configuracion", "\u2699\ufe0f", "Configuraci\u00f3n")]:
         if clave == "configuracion" and not ES_ADMIN:
             continue
         tipo_boton = "primary" if menu_actual == clave else "secondary"
-        label_boton = icono if compacto else f"{icono}  {etiqueta}"
-        if st.sidebar.button(label_boton, use_container_width=True, key=f"menu_{clave}", type=tipo_boton, help=etiqueta if compacto else None):
+        if st.sidebar.button(f"{icono}  {etiqueta}", use_container_width=True, key=f"menu_{clave}", type=tipo_boton):
             st.session_state.menu_activo = clave
             st.rerun()
 
     st.sidebar.markdown("<hr style='margin: 16px 0 12px 0; border-color: var(--border-color);'>", unsafe_allow_html=True)
 
-    etiqueta_salir = "\U0001f6aa" if compacto else "\U0001f6aa  Cerrar Sesi\u00f3n"
-    if st.sidebar.button(etiqueta_salir, use_container_width=True, help="Cerrar Sesi\u00f3n" if compacto else None):
+    if st.sidebar.button("\U0001f6aa  Cerrar Sesi\u00f3n", use_container_width=True):
         st.session_state.autenticado = False
         st.session_state.usuario_actual = ""
         st.session_state.rol_actual = ""
