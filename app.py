@@ -1235,7 +1235,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                         <div class="brand-icon-hero">LOGO_SVG_PLACEHOLDER</div>
                         <div class="hero-brand-name">LEWIN BOUTIQUE</div>
                     </div>
-                    <a class="hero-inicio-link" href="?ir=login" target="_self">INICIO</a>
+                    
                 </div>
                 <div class="hero-subtitle-tag">Inventario Boutique</div>
                 <h1 class="hero-title">Lewin Boutique<br>Control Center</h1>
@@ -1260,6 +1260,11 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
     hero_html = textwrap.dedent(hero_html)
 
     st.markdown(hero_html, unsafe_allow_html=True)
+        col_btn_hero_izq, col_btn_hero_der = st.columns([5, 1])
+    with col_btn_hero_der:
+        if st.button("INICIO", key="btn_inicio_hero", use_container_width=True):
+            st.query_params["ir"] = "login"
+            st.rerun()
     st.stop()
 
 # =====================================================================================
