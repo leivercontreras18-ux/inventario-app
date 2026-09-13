@@ -2824,4 +2824,3 @@ else:
                     st.session_state.colores_maestros = list(st.session_state.edit_colores)
                     st.success("\u00a1Configuraci\u00f3n guardada en GitHub exitosamente!")
                     st.rerun()
-
