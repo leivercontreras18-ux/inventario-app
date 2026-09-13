@@ -1260,7 +1260,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
     hero_html = textwrap.dedent(hero_html)
 
     st.markdown(hero_html, unsafe_allow_html=True)
-    col_btn_hero_izq, col_btn_hero_der = st.columns([5, 1])
+        col_btn_hero_izq, col_btn_hero_der = st.columns([5, 1])
     with col_btn_hero_der:
         if st.button("INICIO", key="btn_inicio_hero", use_container_width=True):
             st.query_params["ir"] = "login"
@@ -2824,3 +2824,4 @@ else:
                     st.session_state.colores_maestros = list(st.session_state.edit_colores)
                     st.success("\u00a1Configuraci\u00f3n guardada en GitHub exitosamente!")
                     st.rerun()
+
