@@ -1052,7 +1052,7 @@ div[data-testid="stForm"] {{
 
 .user-profile-compact {{
     background: rgba(219, 39, 119, 0.09); padding: 10px 14px; border-radius: 14px;
-    border: 1px solid var(--border-color); margin-bottom: 8px;
+    border: 1px solid var(--border-color); margin-bottom: 20px;
     display: flex; align-items: center; gap: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }}
