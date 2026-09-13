@@ -62,7 +62,7 @@ def obtener_conexion_github():
     except Exception:
         return None
 
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=3600)
 def cargar_config_github():
     try:
         g = obtener_conexion_github()
@@ -94,8 +94,8 @@ COLUMNAS_DEUDAS_MOVIMIENTOS = [
     "medio_pago", "tasa_cambio", "fecha", "usuario",
 ]
 
-@st.cache_data(ttl=30)
-def cargar_datos_completos():
+@st.cache_data(ttl=3600)
+def cargar_config_github():
     cats_default = ["Vestidos", "Blusas", "Pantalones", "Jeans", "Chaquetas", "Calzado", "Accesorios"]
     tallas_default = ["XS", "S", "M", "L", "XL", "\u00danica"]
     colores_default = ["Negro", "Blanco", "Beige", "Rojo", "Azul", "Rosa", "Verde"]
@@ -127,12 +127,12 @@ def cargar_datos_completos():
 
     return df, cats, tallas, colores
 
-@st.cache_data(ttl=20)
+@st.cache_data(ttl=300)
 def cargar_movimientos():
     if not supabase:
         return pd.DataFrame(columns=COLUMNAS_MOVIMIENTOS)
     try:
-        res = supabase.table("movimientos").select("*").order("fecha", desc=True).execute()
+        res = supabase.table("movimientos").select("*").order("fecha", desc=True).limit(500).execute()
         if res.data:
             df_mov = pd.DataFrame(res.data)
             if "pagado" not in df_mov.columns:
@@ -199,7 +199,7 @@ def eliminar_todos_los_movimientos():
         st.error(f"Error al restablecer los movimientos: {e}")
         return False
 
-@st.cache_data(ttl=20)
+@st.cache_data(ttl=300)
 def cargar_deudores():
     if not supabase:
         return pd.DataFrame(columns=COLUMNAS_DEUDORES)
@@ -211,12 +211,12 @@ def cargar_deudores():
         st.warning(f"No se pudieron cargar los deudores: {e}")
     return pd.DataFrame(columns=COLUMNAS_DEUDORES)
 
-@st.cache_data(ttl=20)
+@st.cache_data(ttl=300)
 def cargar_deudas_movimientos():
     if not supabase:
         return pd.DataFrame(columns=COLUMNAS_DEUDAS_MOVIMIENTOS)
     try:
-        res = supabase.table("deudas_movimientos").select("*").order("fecha", desc=True).execute()
+        res = supabase.table("deudas_movimientos").select("*").order("fecha", desc=True).limit(500).execute()
         if res.data:
             return pd.DataFrame(res.data)
     except Exception as e:
@@ -421,7 +421,7 @@ def eliminar_prenda(id_prenda):
 # UTILIDADES
 # =====================================================================================
 
-@st.cache_data(ttl=900)
+@st.cache_data(ttl=1800)
 def obtener_tasas_cambio():
     fuentes = {
         "BCV": "https://ve.dolarapi.com/v1/dolares/oficial",
