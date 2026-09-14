@@ -1558,9 +1558,9 @@ else:
     st.sidebar.markdown("<div class='menu-divider'></div>", unsafe_allow_html=True)
 
     GRUPOS_CLAVES_MENU = {
-        "acc_inventario": ["existencias", "registrar", "modificar"],
-        "acc_ventas": ["vender", "ventas_pagadas", "deudores"],
-        "acc_compras": ["comprar", "movimientos", "facturas"],
+        "acc_inventario": ["existencias", "etiquetas", "registrar", "modificar"],
+        "acc_ventas": ["vender", "ventas_pagadas", "facturas", "deudores"],
+        "acc_compras": ["comprar", "movimientos"],
     }
     if "grupo_menu_abierto" not in st.session_state:
         st.session_state.grupo_menu_abierto = next(
