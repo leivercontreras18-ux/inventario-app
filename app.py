@@ -2493,12 +2493,12 @@ else:
                         st.text_area("Texto para copiar y pegar:", value=texto_wa, height=180, key=f"txt_wa_{id_ficha_sel}")
 
                         st.caption("💡 Descarga la ficha y mándala como imagen por WhatsApp. Copia el texto si quieres acompañarla.")
-                    else:
+            else:
                         st.caption("⚠️ No se pudo generar la ficha. Revisa que `fpdf2` esté instalado.")
 
-                           with col_ficha_prev:
-                    st.markdown("**Vista previa:**")
-                    imagen_preview = generar_ficha_como_imagen(prenda_dict, tasa_ficha)
+            with col_ficha_prev:
+                        st.markdown("**Vista previa:**")
+                        imagen_preview = generar_ficha_como_imagen(prenda_dict, tasa_ficha)
                     if imagen_preview:
                         st.image(imagen_preview, use_container_width=True)
                     else:
