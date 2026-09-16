@@ -886,7 +886,7 @@ def generar_etiquetas_pdf(lista_prendas, tasa_cambio):
         return None
 
     def pdf_a_imagen(pdf_bytes):
-    return None
+        return None
 
 
 
