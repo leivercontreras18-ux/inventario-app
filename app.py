@@ -1994,6 +1994,71 @@ else:
         else:
             st.info("No hay prendas registradas todavía en el sistema.")
 
+        # -----------------------------------------------------------------------------
+    # ETIQUETAS DE PRECIOS
+    # -----------------------------------------------------------------------------
+    elif menu == "etiquetas":
+        st.markdown(
+            """
+<div class="page-header">
+    <div class="page-title">🏷️ Generador de Etiquetas de Precios</div>
+    <div class="page-subtitle">Crea e imprime etiquetas para colocar en las prendas físicas con logo, talla, color y precio.</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        if df.empty:
+            st.info("No hay prendas registradas para generar etiquetas.")
+        else:
+            tasa_etiqueta, _ = selector_tasa_cambio("etiquetas_tasa")
+            cats_etiquetas = ["Todas"] + list(st.session_state.categorias_maestras)
+            cat_sel_et = st.selectbox("Filtrar por Categoría", cats_etiquetas, key="cat_sel_etiquetas")
+
+            df_et = df.copy()
+            if cat_sel_et != "Todas":
+                df_et = df_et[df_et["Categoria"] == cat_sel_et]
+
+            opciones_prendas_et = df_et["ID"].astype(str).tolist()
+            prendas_sel_et = st.multiselect(
+                "Seleccionar prendas a imprimir",
+                opciones_prendas_et,
+                default=opciones_prendas_et[:6],
+                format_func=lambda x: f"ID: {x} - {df_et[df_et['ID'].astype(str) == x]['Producto'].values[0]}"
+            )
+
+            if prendas_sel_et:
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown("<div class='section-title'>📋 Vista Previa de Etiquetas Imprimibles</div>", unsafe_allow_html=True)
+
+                cols_et = st.columns(3)
+                for idx, pid in enumerate(prendas_sel_et):
+                    fila_p = df[df["ID"].astype(str) == str(pid)].iloc[0]
+                    precio_usd = float(fila_p.get("precio_venta", 0) or 0)
+                    precio_bs = precio_usd * tasa_etiqueta if tasa_etiqueta > 0 else 0.0
+                    bs_txt = f"<br><span style='font-size:11px; color:#666;'>{precio_bs:,.2f} Bs</span>" if precio_bs > 0 else ""
+
+                    card_html = f"""<div style="background: #ffffff; color: #1a1a1a; padding: 16px; border-radius: 12px; border: 2px dashed #7c4dfc; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+<div style="text-align: center; border-bottom: 1px solid #eee; padding-bottom: 6px; margin-bottom: 8px;">
+<div style="font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 11px; letter-spacing: 2px; color: #7c4dfc;">LEWIN BOUTIQUE</div>
+<div style="font-weight: 700; font-size: 13px; color: #111;">{fila_p['Producto']}</div>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+<div style="font-size: 11px; color: #444;">
+<div>ID: <b>{fila_p['ID']}</b></div>
+<div>Talla: <b>{fila_p['talla']}</b></div>
+<div>Color: <b>{fila_p['color']}</b></div>
+</div>
+</div>
+<div style="border-top: 1px solid #eee; padding-top: 6px; display: flex; justify-content: space-between; align-items: center;">
+<span style="font-size: 18px; font-weight: 800; color: #7c4dfc;">{moneda(precio_usd)}</span>
+{bs_txt}
+</div>
+</div>"""
+                    with cols_et[idx % 3]:
+                        st.markdown(card_html, unsafe_allow_html=True)
+
+
     # -----------------------------------------------------------------------------
     # VENDER
     # -----------------------------------------------------------------------------
