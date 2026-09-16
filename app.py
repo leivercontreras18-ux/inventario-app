@@ -884,12 +884,7 @@ def generar_etiquetas_pdf(lista_prendas, tasa_cambio):
     except Exception as e:
         st.warning(f"No se pudo generar el PDF de etiquetas: {e}")
         return None
-
-    def pdf_a_imagen(pdf_bytes):
-        return None
-
-
-
+        
 def generar_ficha_digital_pdf(prenda, tasa_cambio):
     """Genera un PDF con formato de ficha digital para compartir por WhatsApp."""
     if not PDF_DISPONIBLE:
@@ -2342,31 +2337,14 @@ else:
                     pdf_ficha = generar_ficha_digital_pdf(prenda_dict, tasa_ficha)
 
                     if pdf_ficha:
-                        col_btn_pdf, col_btn_png = st.columns(2)
-
-                        with col_btn_pdf:
-                            st.download_button(
-                                "📄 PDF",
-                                data=pdf_ficha,
-                                file_name=f"ficha_{id_ficha_sel}.pdf",
-                                mime="application/pdf",
-                                use_container_width=True,
-                                key=f"btn_ficha_pdf_{id_ficha_sel}",
-                            )
-
-                        with col_btn_png:
-                            imagen_ficha = pdf_a_imagen(pdf_ficha)
-                            if imagen_ficha:
-                                st.download_button(
-                                    "🖼️ Imagen (PNG)",
-                                    data=imagen_ficha,
-                                    file_name=f"ficha_{id_ficha_sel}.png",
-                                    mime="image/png",
-                                    use_container_width=True,
-                                    key=f"btn_ficha_png_{id_ficha_sel}",
-                                )
-                            else:
-                                st.caption("⚠️ PNG no disponible")
+                        st.download_button(
+                            "📥 Descargar Ficha (PDF)",
+                            data=pdf_ficha,
+                            file_name=f"ficha_{id_ficha_sel}.pdf",
+                            mime="application/pdf",
+                            use_container_width=True,
+                            key=f"btn_ficha_pdf_{id_ficha_sel}",
+                        )
 
                         texto_wa = f"""🛍️ *LEWIN BOUTIQUE*
 
@@ -2393,15 +2371,10 @@ else:
 
             with col_ficha_prev:
                     st.markdown("**Vista previa:**")
-                    pdf_preview = generar_ficha_digital_pdf(prenda_dict, tasa_ficha)
-                    if pdf_preview:
-                        imagen_preview = pdf_a_imagen(pdf_preview)
-                        if imagen_preview:
-                            st.image(imagen_preview, use_container_width=True)
-                        else:
-                            st.info("Vista previa no disponible.")
+                    if fila_ficha.get("foto_url"):
+                        st.image(fila_ficha["foto_url"], use_container_width=True)
                     else:
-                        st.info("No se pudo generar la vista previa.")
+                        st.info("Este producto no tiene foto.")
 
             # ===== PESTAÑA 2: ETIQUETAS FÍSICAS =====
             with tab_etiqueta:
