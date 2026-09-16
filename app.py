@@ -886,17 +886,7 @@ def generar_etiquetas_pdf(lista_prendas, tasa_cambio):
         return None
 
     def pdf_a_imagen(pdf_bytes):
-        """Convierte un PDF a imagen PNG (solo la primera página)."""
-        if not IMAGEN_FACTURA_DISPONIBLE or not pdf_bytes:
-            return None
-        try:
-            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-            pagina = doc[0]
-            pix = pagina.get_pixmap(matrix=fitz.Matrix(3, 3))
-            return pix.tobytes("png")
-        except Exception as e:
-            st.warning(f"No se pudo convertir a imagen: {e}")
-            return None
+    return None
 
 
 
