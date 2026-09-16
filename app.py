@@ -1557,7 +1557,7 @@ else:
 
     st.sidebar.markdown("<div class='menu-divider'></div>", unsafe_allow_html=True)
 
-       GRUPOS_CLAVES_MENU = {
+             GRUPOS_CLAVES_MENU = {
         "acc_inventario": ["existencias", "etiquetas", "registrar", "modificar"],
         "acc_ventas": ["vender", "ventas_pagadas", "facturas", "deudores"],
         "acc_compras": ["comprar", "movimientos"],
@@ -1607,11 +1607,11 @@ else:
 
     st.sidebar.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
 
-        render_grupo_acordeon("📊", "Prendas", [
+            render_grupo_acordeon("📊", "Prendas", [
         ("existencias", "Prendas"), ("etiquetas", "Etiquetas de Precios"), ("registrar", "Registrar Prenda"), ("modificar", "Eliminar Prenda"),
     ], "acc_inventario")
 
-        render_grupo_acordeon("🛍️", "Ventas", [
+            render_grupo_acordeon("🛍️", "Ventas", [
         ("vender", "Nueva Venta"), ("ventas_pagadas", "Ventas Pagadas"), ("facturas", "Factura"), ("deudores", "Ventas por Pagar"),
     ], "acc_ventas")
 
