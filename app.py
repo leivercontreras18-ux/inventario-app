@@ -987,6 +987,109 @@ def generar_ficha_digital_pdf(prenda, tasa_cambio):
         return None
 
 
+def generar_ficha_digital_pdf(prenda, tasa_cambio):
+    """Genera un PDF con formato de ficha digital para compartir por WhatsApp."""
+    if not PDF_DISPONIBLE:
+        return None
+    try:
+        ancho_mm = 90
+        alto_mm = 150
+        pdf = FPDF(orientation="P", unit="mm", format=(ancho_mm, alto_mm))
+        pdf.add_page()
+        pdf.set_auto_page_break(auto=False)
+
+        # ===== BANDA SUPERIOR CON LOGO =====
+        pdf.set_fill_color(124, 77, 252)
+        pdf.rect(0, 0, ancho_mm, 20, style="F")
+        try:
+            logo_bytes = base64.b64decode(LOGO_LEWIN_BASE64)
+            pdf.image(BytesIO(logo_bytes), x=5, y=3, w=12, type="PNG")
+        except Exception:
+            pass
+        pdf.set_xy(20, 5)
+        pdf.set_font("Helvetica", "B", 13)
+        pdf.set_text_color(255, 255, 255)
+        pdf.cell(0, 5, "LEWIN BOUTIQUE", ln=True)
+        pdf.set_xy(20, 11)
+        pdf.set_font("Helvetica", "", 8)
+        pdf.set_text_color(235, 230, 255)
+        pdf.cell(0, 4, "Boutique", ln=True)
+
+        # ===== FOTO DEL PRODUCTO =====
+        y_foto = 24
+        ancho_foto = ancho_mm - 10
+        alto_foto = 55
+        pdf.set_fill_color(245, 243, 255)
+        pdf.rect(5, y_foto, ancho_foto, alto_foto, style="F")
+        if prenda.get("foto_url"):
+            try:
+                foto_resp = requests.get(prenda["foto_url"], timeout=10)
+                if foto_resp.status_code == 200:
+                    img_buf = BytesIO(foto_resp.content)
+                    pdf.image(img_buf, x=5, y=y_foto, w=ancho_foto, h=alto_foto)
+            except Exception:
+                pass
+        pdf.set_draw_color(124, 77, 252)
+        pdf.set_line_width(0.3)
+        pdf.rect(5, y_foto, ancho_foto, alto_foto)
+
+        # ===== NOMBRE DEL PRODUCTO =====
+        pdf.set_xy(5, 82)
+        pdf.set_font("Helvetica", "B", 12)
+        pdf.set_text_color(30, 30, 30)
+        pdf.cell(ancho_foto, 6, str(prenda.get("Producto", ""))[:35], align="C")
+
+        # ===== TALLA Y COLOR =====
+        pdf.set_xy(5, 89)
+        pdf.set_font("Helvetica", "", 9)
+        pdf.set_text_color(90, 80, 130)
+        pdf.cell(ancho_foto, 4, f"Talla: {prenda.get('talla', '-')}   |   Color: {prenda.get('color', '-')}", align="C")
+
+        # ===== PRECIO EN DOLARES =====
+        precio_usd = float(prenda.get("precio_venta", 0) or 0)
+        pdf.set_xy(5, 95)
+        pdf.set_font("Helvetica", "B", 22)
+        pdf.set_text_color(124, 77, 252)
+        pdf.cell(ancho_foto, 12, f"${precio_usd:,.2f}", align="C")
+
+        # ===== PRECIO EN BOLIVARES (opcional) =====
+        if tasa_cambio > 0 and precio_usd > 0:
+            pdf.set_xy(5, 108)
+            pdf.set_font("Helvetica", "", 9)
+            pdf.set_text_color(140, 140, 140)
+            pdf.cell(ancho_foto, 4, f"{precio_usd * tasa_cambio:,.2f} Bs", align="C")
+
+        # ===== QR AL CATALOGO =====
+        if QR_DISPONIBLE:
+            qr_bytes = generar_qr_bytes(URL_CATALOGO_WEB)
+            if qr_bytes:
+                qr_buf = BytesIO(qr_bytes)
+                pdf.image(qr_buf, x=(ancho_mm - 26) / 2, y=116, w=26, h=26)
+                pdf.set_xy(5, 143)
+                pdf.set_font("Helvetica", "", 7)
+                pdf.set_text_color(120, 120, 120)
+                pdf.cell(ancho_foto, 4, "Escanea para ver mas productos", align="C")
+
+        # ===== PIE DE CONTACTO =====
+        pie_textos = []
+        if WHATSAPP_BOUTIQUE:
+            pie_textos.append(f"WA: {WHATSAPP_BOUTIQUE}")
+        if INSTAGRAM_BOUTIQUE:
+            pie_textos.append(INSTAGRAM_BOUTIQUE)
+        if pie_textos:
+            pdf.set_xy(5, 145)
+            pdf.set_font("Helvetica", "", 7)
+            pdf.set_text_color(140, 140, 140)
+            pdf.cell(ancho_foto, 4, " | ".join(pie_textos), align="C")
+
+        return bytes(pdf.output())
+    except Exception as e:
+        st.warning(f"No se pudo generar la ficha: {e}")
+        return None
+
+
+
+
 def generar_qr_bytes(texto):
     if not QR_DISPONIBLE:
         return None
