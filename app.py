@@ -895,6 +895,7 @@ def generar_ficha_digital_pdf(prenda, tasa_cambio):
         alto_mm = 130
         pdf = FPDF(orientation="P", unit="mm", format=(ancho_mm, alto_mm))
         pdf.add_page()
+        pdf.set_auto_page_break(auto=False)
 
         # Banda superior con logo
         pdf.set_fill_color(124, 77, 252)
@@ -961,14 +962,14 @@ def generar_ficha_digital_pdf(prenda, tasa_cambio):
             qr_bytes = generar_qr_bytes(URL_CATALOGO_WEB)
             if qr_bytes:
                 qr_buf = BytesIO(qr_bytes)
-                pdf.image(qr_buf, x=(ancho_mm - 25) / 2, y=alto_mm - 35, w=25, h=25)
-                pdf.set_xy(5, alto_mm - 9)
+                pdf.image(qr_buf, x=(ancho_mm - 22) / 2, y=alto_mm - 42, w=22, h=22)
+                pdf.set_xy(5, alto_mm - 16)
                 pdf.set_font("Helvetica", "", 7)
                 pdf.set_text_color(120, 120, 120)
                 pdf.cell(ancho_foto, 4, "Escanea para ver mas productos", align="C")
 
         # Datos de contacto (solo si están configurados)
-        pie_y = alto_mm - 5
+        pie_y = alto_mm - 8
         pie_textos = []
         if WHATSAPP_BOUTIQUE:
             pie_textos.append(f"WhatsApp: {WHATSAPP_BOUTIQUE}")
