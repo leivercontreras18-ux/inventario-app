@@ -3491,3 +3491,4 @@ box-shadow: 0 4px 20px rgba(124, 77, 252, 0.4);
                     st.session_state.colores_maestros = list(st.session_state.edit_colores)
                     st.success("¡Configuración guardada en GitHub exitosamente!")
                     st.rerun()
+
