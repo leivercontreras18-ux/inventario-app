@@ -2351,7 +2351,7 @@ else:
 
                     pdf_ficha = generar_ficha_digital_pdf(prenda_dict, tasa_ficha)
 
-                                        if pdf_ficha:
+                    if pdf_ficha:
                         col_btn_pdf, col_btn_png = st.columns(2)
 
                         with col_btn_pdf:
