@@ -1557,7 +1557,7 @@ else:
 
     st.sidebar.markdown("<div class='menu-divider'></div>", unsafe_allow_html=True)
 
-             GRUPOS_CLAVES_MENU = {
+        GRUPOS_CLAVES_MENU = {
         "acc_inventario": ["existencias", "etiquetas", "registrar", "modificar"],
         "acc_ventas": ["vender", "ventas_pagadas", "facturas", "deudores"],
         "acc_compras": ["comprar", "movimientos"],
