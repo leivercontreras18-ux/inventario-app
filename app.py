@@ -887,7 +887,7 @@ def generar_etiquetas_pdf(lista_prendas, tasa_cambio):
         return None
 
 
- def generar_ficha_como_imagen(prenda, tasa_cambio):
+def generar_ficha_como_imagen(prenda, tasa_cambio):
     """Genera la ficha del producto como imagen PNG usando PIL."""
     try:
         ancho = 540
