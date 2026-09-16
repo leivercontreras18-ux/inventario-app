@@ -5,6 +5,7 @@ import urllib.parse
 import uuid
 from datetime import datetime
 from io import BytesIO
+from PIL import Image, ImageDraw, ImageFont
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -884,7 +885,114 @@ def generar_etiquetas_pdf(lista_prendas, tasa_cambio):
     except Exception as e:
         st.warning(f"No se pudo generar el PDF de etiquetas: {e}")
         return None
-        
+ def generar_ficha_como_imagen(prenda, tasa_cambio):
+    """Genera la ficha del producto como imagen PNG usando PIL."""
+    try:
+        ancho = 540
+        alto = 900
+        img = Image.new("RGB", (ancho, alto), (255, 255, 255))
+        draw = ImageDraw.Draw(img)
+
+        # Banda superior morada
+        draw.rectangle([(0, 0), (ancho, 110)], fill=(124, 77, 252))
+
+        # Fuentes
+        try:
+            font_titulo = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 36)
+            font_normal = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 28)
+            font_pequena = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 20)
+            font_precio = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 64)
+        except Exception:
+            font_titulo = ImageFont.load_default()
+            font_normal = ImageFont.load_default()
+            font_pequena = ImageFont.load_default()
+            font_precio = ImageFont.load_default()
+
+        # Logo de texto
+        draw.text((30, 35), "LEWIN BOUTIQUE", fill=(255, 255, 255), font=font_titulo)
+
+        # Foto del producto
+        y_foto = 130
+        ancho_foto = ancho - 60
+        alto_foto = 330
+        draw.rectangle([(30, y_foto), (30 + ancho_foto, y_foto + alto_foto)],
+                       fill=(245, 243, 255), outline=(124, 77, 252), width=2)
+
+        if prenda.get("foto_url"):
+            try:
+                foto_resp = requests.get(prenda["foto_url"], timeout=10)
+                if foto_resp.status_code == 200:
+                    foto = Image.open(BytesIO(foto_resp.content)).convert("RGB")
+                    foto.thumbnail((ancho_foto - 10, alto_foto - 10))
+                    x_f = 30 + (ancho_foto - foto.width) // 2
+                    y_f = y_foto + (alto_foto - foto.height) // 2
+                    img.paste(foto, (x_f, y_f))
+            except Exception:
+                pass
+
+        # Nombre del producto
+        y_nombre = y_foto + alto_foto + 25
+        nombre = str(prenda.get("Producto", ""))[:35]
+        bbox = draw.textbbox((0, 0), nombre, font=font_normal)
+        draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_nombre), nombre, fill=(30, 30, 30), font=font_normal)
+
+        # Talla y color
+        y_tc = y_nombre + 50
+        talla_color = f"Talla: {prenda.get('talla', '-')}  |  Color: {prenda.get('color', '-')}"
+        bbox = draw.textbbox((0, 0), talla_color, font=font_pequena)
+        draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_tc), talla_color, fill=(90, 80, 130), font=font_pequena)
+
+        # Precio USD
+        y_precio = y_tc + 50
+        precio_usd = float(prenda.get("precio_venta", 0) or 0)
+        precio_txt = f"${precio_usd:,.2f}"
+        bbox = draw.textbbox((0, 0), precio_txt, font=font_precio)
+        draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_precio), precio_txt, fill=(124, 77, 252), font=font_precio)
+
+        # Precio Bs
+        if tasa_cambio > 0 and precio_usd > 0:
+            y_bs = y_precio + 80
+            bs_txt = f"{precio_usd * tasa_cambio:,.2f} Bs"
+            bbox = draw.textbbox((0, 0), bs_txt, font=font_pequena)
+            draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_bs), bs_txt, fill=(140, 140, 140), font=font_pequena)
+
+        # QR
+        if QR_DISPONIBLE:
+            qr_bytes_data = generar_qr_bytes(URL_CATALOGO_WEB)
+            if qr_bytes_data:
+                qr_img = Image.open(BytesIO(qr_bytes_data)).convert("RGB")
+                qr_size = 170
+                qr_img = qr_img.resize((qr_size, qr_size))
+                x_qr = (ancho - qr_size) // 2
+                y_qr = alto - 270
+                img.paste(qr_img, (x_qr, y_qr))
+
+                y_qr_texto = y_qr + qr_size + 10
+                texto_qr = "Escanea para ver mas productos"
+                bbox = draw.textbbox((0, 0), texto_qr, font=font_pequena)
+                draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_qr_texto), texto_qr, fill=(120, 120, 120), font=font_pequena)
+
+        # Pie de contacto
+        pie_textos = []
+        if WHATSAPP_BOUTIQUE:
+            pie_textos.append(f"WA: {WHATSAPP_BOUTIQUE}")
+        if INSTAGRAM_BOUTIQUE:
+            pie_textos.append(INSTAGRAM_BOUTIQUE)
+        if pie_textos:
+            y_pie = alto - 40
+            texto_pie = " | ".join(pie_textos)
+            bbox = draw.textbbox((0, 0), texto_pie, font=font_pequena)
+            draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_pie), texto_pie, fill=(140, 140, 140), font=font_pequena)
+
+        # Guardar en bytes
+        buf = BytesIO()
+        img.save(buf, format="PNG")
+        return buf.getvalue()
+    except Exception as e:
+        st.warning(f"No se pudo generar la ficha como imagen: {e}")
+        return None
+
+
 def generar_ficha_digital_pdf(prenda, tasa_cambio):
     """Genera un PDF con formato de ficha digital para compartir por WhatsApp."""
     if not PDF_DISPONIBLE:
@@ -2336,15 +2444,32 @@ else:
 
                     pdf_ficha = generar_ficha_digital_pdf(prenda_dict, tasa_ficha)
 
-                    if pdf_ficha:
-                        st.download_button(
-                            "📥 Descargar Ficha (PDF)",
-                            data=pdf_ficha,
-                            file_name=f"ficha_{id_ficha_sel}.pdf",
-                            mime="application/pdf",
-                            use_container_width=True,
-                            key=f"btn_ficha_pdf_{id_ficha_sel}",
-                        )
+                                        if pdf_ficha:
+                        col_btn_pdf, col_btn_png = st.columns(2)
+
+                        with col_btn_pdf:
+                            st.download_button(
+                                "📄 PDF",
+                                data=pdf_ficha,
+                                file_name=f"ficha_{id_ficha_sel}.pdf",
+                                mime="application/pdf",
+                                use_container_width=True,
+                                key=f"btn_ficha_pdf_{id_ficha_sel}",
+                            )
+
+                        with col_btn_png:
+                            imagen_ficha = generar_ficha_como_imagen(prenda_dict, tasa_ficha)
+                            if imagen_ficha:
+                                st.download_button(
+                                    "🖼️ Imagen (PNG)",
+                                    data=imagen_ficha,
+                                    file_name=f"ficha_{id_ficha_sel}.png",
+                                    mime="image/png",
+                                    use_container_width=True,
+                                    key=f"btn_ficha_png_{id_ficha_sel}",
+                                )
+                            else:
+                                st.caption("⚠️ PNG no disponible")
 
                         texto_wa = f"""🛍️ *LEWIN BOUTIQUE*
 
@@ -2369,12 +2494,13 @@ else:
                     else:
                         st.caption("⚠️ No se pudo generar la ficha. Revisa que `fpdf2` esté instalado.")
 
-            with col_ficha_prev:
+                           with col_ficha_prev:
                     st.markdown("**Vista previa:**")
-                    if fila_ficha.get("foto_url"):
-                        st.image(fila_ficha["foto_url"], use_container_width=True)
+                    imagen_preview = generar_ficha_como_imagen(prenda_dict, tasa_ficha)
+                    if imagen_preview:
+                        st.image(imagen_preview, use_container_width=True)
                     else:
-                        st.info("Este producto no tiene foto.")
+                        st.info("Vista previa no disponible.")
 
             # ===== PESTAÑA 2: ETIQUETAS FÍSICAS =====
             with tab_etiqueta:
