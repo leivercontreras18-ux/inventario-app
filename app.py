@@ -885,6 +885,8 @@ def generar_etiquetas_pdf(lista_prendas, tasa_cambio):
     except Exception as e:
         st.warning(f"No se pudo generar el PDF de etiquetas: {e}")
         return None
+
+
  def generar_ficha_como_imagen(prenda, tasa_cambio):
     """Genera la ficha del producto como imagen PNG usando PIL."""
     try:
