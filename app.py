@@ -2499,9 +2499,9 @@ else:
                 with col_ficha_prev:
                         st.markdown("**Vista previa:**")
                         imagen_preview = generar_ficha_como_imagen(prenda_dict, tasa_ficha)
-                    if imagen_preview:
+                if imagen_preview:
                         st.image(imagen_preview, use_container_width=True)
-                    else:
+                else:
                         st.info("Vista previa no disponible.")
 
             # ===== PESTAÑA 2: ETIQUETAS FÍSICAS =====
