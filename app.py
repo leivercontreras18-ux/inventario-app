@@ -2497,11 +2497,11 @@ else:
                     st.caption("⚠️ No se pudo generar la ficha. Revisa que `fpdf2` esté instalado.")
 
                 with col_ficha_prev:
-                        st.markdown("**Vista previa:**")
-                        imagen_preview = generar_ficha_como_imagen(prenda_dict, tasa_ficha)
-                if imagen_preview:
-                    st.image(imagen_preview, width=240)
-                else:
+                    st.markdown("**Vista previa:**")
+                    imagen_preview = generar_ficha_como_imagen(prenda_dict, tasa_ficha)
+                    if imagen_preview:
+                        st.image(imagen_preview, width=240)
+                    else:
                         st.info("Vista previa no disponible.")
 
             # ===== PESTAÑA 2: ETIQUETAS FÍSICAS =====
