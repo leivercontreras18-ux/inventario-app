@@ -984,7 +984,7 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
             y_pie = alto - 25
             texto_pie = " | ".join(pie_textos)
             bbox = draw.textbbox((0, 0), texto_pie, font=font_pequena)
-            draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_pie), texto_pie, fill=(70, 70 70), font=font_pequena)
+            draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_pie), texto_pie, fill=(70, 70, 70), font=font_pequena)
 
         # Guardar en bytes
         buf = BytesIO()
