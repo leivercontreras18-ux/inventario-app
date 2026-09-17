@@ -2500,7 +2500,7 @@ else:
                         st.markdown("**Vista previa:**")
                         imagen_preview = generar_ficha_como_imagen(prenda_dict, tasa_ficha)
                 if imagen_preview:
-                    st.image(imagen_preview, width=350)
+                    st.image(imagen_preview, width=280)
                 else:
                         st.info("Vista previa no disponible.")
 
