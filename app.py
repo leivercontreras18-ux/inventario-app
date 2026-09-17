@@ -936,13 +936,13 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
         y_nombre = y_foto + alto_foto + 18
         nombre = str(prenda.get("Producto", ""))[:28]
         bbox = draw.textbbox((0, 0), nombre, font=font_normal)
-        draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_nombre), nombre, fill=(30, 30, 30), font=font_normal)
+        draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_nombre), nombre, fill=(0, 0, 0), font=font_normal)
 
         # Talla y color
         y_tc = y_nombre + 42
         talla_color = f"Talla: {prenda.get('talla', '-')}  |  Color: {prenda.get('color', '-')}"
         bbox = draw.textbbox((0, 0), talla_color, font=font_pequena)
-        draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_tc), talla_color, fill=(90, 80, 130), font=font_pequena)
+        draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_tc), talla_color, fill=(45, 35, 75), font=font_pequena)
 
         # Precio en USD
         y_precio = y_tc + 38
@@ -956,7 +956,7 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
             y_bs = y_precio + 60
             bs_txt = f"{precio_usd * tasa_cambio:,.2f} Bs"
             bbox = draw.textbbox((0, 0), bs_txt, font=font_pequena)
-            draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_bs), bs_txt, fill=(140, 140, 140), font=font_pequena)
+            draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_bs), bs_txt, fill=(70, 70, 70), font=font_pequena)
 
         # QR
         if QR_DISPONIBLE:
@@ -972,7 +972,7 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
                 y_qr_texto = y_qr + qr_size + 8
                 texto_qr = "Escanea para ver mas productos"
                 bbox = draw.textbbox((0, 0), texto_qr, font=font_pequena)
-                draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_qr_texto), texto_qr, fill=(120, 120, 120), font=font_pequena)
+                draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_qr_texto), texto_qr, fill=(60, 60, 60), font=font_pequena)
 
         # Pie de contacto
         pie_textos = []
@@ -984,7 +984,7 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
             y_pie = alto - 25
             texto_pie = " | ".join(pie_textos)
             bbox = draw.textbbox((0, 0), texto_pie, font=font_pequena)
-            draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_pie), texto_pie, fill=(140, 140, 140), font=font_pequena)
+            draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_pie), texto_pie, fill=(70, 70 70), font=font_pequena)
 
         # Guardar en bytes
         buf = BytesIO()
