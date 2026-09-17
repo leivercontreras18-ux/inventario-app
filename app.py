@@ -891,19 +891,19 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
     """Genera la ficha del producto como imagen PNG usando PIL."""
     try:
         ancho = 540
-        alto = 900
+        alto = 620
         img = Image.new("RGB", (ancho, alto), (255, 255, 255))
         draw = ImageDraw.Draw(img)
 
         # Banda superior morada
-        draw.rectangle([(0, 0), (ancho, 110)], fill=(124, 77, 252))
+        draw.rectangle([(0, 0), (ancho, 75)], fill=(124, 77, 252))
 
         # Fuentes
         try:
-            font_titulo = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 36)
-            font_normal = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 28)
-            font_pequena = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 20)
-            font_precio = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 64)
+            font_titulo = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 26)
+            font_normal = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
+            font_pequena = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 16)
+            font_precio = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 42)
         except Exception:
             font_titulo = ImageFont.load_default()
             font_normal = ImageFont.load_default()
@@ -911,13 +911,13 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
             font_precio = ImageFont.load_default()
 
         # Logo de texto
-        draw.text((30, 35), "LEWIN BOUTIQUE", fill=(255, 255, 255), font=font_titulo)
+        draw.text((25, 24), "LEWIN BOUTIQUE", fill=(255, 255, 255), font=font_titulo)
 
         # Foto del producto
-        y_foto = 130
-        ancho_foto = ancho - 60
-        alto_foto = 330
-        draw.rectangle([(30, y_foto), (30 + ancho_foto, y_foto + alto_foto)],
+        y_foto = 90
+        ancho_foto = ancho - 50
+        alto_foto = 200
+        draw.rectangle([(25, y_foto), (25 + ancho_foto, y_foto + alto_foto)],
                        fill=(245, 243, 255), outline=(124, 77, 252), width=2)
 
         if prenda.get("foto_url"):
@@ -926,34 +926,34 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
                 if foto_resp.status_code == 200:
                     foto = Image.open(BytesIO(foto_resp.content)).convert("RGB")
                     foto.thumbnail((ancho_foto - 10, alto_foto - 10))
-                    x_f = 30 + (ancho_foto - foto.width) // 2
+                    x_f = 25 + (ancho_foto - foto.width) // 2
                     y_f = y_foto + (alto_foto - foto.height) // 2
                     img.paste(foto, (x_f, y_f))
             except Exception:
                 pass
 
         # Nombre del producto
-        y_nombre = y_foto + alto_foto + 25
+        y_nombre = y_foto + alto_foto + 15
         nombre = str(prenda.get("Producto", ""))[:35]
         bbox = draw.textbbox((0, 0), nombre, font=font_normal)
         draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_nombre), nombre, fill=(30, 30, 30), font=font_normal)
 
         # Talla y color
-        y_tc = y_nombre + 50
+        y_tc = y_nombre + 32
         talla_color = f"Talla: {prenda.get('talla', '-')}  |  Color: {prenda.get('color', '-')}"
         bbox = draw.textbbox((0, 0), talla_color, font=font_pequena)
         draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_tc), talla_color, fill=(90, 80, 130), font=font_pequena)
 
-        # Precio USD
-        y_precio = y_tc + 50
+        # Precio en USD
+        y_precio = y_tc + 30
         precio_usd = float(prenda.get("precio_venta", 0) or 0)
         precio_txt = f"${precio_usd:,.2f}"
         bbox = draw.textbbox((0, 0), precio_txt, font=font_precio)
         draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_precio), precio_txt, fill=(124, 77, 252), font=font_precio)
 
-        # Precio Bs
+        # Precio en Bs
         if tasa_cambio > 0 and precio_usd > 0:
-            y_bs = y_precio + 80
+            y_bs = y_precio + 50
             bs_txt = f"{precio_usd * tasa_cambio:,.2f} Bs"
             bbox = draw.textbbox((0, 0), bs_txt, font=font_pequena)
             draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_bs), bs_txt, fill=(140, 140, 140), font=font_pequena)
@@ -963,13 +963,13 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
             qr_bytes_data = generar_qr_bytes(URL_CATALOGO_WEB)
             if qr_bytes_data:
                 qr_img = Image.open(BytesIO(qr_bytes_data)).convert("RGB")
-                qr_size = 170
+                qr_size = 130
                 qr_img = qr_img.resize((qr_size, qr_size))
                 x_qr = (ancho - qr_size) // 2
-                y_qr = alto - 270
+                y_qr = alto - 155
                 img.paste(qr_img, (x_qr, y_qr))
 
-                y_qr_texto = y_qr + qr_size + 10
+                y_qr_texto = y_qr + qr_size + 5
                 texto_qr = "Escanea para ver mas productos"
                 bbox = draw.textbbox((0, 0), texto_qr, font=font_pequena)
                 draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_qr_texto), texto_qr, fill=(120, 120, 120), font=font_pequena)
@@ -981,7 +981,7 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
         if INSTAGRAM_BOUTIQUE:
             pie_textos.append(INSTAGRAM_BOUTIQUE)
         if pie_textos:
-            y_pie = alto - 40
+            y_pie = alto - 22
             texto_pie = " | ".join(pie_textos)
             bbox = draw.textbbox((0, 0), texto_pie, font=font_pequena)
             draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_pie), texto_pie, fill=(140, 140, 140), font=font_pequena)
@@ -993,7 +993,6 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
     except Exception as e:
         st.warning(f"No se pudo generar la ficha como imagen: {e}")
         return None
-
 
 def generar_ficha_digital_pdf(prenda, tasa_cambio):
     """Genera un PDF con formato de ficha digital para compartir por WhatsApp."""
