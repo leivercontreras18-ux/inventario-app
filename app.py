@@ -1841,8 +1841,8 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
                 </div>
                 <div class="footer-signature-hero">Diseñado con ♥ para Lewin Boutique</div>
             </div>
-        </div>
-        logo_html_hero = f'<img src="{LOGO_URL}" style="width: 90px; height: auto;" />'
+            """
+    logo_html_hero = f'<img src="{LOGO_URL}" style="width: 90px; height: auto;" />'
     hero_html = hero_html.replace("PLACEHOLDER_TOTAL", str(total_prendas_hero)).replace("PLACEHOLDER_PORC", str(porcentaje_ok_hero)).replace("LOGO_SVG_PLACEHOLDER",logo_html_hero)
     hero_html = textwrap.dedent(hero_html)
 
