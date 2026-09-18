@@ -1758,7 +1758,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         .hero-inner { position: relative; z-index: 1; }
         .hero-topbar {
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px;
-            border-bottom: 1px solid var(--border-color); padding-bottom: 20px;
+            padding-bottom: 20px;
         }
         .hero-brand { display: flex; align-items: center; gap: 12px; }
         .brand-icon-hero {
@@ -1843,7 +1843,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             </div>
         </div>
         """
-    hero_html = hero_html.replace("PLACEHOLDER_TOTAL", str(total_prendas_hero)).replace("PLACEHOLDER_PORC", str(porcentaje_ok_hero)).replace("LOGO_SVG_PLACEHOLDER", logo_svg_markup(90))
+    hero_html = hero_html.replace("PLACEHOLDER_TOTAL", str(total_prendas_hero)).replace("PLACEHOLDER_PORC", str(porcentaje_ok_hero)).replace("LOGO_SVG_PLACEHOLDER",f'<img src="{LOGO_URL}" style="width: 90px; height: auto;" />'
     hero_html = textwrap.dedent(hero_html)
 
     st.markdown(hero_html, unsafe_allow_html=True)
