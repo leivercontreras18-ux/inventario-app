@@ -996,7 +996,9 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
         draw.text((160, y_bottom + 35), "Escanea el QR", fill=(255, 255, 255), font=font_nombre)
         draw.text((160, y_bottom + 80), "para ver más productos", fill=(235, 230, 255), font=font_small)
 
+       
         # Contacto abajo
+        pie_textos = []
         if WHATSAPP_BOUTIQUE:
             num = WHATSAPP_BOUTIQUE
             if len(num) == 12:
