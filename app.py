@@ -1758,7 +1758,8 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         .hero-inner { position: relative; z-index: 1; }
         .hero-topbar {
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px;
-            padding-bottom: 20px;
+            padding-bottom: 20px; gap: 20px;
+        }
         }
         .hero-brand { display: flex; align-items: center; gap: 12px; }
         .brand-icon-hero {
@@ -1814,14 +1815,16 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             <div class="particle-hero" style="width:4px; height:4px; top:55%; left:68%; animation: floatParticle 7s ease-in-out infinite 2s;"></div>
             <div class="particle-hero" style="width:3px; height:3px; top:25%; left:85%; animation: floatParticle 9s ease-in-out infinite 0.5s;"></div>
             <div class="hero-inner">
-                <div class="hero-topbar">
-                    <div class="hero-brand">
-                        <div class="brand-icon-hero">LOGO_SVG_PLACEHOLDER</div>
-                        <div class="hero-brand-name">LEWIN BOUTIQUE</div>
-                    </div>
-                    <a class="hero-inicio-link" href="?ir=login">INICIO</a>
-                </div>
-                <div class="hero-subtitle-tag">Inventario Boutique</div>
+            <div class="hero-topbar">
+            <div class="hero-brand">
+                <div class="brand-icon-hero">LOGO_SVG_PLACEHOLDER</div>
+            </div>
+            <div style="flex: 1; text-align: center;">
+                <div class="hero-brand-name" style="font-size: 18px; letter-spacing: 3px;">TIENDA LEWIN</div>
+                <div class="hero-subtitle-tag" style="margin-top: 6px; margin-bottom: 0;">BOUTIQUE INVENTARIO</div>
+            </div>
+            <a class="hero-inicio-link" href="?ir=login">INICIO</a>
+        </div>
                 <h1 class="hero-title">Lewin Boutique<br>Control Center</h1>
                 <p class="hero-desc">
                     Gestión completa de inventario, ventas, reportes y catálogo visual en una sola plataforma.
