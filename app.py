@@ -1911,7 +1911,7 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("<div class='login-welcome-tag'>Bienvenida de vuelta</div>", unsafe_allow_html=True)
         with st.form("form_login"):
-            st.markdown(f"<div class='login-brand-icon'>{logo_svg_markup(80)}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='login-brand-icon'>{logo_svg_markup(120)}</div>", unsafe_allow_html=True)
             st.markdown("<div class='login-title-text'>Lewin Boutique Access</div>", unsafe_allow_html=True)
             st.markdown("<div class='login-subtitle-text'>Ingresa tus credenciales para continuar</div>", unsafe_allow_html=True)
 
