@@ -1638,8 +1638,8 @@ section[data-testid="stSidebar"] button[kind="primary"][aria-label^="​"] * {{
 # =====================================================================================
 
 USUARIOS = {
-    "leiver": {"clave": "natsudraghonil", "rol": "administrador"},
-    "winderly": {"clave": "coromoto", "rol": "vendedor"},
+    "leiver": {"clave": st.secrets.get("CLAVE_LEIVER", ""), "rol": "administrador"},
+    "winderly": {"clave": st.secrets.get("CLAVE_WINDERLY", ""), "rol": "vendedor"},
 }
 
 # =====================================================================================
