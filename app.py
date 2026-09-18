@@ -1813,8 +1813,6 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             <div class="particle-hero" style="width:3px; height:3px; top:35%; left:75%; animation: floatParticle 8s ease-in-out infinite 1s;"></div>
             <div class="particle-hero" style="width:4px; height:4px; top:55%; left:68%; animation: floatParticle 7s ease-in-out infinite 2s;"></div>
             <div class="particle-hero" style="width:3px; height:3px; top:25%; left:85%; animation: floatParticle 9s ease-in-out infinite 0.5s;"></div>
-            <div class="stitch-line-hero" style="top:12%; left:5%; width:120px;"></div>
-            <div class="stitch-line-hero" style="bottom:18%; left:5%; width:80px;"></div>
             <div class="hero-inner">
                 <div class="hero-topbar">
                     <div class="hero-brand">
