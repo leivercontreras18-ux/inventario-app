@@ -1957,7 +1957,7 @@ else:
         )
     else:
         st.sidebar.markdown(
-            f'<div style="text-align: center; padding: 20px 0 15px 0;"><img src="{LOGO_URL}" style="width: 180px; height: auto;" /></div>',
+            f'<div style="text-align: center; padding: 20px 0 15px 0;"><img src="{LOGO_URL}" style="width: 190px; height: auto;" /></div>',
             unsafe_allow_html=True,
         )
         
