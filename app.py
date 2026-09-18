@@ -888,105 +888,127 @@ def generar_etiquetas_pdf(lista_prendas, tasa_cambio):
 
 
 def generar_ficha_como_imagen(prenda, tasa_cambio):
-    """Genera la ficha del producto como imagen PNG usando PIL."""
+    """Genera la ficha del producto como imagen PNG (diseño tipo tarjeta)."""
     try:
         ancho = 540
-        alto = 680
+        alto = 740
         img = Image.new("RGB", (ancho, alto), (255, 255, 255))
         draw = ImageDraw.Draw(img)
 
-        # Banda superior morada
-        draw.rectangle([(0, 0), (ancho, 90)], fill=(124, 77, 252))
-
-        # Fuentes más grandes
+        # Fuentes
         try:
-            font_titulo = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 32)
-            font_normal = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 30)
-            font_pequena = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 22)
-            font_precio = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 52)
+            font_logo = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
+            font_nombre = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 34)
+            font_pequena = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 20)
+            font_precio = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 56)
+            font_precio_bs = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 20)
+            font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 18)
         except Exception:
-            font_titulo = ImageFont.load_default()
-            font_normal = ImageFont.load_default()
+            font_logo = ImageFont.load_default()
+            font_nombre = ImageFont.load_default()
             font_pequena = ImageFont.load_default()
             font_precio = ImageFont.load_default()
+            font_precio_bs = ImageFont.load_default()
+            font_small = ImageFont.load_default()
 
-        # Logo de texto
-        draw.text((25, 28), "LEWIN BOUTIQUE", fill=(255, 255, 255), font=font_titulo)
-
-        # Foto del producto
-        y_foto = 105
-        ancho_foto = ancho - 50
-        alto_foto = 200
-        draw.rectangle([(25, y_foto), (25 + ancho_foto, y_foto + alto_foto)],
-                       fill=(245, 243, 255), outline=(124, 77, 252), width=2)
+        # ===== FOTO (parte superior, estilo revista, full width) =====
+        alto_foto = 400
+        draw.rectangle([(0, 0), (ancho, alto_foto)], fill=(245, 243, 255))
 
         if prenda.get("foto_url"):
             try:
                 foto_resp = requests.get(prenda["foto_url"], timeout=10)
                 if foto_resp.status_code == 200:
                     foto = Image.open(BytesIO(foto_resp.content)).convert("RGB")
-                    foto.thumbnail((ancho_foto - 10, alto_foto - 10))
-                    x_f = 25 + (ancho_foto - foto.width) // 2
-                    y_f = y_foto + (alto_foto - foto.height) // 2
-                    img.paste(foto, (x_f, y_f))
+                    # Crop to cover (llenar el espacio sin deformar)
+                    ratio_dest = ancho / alto_foto
+                    ratio_foto = foto.width / foto.height
+                    if ratio_foto > ratio_dest:
+                        nuevo_alto = alto_foto
+                        nuevo_ancho = int(alto_foto * ratio_foto)
+                        foto = foto.resize((nuevo_ancho, nuevo_alto))
+                        offset_x = (nuevo_ancho - ancho) // 2
+                        foto = foto.crop((offset_x, 0, offset_x + ancho, alto_foto))
+                    else:
+                        nuevo_ancho = ancho
+                        nuevo_alto = int(ancho / ratio_foto)
+                        foto = foto.resize((nuevo_ancho, nuevo_alto))
+                        offset_y = (nuevo_alto - alto_foto) // 2
+                        foto = foto.crop((0, offset_y, ancho, offset_y + alto_foto))
+                    img.paste(foto, (0, 0))
             except Exception:
                 pass
 
-        # Nombre del producto
-        y_nombre = y_foto + alto_foto + 18
-        nombre = str(prenda.get("Producto", ""))[:28]
-        bbox = draw.textbbox((0, 0), nombre, font=font_normal)
-        draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_nombre), nombre, fill=(0, 0, 0), font=font_normal)
+        # Overlay oscuro sutil sobre la foto para que el logo se lea
+        overlay = Image.new("RGB", (ancho, 70), (0, 0, 0))
+        img.paste(Image.blend(img.crop((0, 0, ancho, 70)), overlay, 0.35), (0, 0))
 
-        # Talla y color
-        y_tc = y_nombre + 42
-        talla_color = f"Talla: {prenda.get('talla', '-')}  |  Color: {prenda.get('color', '-')}"
-        bbox = draw.textbbox((0, 0), talla_color, font=font_pequena)
-        draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_tc), talla_color, fill=(45, 35, 75), font=font_pequena)
+        # Logo arriba sobre la foto
+        draw.text((25, 22), "LEWIN BOUTIQUE", fill=(255, 255, 255), font=font_logo)
 
-        # Precio en USD
-        y_precio = y_tc + 38
+        # ===== INFO CARD (nombre + talla/color izquierda, precio derecha) =====
+        y_info = alto_foto
+        alto_info = 200
+
+        # Línea divisoria morada arriba del card
+        draw.rectangle([(0, y_info), (ancho, y_info + 4)], fill=(124, 77, 252))
+
+        # Nombre del producto (izquierda)
+        nombre = str(prenda.get("Producto", ""))[:22]
+        draw.text((30, y_info + 35), nombre, fill=(0, 0, 0), font=font_nombre)
+
+        # Línea decorativa
+        draw.line([(30, y_info + 90), (180, y_info + 90)], fill=(124, 77, 252), width=2)
+
+        # Talla y color (izquierda, abajo)
+        draw.text((30, y_info + 105), f"Talla: {prenda.get('talla', '-')}", fill=(45, 35, 75), font=font_pequena)
+        draw.text((30, y_info + 135), f"Color: {prenda.get('color', '-')}", fill=(45, 35, 75), font=font_pequena)
+
+        # Precio USD (derecha, alineado a la derecha)
         precio_usd = float(prenda.get("precio_venta", 0) or 0)
         precio_txt = f"${precio_usd:,.2f}"
-        bbox = draw.textbbox((0, 0), precio_txt, font=font_precio)
-        draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_precio), precio_txt, fill=(124, 77, 252), font=font_precio)
+        bbox_p = draw.textbbox((0, 0), precio_txt, font=font_precio)
+        ancho_p = bbox_p[2] - bbox_p[0]
+        draw.text((ancho - 30 - ancho_p, y_info + 35), precio_txt, fill=(124, 77, 252), font=font_precio)
 
-        # Precio en Bs
+        # Precio Bs (derecha, abajo)
         if tasa_cambio > 0 and precio_usd > 0:
-            y_bs = y_precio + 60
             bs_txt = f"{precio_usd * tasa_cambio:,.2f} Bs"
-            bbox = draw.textbbox((0, 0), bs_txt, font=font_pequena)
-            draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_bs), bs_txt, fill=(70, 70, 70), font=font_pequena)
+            bbox_bs = draw.textbbox((0, 0), bs_txt, font=font_precio_bs)
+            ancho_bs = bbox_bs[2] - bbox_bs[0]
+            draw.text((ancho - 30 - ancho_bs, y_info + 115), bs_txt, fill=(70, 70, 70), font=font_precio_bs)
 
-        # QR
+        # ===== BOTTOM MORADO: QR + CONTACTO =====
+        y_bottom = y_info + alto_info  # 600
+        draw.rectangle([(0, y_bottom), (ancho, alto)], fill=(124, 77, 252))
+
+        # QR a la izquierda (con fondo blanco)
         if QR_DISPONIBLE:
             qr_bytes_data = generar_qr_bytes(URL_CATALOGO_WEB)
             if qr_bytes_data:
+                qr_size = 105
+                draw.rectangle([(25, y_bottom + 15), (25 + qr_size + 10, y_bottom + 15 + qr_size + 10)], fill=(255, 255, 255))
                 qr_img = Image.open(BytesIO(qr_bytes_data)).convert("RGB")
-                qr_size = 130
                 qr_img = qr_img.resize((qr_size, qr_size))
-                x_qr = (ancho - qr_size) // 2
-                y_qr = alto - 175
-                img.paste(qr_img, (x_qr, y_qr))
+                img.paste(qr_img, (30, y_bottom + 20))
 
-                y_qr_texto = y_qr + qr_size + 8
-                texto_qr = "Escanea para ver mas productos"
-                bbox = draw.textbbox((0, 0), texto_qr, font=font_pequena)
-                draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_qr_texto), texto_qr, fill=(60, 60, 60), font=font_pequena)
+        # Texto a la derecha del QR
+        draw.text((160, y_bottom + 35), "Escanea el QR", fill=(255, 255, 255), font=font_nombre)
+        draw.text((160, y_bottom + 80), "para ver más productos", fill=(235, 230, 255), font=font_small)
 
-        # Pie de contacto
+        # Contacto abajo
         pie_textos = []
         if WHATSAPP_BOUTIQUE:
             pie_textos.append(f"WA: {WHATSAPP_BOUTIQUE}")
         if INSTAGRAM_BOUTIQUE:
             pie_textos.append(INSTAGRAM_BOUTIQUE)
         if pie_textos:
-            y_pie = alto - 25
-            texto_pie = " | ".join(pie_textos)
-            bbox = draw.textbbox((0, 0), texto_pie, font=font_pequena)
-            draw.text(((ancho - (bbox[2] - bbox[0])) // 2, y_pie), texto_pie, fill=(70, 70, 70), font=font_pequena)
+            texto_pie = " · ".join(pie_textos)
+            bbox_pie = draw.textbbox((0, 0), texto_pie, font=font_small)
+            ancho_pie = bbox_pie[2] - bbox_pie[0]
+            draw.text(((ancho - ancho_pie) // 2, alto - 30), texto_pie, fill=(255, 255, 255), font=font_small)
 
-        # Guardar en bytes
+        # Guardar
         buf = BytesIO()
         img.save(buf, format="PNG")
         return buf.getvalue()
