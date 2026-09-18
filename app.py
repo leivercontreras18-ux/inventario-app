@@ -499,8 +499,7 @@ def selector_tasa_cambio(key_prefix, valor_por_defecto=0.0):
 
 
 def logo_svg_markup(size=30):
-    alto = round(size * 1.208)
-    return f'<img src="{LOGO_URL}" width="{size}" height="{alto}" style="display:block; object-fit:contain;" />'
+    return f'<img src="{LOGO_URL}" style="width:{size}px; height:{size}px; object-fit:contain; display:block;" />'
 
 
 def moneda(valor):
@@ -1949,14 +1948,14 @@ else:
     menu_actual = st.session_state.get("menu_activo", "inicio")
     compacto = st.session_state.sidebar_compacto
 
-    LOGO_SVG = logo_svg_markup(160)
+    LOGO_SVG = logo_svg_markup(120)
 
     if compacto:
-        st.sidebar.markdown(f"<div style='display:flex; justify-content:center; margin-bottom:6px;'>{LOGO_SVG}</div>", unsafe_allow_html=True)
-    else:
-         st.sidebar.markdown(
-            f"""<div style="display: flex; justify-content: center; align-items: center; padding: 15px 0 20px 0;">
+        st.sidebar.markdown(
+            f"""<div style="display: flex; justify-content: center; align-items: center; padding: 10px 0;">
+<div style="width: 140px; height: 140px; background: rgba(124, 77, 252, 0.08); border-radius: 20px; display: flex; justify-content: center; align-items: center; overflow: hidden;">
 {LOGO_SVG}
+</div>
 </div>""",
             unsafe_allow_html=True,
         )
