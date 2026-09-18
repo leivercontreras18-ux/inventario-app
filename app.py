@@ -1334,7 +1334,7 @@ def get_css(tema: str, compacto: bool = False) -> str:
     font-family: 'Poppins', sans-serif !important;
 }}
 
-.stApp::before {
+.stApp::before {{
     content: "";
     position: fixed;
     top: 50%;
@@ -1349,7 +1349,7 @@ def get_css(tema: str, compacto: bool = False) -> str:
     opacity: 0.05;
     pointer-events: none;
     z-index: 0;
-}
+}}
 
 header[data-testid="stHeader"] {{ background: transparent !important; }}
 
