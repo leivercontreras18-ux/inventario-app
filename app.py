@@ -997,9 +997,13 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
         draw.text((160, y_bottom + 80), "para ver más productos", fill=(235, 230, 255), font=font_small)
 
         # Contacto abajo
-        pie_textos = []
         if WHATSAPP_BOUTIQUE:
-            pie_textos.append(f"WA: {WHATSAPP_BOUTIQUE}")
+            num = WHATSAPP_BOUTIQUE
+            if len(num) == 12:
+                num_formateado = f"+{num[:2]} {num[2:5]} {num[5:8]} {num[8:]}"
+            else:
+                num_formateado = f"+{num}"
+            pie_textos.append(f"WA: {num_formateado}")
         if INSTAGRAM_BOUTIQUE:
             pie_textos.append(INSTAGRAM_BOUTIQUE)
         if pie_textos:
@@ -1102,7 +1106,12 @@ def generar_ficha_digital_pdf(prenda, tasa_cambio):
         pie_y = alto_mm - 8
         pie_textos = []
         if WHATSAPP_BOUTIQUE:
-            pie_textos.append(f"WhatsApp: {WHATSAPP_BOUTIQUE}")
+            num = WHATSAPP_BOUTIQUE
+            if len(num) == 12:
+                num_formateado = f"+{num[:2]} {num[2:5]} {num[5:8]} {num[8:]}"
+            else:
+                num_formateado = f"+{num}"
+            pie_textos.append(f"WhatsApp: {num_formateado}")
         if INSTAGRAM_BOUTIQUE:
             pie_textos.append(INSTAGRAM_BOUTIQUE)
         if pie_textos:
