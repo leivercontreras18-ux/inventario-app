@@ -1949,19 +1949,18 @@ else:
     menu_actual = st.session_state.get("menu_activo", "inicio")
     compacto = st.session_state.sidebar_compacto
 
-    LOGO_SVG = logo_svg_markup(70)
+    LOGO_SVG = logo_svg_markup(160)
 
     if compacto:
         st.sidebar.markdown(f"<div style='display:flex; justify-content:center; margin-bottom:6px;'>{LOGO_SVG}</div>", unsafe_allow_html=True)
     else:
-        st.sidebar.markdown(
-            f"""<div class="logo-brand-row">
+         st.sidebar.markdown(
+            f"""<div style="display: flex; justify-content: center; align-items: center; padding: 15px 0 20px 0;">
 {LOGO_SVG}
-<div><div class="logo-brand-name">LEWIN</div><div class="logo-brand-sub">BOUTIQUE</div></div>
 </div>""",
             unsafe_allow_html=True,
         )
-
+        
     col_collapse1, col_collapse2 = st.sidebar.columns([3, 1])
     with col_collapse2:
         if st.button("☰", key="btn_toggle_compacto", help="Colapsar / expandir menú"):
