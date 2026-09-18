@@ -1952,11 +1952,12 @@ else:
 
     if compacto:
         st.sidebar.markdown(
-            f"""<div style="display: flex; justify-content: center; align-items: center; padding: 10px 0;">
-<div style="width: 140px; height: 140px; background: rgba(124, 77, 252, 0.08); border-radius: 20px; display: flex; justify-content: center; align-items: center; overflow: hidden;">
-{LOGO_SVG}
-</div>
-</div>""",
+            f'<div style="text-align: center; padding: 15px 0;"><img src="{LOGO_URL}" style="width: 60px; height: auto;" /></div>',
+            unsafe_allow_html=True,
+        )
+    else:
+        st.sidebar.markdown(
+            f'<div style="text-align: center; padding: 20px 0 15px 0;"><img src="{LOGO_URL}" style="width: 130px; height: auto;" /></div>',
             unsafe_allow_html=True,
         )
         
