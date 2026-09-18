@@ -1827,7 +1827,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
             </div>
         </div>
         """
-    hero_html = hero_html.replace("PLACEHOLDER_TOTAL", str(total_prendas_hero)).replace("PLACEHOLDER_PORC", str(porcentaje_ok_hero)).replace("LOGO_SVG_PLACEHOLDER", logo_svg_markup(38))
+    hero_html = hero_html.replace("PLACEHOLDER_TOTAL", str(total_prendas_hero)).replace("PLACEHOLDER_PORC", str(porcentaje_ok_hero)).replace("LOGO_SVG_PLACEHOLDER", logo_svg_markup(90))
     hero_html = textwrap.dedent(hero_html)
 
     st.markdown(hero_html, unsafe_allow_html=True)
@@ -1894,7 +1894,7 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("<div class='login-welcome-tag'>Bienvenida de vuelta</div>", unsafe_allow_html=True)
         with st.form("form_login"):
-            st.markdown(f"<div class='login-brand-icon'>{logo_svg_markup(40)}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='login-brand-icon'>{logo_svg_markup(80)}</div>", unsafe_allow_html=True)
             st.markdown("<div class='login-title-text'>Lewin Boutique Access</div>", unsafe_allow_html=True)
             st.markdown("<div class='login-subtitle-text'>Ingresa tus credenciales para continuar</div>", unsafe_allow_html=True)
 
@@ -1932,7 +1932,7 @@ else:
     menu_actual = st.session_state.get("menu_activo", "inicio")
     compacto = st.session_state.sidebar_compacto
 
-    LOGO_SVG = logo_svg_markup(34)
+    LOGO_SVG = logo_svg_markup(70)
 
     if compacto:
         st.sidebar.markdown(f"<div style='display:flex; justify-content:center; margin-bottom:6px;'>{LOGO_SVG}</div>", unsafe_allow_html=True)
