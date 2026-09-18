@@ -1334,6 +1334,23 @@ def get_css(tema: str, compacto: bool = False) -> str:
     font-family: 'Poppins', sans-serif !important;
 }}
 
+.stApp::before {
+    content: "";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    transform: translate(-50%, -50%);
+    background-image: url('https://qhihqujbzjcuxshndsez.supabase.co/storage/v1/object/public/productos-fotos/1787708461873-removebg-preview.png');
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 55%;
+    opacity: 0.05;
+    pointer-events: none;
+    z-index: 0;
+}
+
 header[data-testid="stHeader"] {{ background: transparent !important; }}
 
 .block-container {{ max-width: 100% !important; padding: 3.5rem 2rem 2rem 2rem !important; }}
