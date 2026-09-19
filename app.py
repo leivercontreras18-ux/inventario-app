@@ -1839,11 +1839,11 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         .hero-new-desc {
           font-family: 'Poppins', sans-serif;
           font-size: 16px;
-          color: #2c3e50 !important;
-          line-height: 1.6;
+          color: #1a2b3d !important;
+          line-height: 1.7;
           margin-bottom: 35px;
           max-width: 650px;
-          font-weight: 500;
+          font-weight: 600;
         }
         .hero-new-pills {
           display: flex;
