@@ -33,8 +33,16 @@ try:
 except ImportError:
     IMAGEN_FACTURA_DISPONIBLE = False
 
+try:
+    _favicon_resp = requests.get("https://qhihqujbzjcuxshndsez.supabase.co/storage/v1/object/public/productos-fotos/1787708461873-removebg-preview.png", timeout=3)
+    _favicon_img = Image.open(BytesIO(_favicon_resp.content))
+except Exception:
+    _favicon_img = "👕"
+
 st.set_page_config(
-    page_title="Lewin // Inventario Boutique", page_icon="👕", layout="wide"
+    page_title="Lewin // Inventario Boutique",
+    page_icon=_favicon_img,
+    layout="wide"
 )
 
 # =====================================================================================
