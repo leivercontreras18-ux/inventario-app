@@ -1990,20 +1990,40 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
             color: #ffffff !important; border: none !important;
             box-shadow: 0 8px 20px rgba(74, 111, 165, 0.35) !important;
         }
-        /* Inputs en blanco para el login */
+        /* Inputs en blanco para el login - VERSIÓN AGRESIVA */
         div[data-testid="stForm"] div[data-baseweb="input"],
-        div[data-testid="stForm"] div[data-baseweb="input"] input {
+        div[data-testid="stForm"] div[data-baseweb="input"] > div,
+        div[data-testid="stForm"] div[data-baseweb="base-input"],
+        div[data-testid="stForm"] div[data-baseweb="base-input"] > div,
+        div[data-testid="stForm"] input[type="text"],
+        div[data-testid="stForm"] input[type="password"],
+        div[data-testid="stForm"] .stTextInput input,
+        div[data-testid="stForm"] [data-testid="stTextInput"] input {
             background-color: #ffffff !important;
             color: #2c3e50 !important;
-            border: 1px solid rgba(74, 111, 165, 0.2) !important;
+            border: 1px solid rgba(74, 111, 165, 0.25) !important;
             border-radius: 8px !important;
+            -webkit-text-fill-color: #2c3e50 !important;
+            caret-color: #4a6fa5 !important;
         }
-        div[data-testid="stForm"] div[data-baseweb="input"]:focus-within {
+        div[data-testid="stForm"] div[data-baseweb="input"]:focus-within,
+        div[data-testid="stForm"] div[data-baseweb="base-input"]:focus-within {
             border-color: #4a6fa5 !important;
-            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.15) !important;
+            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.18) !important;
         }
-        div[data-testid="stForm"] div[data-baseweb="input"] input::placeholder {
+        div[data-testid="stForm"] div[data-baseweb="input"] input::placeholder,
+        div[data-testid="stForm"] input::placeholder {
             color: #8ba3c0 !important;
+            -webkit-text-fill-color: #8ba3c0 !important;
+        }
+        /* Checkbox "Arma de grabación" */
+        div[data-testid="stForm"] div[data-baseweb="checkbox"] div,
+        div[data-testid="stForm"] .stCheckbox label {
+            color: #2c3e50 !important;
+        }
+        div[data-testid="stForm"] div[data-baseweb="checkbox"] > div:first-child {
+            background-color: #ffffff !important;
+            border: 1px solid rgba(74, 111, 165, 0.3) !important;
         }
         </style>
         <div class="particle-login" style="width:5px; height:5px; top:15%; left:10%; animation: floatParticleLogin 7s ease-in-out infinite;"></div>
