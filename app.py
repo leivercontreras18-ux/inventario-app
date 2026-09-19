@@ -1344,8 +1344,8 @@ def get_css(tema: str, compacto: bool = False) -> str:
 }}
 
 @keyframes glowActivo {{
-    0%, 100% {{ box-shadow: 0 0 8px rgba(236, 106, 168, 0.35), inset 3px 0 0 var(--accent); }}
-    50% {{ box-shadow: 0 0 16px rgba(236, 106, 168, 0.55), inset 3px 0 0 var(--accent); }}
+    0%, 100% {{ box-shadow: 0 0 8px rgba(74, 111, 165, 0.35), inset 3px 0 0 var(--accent); }}
+    50% {{ box-shadow: 0 0 16px rgba(74, 111, 165, 0.55), inset 3px 0 0 var(--accent); }}
 }}
 
 @keyframes menuSlideDown {{
@@ -1557,11 +1557,11 @@ section[data-testid="stSidebar"] button[kind="secondary"] {{
     transition: background 0.15s ease !important;
 }}
 section[data-testid="stSidebar"] button[kind="secondary"]:hover {{
-    background: rgba(236, 106, 168, 0.08) !important; border-color: var(--border-color) !important;
+    background: rgba(74, 111, 165, 0.08) !important; border-color: var(--border-color) !important;
     transform: none !important;
 }}
 section[data-testid="stSidebar"] button[kind="primary"] {{
-    background: rgba(236, 106, 168, 0.13) !important; color: var(--text-color) !important;
+    background: rgba(74, 111, 165, 0.13) !important; color: var(--text-color) !important;
     border: none !important; border-radius: 10px !important;
     text-align: left !important; justify-content: flex-start !important;
     font-weight: 700 !important; padding: 9px 12px !important;
@@ -1613,10 +1613,13 @@ div[data-testid="stWidgetLabel"], div[data-testid="stWidgetLabel"] * {{
 label, .stMarkdown p {{
     color: var(--text-color) !important;
 }}
-.stCaption, div[data-testid="stCaptionContainer"] * {{
-    color: #3d5066 !important;
-    opacity: 1 !important;
-}}
+.stCaption, div[data-testid="stCaptionContainer"] *,
+        div[data-testid="stCaptionContainer"] p,
+        div[data-testid="stCaptionContainer"] span {{
+            color: #1a2b3d !important;
+            opacity: 1 !important;
+            font-weight: 500 !important;
+       }}
 
 div[data-testid="stTextArea"] textarea {{
     background-color: var(--input-bg) !important;
@@ -1644,7 +1647,7 @@ section[data-testid="stSidebar"] button[aria-label^="​"] {{
     animation: menuSlideDown 0.4s ease !important; animation-fill-mode: both !important;
 }}
 section[data-testid="stSidebar"] button[aria-label^="​"]:hover {{
-    background: rgba(236, 106, 168, 0.06) !important; color: var(--text-color) !important;
+    background: rgba(74, 111, 165, 0.06) !important; color: var(--text-color) !important;
 }}
 section[data-testid="stSidebar"] button[kind="primary"][aria-label^="​"] {{
     color: var(--accent) !important; border-left: 2px solid var(--accent) !important;
