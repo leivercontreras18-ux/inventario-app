@@ -1991,6 +1991,27 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
             box-shadow: 0 8px 20px rgba(74, 111, 165, 0.35) !important;
         }
         /* Inputs en blanco para el login - VERSIÓN AGRESIVA */
+         /* Botón del ojito (mostrar/ocultar contraseña) */
+        div[data-testid="stForm"] div[data-baseweb="input"] button,
+        div[data-testid="stForm"] div[data-baseweb="base-input"] button,
+        div[data-testid="stForm"] button[kind="secondary"],
+        div[data-testid="stForm"] button[kind="minimal"] {
+            background-color: #ffffff !important;
+            color: #4a6fa5 !important;
+            border: none !important;
+            border-left: 1px solid rgba(74, 111, 165, 0.2) !important;
+            border-radius: 0 !important;
+        }
+        div[data-testid="stForm"] div[data-baseweb="input"] button:hover,
+        div[data-testid="stForm"] button[kind="secondary"]:hover {
+            background-color: #e8f0f8 !important;
+            color: #2c3e50 !important;
+        }
+        div[data-testid="stForm"] div[data-baseweb="input"] button svg,
+        div[data-testid="stForm"] button[kind="secondary"] svg {
+            fill: #4a6fa5 !important;
+            color: #4a6fa5 !important;
+        }
         div[data-testid="stForm"] div[data-baseweb="input"],
         div[data-testid="stForm"] div[data-baseweb="input"] > div,
         div[data-testid="stForm"] div[data-baseweb="base-input"],
@@ -2018,12 +2039,19 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
         }
         /* Checkbox "Arma de grabación" */
         div[data-testid="stForm"] div[data-baseweb="checkbox"] div,
-        div[data-testid="stForm"] .stCheckbox label {
+        div[data-testid="stForm"] .stCheckbox label,
+        div[data-testid="stForm"] .stCheckbox span {
             color: #2c3e50 !important;
         }
-        div[data-testid="stForm"] div[data-baseweb="checkbox"] > div:first-child {
+        div[data-testid="stForm"] div[data-baseweb="checkbox"] > div:first-child,
+        div[data-testid="stForm"] div[data-baseweb="checkbox"] > div > div:first-child {
             background-color: #ffffff !important;
-            border: 1px solid rgba(74, 111, 165, 0.3) !important;
+            border: 1.5px solid rgba(74, 111, 165, 0.35) !important;
+            border-radius: 4px !important;
+        }
+        div[data-testid="stForm"] div[data-baseweb="checkbox"] input:checked + div {
+            background-color: #4a6fa5 !important;
+            border-color: #4a6fa5 !important;
         }
         </style>
         <div class="particle-login" style="width:5px; height:5px; top:15%; left:10%; animation: floatParticleLogin 7s ease-in-out infinite;"></div>
