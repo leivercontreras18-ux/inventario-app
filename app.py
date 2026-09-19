@@ -1990,6 +1990,21 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
             color: #ffffff !important; border: none !important;
             box-shadow: 0 8px 20px rgba(74, 111, 165, 0.35) !important;
         }
+        /* Inputs en blanco para el login */
+        div[data-testid="stForm"] div[data-baseweb="input"],
+        div[data-testid="stForm"] div[data-baseweb="input"] input {
+            background-color: #ffffff !important;
+            color: #2c3e50 !important;
+            border: 1px solid rgba(74, 111, 165, 0.2) !important;
+            border-radius: 8px !important;
+        }
+        div[data-testid="stForm"] div[data-baseweb="input"]:focus-within {
+            border-color: #4a6fa5 !important;
+            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.15) !important;
+        }
+        div[data-testid="stForm"] div[data-baseweb="input"] input::placeholder {
+            color: #8ba3c0 !important;
+        }
         </style>
         <div class="particle-login" style="width:5px; height:5px; top:15%; left:10%; animation: floatParticleLogin 7s ease-in-out infinite;"></div>
         <div class="particle-login" style="width:3px; height:3px; top:75%; left:15%; animation: floatParticleLogin 9s ease-in-out infinite 1s;"></div>
