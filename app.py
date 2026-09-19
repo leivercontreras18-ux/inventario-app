@@ -1942,7 +1942,8 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
 
 elif not st.session_state.autenticado and st.session_state.etapa == "login":
     login_style_html = textwrap.dedent(
-            login_style_html = textwrap.dedent(
+            login_style_html = textwrap.dedent
+    (
         """
         <style>
         /* Fondo claro SOLO para el login */
