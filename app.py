@@ -735,7 +735,7 @@ def generar_factura_pdf(venta_id, cliente, fecha_texto, items_factura, total_fac
     pdf.add_page()
     ancho_pagina = pdf.w - 2 * pdf.l_margin
 
-    # --- Banda superior de color con logo y datos de la marca ---
+    # ---  de color con logo y datos de la marca ---
     pdf.set_fill_color(124, 77, 252)
     pdf.rect(0, 0, pdf.w, 32, style="F")
     try:
@@ -947,12 +947,17 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
             except Exception:
                 pass
 
-        # Overlay oscuro sutil sobre la foto para que el logo se lea
-        overlay = Image.new("RGB", (ancho, 70), (0, 0, 0))
-        img.paste(Image.blend(img.crop((0, 0, ancho, 70)), overlay, 0.35), (0, 0))
-
-        # Logo arriba sobre la foto
-        draw.text((25, 22), "LEWIN BOUTIQUE", fill=(255, 255, 255), font=font_logo)
+        # ===== LOGO OVERLAY (encima de la foto) =====
+        try:
+            logo_resp = requests.get(LOGO_URL, timeout=5)
+            if logo_resp.status_code == 200:
+                logo_img = Image.open(BytesIO(logo_resp.content)).convert("RGBA")
+                logo_img.thumbnail((160, 60))
+                fondo_logo = Image.new("RGBA", (logo_img.width + 20, logo_img.height + 16), (255, 255, 255, 220))
+                img.paste(fondo_logo, (15, 15), fondo_logo)
+                img.paste(logo_img, (25, 23), logo_img)
+        except Exception:
+            pass
 
         # ===== INFO CARD (nombre + talla/color izquierda, precio derecha) =====
         y_info = alto_foto
