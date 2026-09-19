@@ -1694,7 +1694,7 @@ defaults_sesion = {
     "usuario_actual": "",
     "rol_actual": "",
     "etapa": "bienvenida",
-    "tema": "oscuro",
+    "tema": "claro",
     "form_version": 0,
     "menu_activo": "inicio",
     "sidebar_compacto": False,
