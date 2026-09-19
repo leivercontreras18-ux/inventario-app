@@ -1515,10 +1515,10 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
 
 .page-header {{ margin-bottom: 25px; padding-bottom: 10px; }}
 .page-title {{ font-size: 32px; font-weight: 700; color: var(--text-color) !important; letter-spacing: 0.5px; }}
-.page-subtitle { font-size: 14px; color: #3d5066 !important; margin-top: 4px; font-weight: 500; }
+.page-subtitle {{ font-size: 14px; color: #3d5066 !important; margin-top: 4px; font-weight: 500; }}
 
 .section-title {{ font-size: 18px; font-weight: 600; color: var(--text-color); margin-bottom: 4px; }}
-.section-subtitle { font-size: 12px; color: #3d5066 !important; margin-bottom: 15px; font-weight: 500; }
+.section-subtitle {{ font-size: 12px; color: #3d5066 !important; margin-bottom: 15px; font-weight: 500; }}
 
 .metric-card {{
     background: var(--card-bg); backdrop-filter: blur(20px);
@@ -1528,7 +1528,7 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
     height: 100%; animation: fadeInUp 0.4s ease;
 }}
 .metric-value {{ font-size: 32px; font-weight: 800; color: var(--accent) !important; margin-top: 8px; }}
-.metric-label { font-size: 11px; color: #3d5066 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+.metric-label {{ font-size: 11px; color: #3d5066 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }}
 
 .user-profile-compact {{
     background: rgba(124, 77, 252, 0.08); padding: 10px 12px; border-radius: 12px;
