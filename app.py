@@ -1839,11 +1839,13 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         .hero-new-desc {
           font-family: 'Poppins', sans-serif;
           font-size: 16px;
-          color: #1a2b3d !important;
+          color: #0f1a2b !important;
           line-height: 1.7;
           margin-bottom: 35px;
           max-width: 650px;
-          font-weight: 600;
+          font-weight: 700;
+          text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+          opacity: 1 !important;
         }
         .hero-new-pills {
           display: flex;
@@ -1971,7 +1973,7 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
             font-size: 12px; color: var(--text-secondary); text-align: center; margin-top: 4px; margin-bottom: 14px;
         }
         div[data-testid="stForm"] div[data-testid="stFormSubmitButton"] > button {
-            background: linear-gradient(135deg, #7c4dfc 0%, #63b8fe 100%) !important;
+            background: linear-gradient(135deg, #5b8fc7 0%, #4a6fa5 100%) !important;
             color: #ffffff !important; border: none !important;
             animation: pulseGlowLogin 2.6s ease-in-out infinite !important;
         }
