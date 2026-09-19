@@ -1904,7 +1904,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
           </div>
           <div class="hero-new-content">
             <h1 class="hero-new-title">Lewin Boutique<br>Control Center</h1>
-            <p class="hero-new-desc" style="color: #0f1a2b !important; opacity: 1 !important; font-weight: 700 !important; font-size: 16px !important;">Gestion completa de inventario, ventas, reportes y catalogo visual en una sola plataforma.</p>
+            <div class="hero-new-desc" style="color: #0f1a2b !important; opacity: 1 !important; font-weight: 700 !important; font-size: 16px !important; font-family: 'Poppins', sans-serif !important; line-height: 1.6 !important; margin-bottom: 35px !important; max-width: 650px !important;">Gestion completa de inventario, ventas, reportes y catalogo visual en una sola plataforma.</div>
             <div class="hero-new-pills">
               <span class="hero-new-pill">Fotos de productos</span>
               <span class="hero-new-pill">Ventas y compras</span>
