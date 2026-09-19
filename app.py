@@ -1561,11 +1561,14 @@ section[data-testid="stSidebar"] button[kind="secondary"]:hover {{
     transform: none !important;
 }}
 section[data-testid="stSidebar"] button[kind="primary"] {{
-    background: rgba(74, 111, 165, 0.13) !important; color: var(--text-color) !important;
-    border: none !important; border-radius: 10px !important;
+    background: rgba(74, 111, 165, 0.22) !important;
+    color: #1a2b3d !important;
+    border: none !important;
+    border-left: 4px solid #4a6fa5 !important;
+    border-radius: 10px !important;
     text-align: left !important; justify-content: flex-start !important;
     font-weight: 700 !important; padding: 9px 12px !important;
-    animation: glowActivo 2.4s ease-in-out infinite !important;
+    box-shadow: 0 4px 12px rgba(74, 111, 165, 0.2) !important;
 }}
 section[data-testid="stSidebar"] button[kind="primary"]:hover {{
     transform: none !important;
