@@ -1942,23 +1942,24 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
 
 elif not st.session_state.autenticado and st.session_state.etapa == "login":
     login_style_html = textwrap.dedent(
+            login_style_html = textwrap.dedent(
         """
         <style>
+        /* Fondo claro SOLO para el login */
+        .stApp {
+            background: linear-gradient(135deg, #e8f0f8 0%, #f5f9fc 50%, #eaf2fa 100%) !important;
+        }
         @keyframes floatParticleLogin {
             0%   { transform: translateY(0px) translateX(0px); opacity: 0.2; }
             50%  { transform: translateY(-20px) translateX(10px); opacity: 0.55; }
             100% { transform: translateY(0px) translateX(0px); opacity: 0.2; }
         }
-        @keyframes pulseGlowLogin {
-            0%, 100% { box-shadow: 0 8px 25px rgba(124, 77, 252, 0.35); }
-            50% { box-shadow: 0 8px 40px rgba(99, 184, 254, 0.65); }
-        }
         .particle-login {
-            position: fixed; border-radius: 50%; background: #63b8fe; filter: blur(1px);
+            position: fixed; border-radius: 50%; background: #5b8fc7; filter: blur(1px);
             z-index: 0; pointer-events: none;
         }
         .login-welcome-tag {
-            font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 3px;
+            font-size: 11px; color: #4a6fa5; text-transform: uppercase; letter-spacing: 3px;
             font-weight: 700; text-align: center; margin-bottom: 6px;
         }
         .login-brand-icon {
@@ -1967,15 +1968,28 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
         }
         .login-title-text {
             font-family: 'Poppins', sans-serif !important; font-size: 22px; font-weight: 700 !important;
-            color: var(--text-color); letter-spacing: 1px; text-align: center;
+            color: #2c3e50 !important; letter-spacing: 1px; text-align: center;
         }
         .login-subtitle-text {
-            font-size: 12px; color: var(--text-secondary); text-align: center; margin-top: 4px; margin-bottom: 14px;
+            font-size: 12px; color: #6b7c93 !important; text-align: center; margin-top: 4px; margin-bottom: 14px;
         }
+        /* Card del formulario en blanco */
+        div[data-testid="stForm"] {
+            background: #ffffff !important;
+            border: 1px solid rgba(74, 111, 165, 0.12) !important;
+            box-shadow: 0 15px 40px rgba(74, 111, 165, 0.15) !important;
+        }
+        /* Labels en oscuro */
+        div[data-testid="stForm"] label,
+        div[data-testid="stForm"] .stMarkdown p,
+        div[data-testid="stForm"] div[data-testid="stWidgetLabel"] * {
+            color: #2c3e50 !important;
+        }
+        /* Botón INGRESAR en azul */
         div[data-testid="stForm"] div[data-testid="stFormSubmitButton"] > button {
             background: linear-gradient(135deg, #5b8fc7 0%, #4a6fa5 100%) !important;
             color: #ffffff !important; border: none !important;
-            animation: pulseGlowLogin 2.6s ease-in-out infinite !important;
+            box-shadow: 0 8px 20px rgba(74, 111, 165, 0.35) !important;
         }
         </style>
         <div class="particle-login" style="width:5px; height:5px; top:15%; left:10%; animation: floatParticleLogin 7s ease-in-out infinite;"></div>
