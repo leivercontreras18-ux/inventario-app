@@ -1307,6 +1307,7 @@ def get_css(tema: str, compacto: bool = False) -> str:
                            linear-gradient(160deg, #e8f0f8 0%, #f0f5fb 50%, #eaf2fa 100%);
             --text-color: #2c3e50;
             --text-secondary: #2c3e50;
+            --text-muted: #4a5c73;
             --accent: #4a6fa5;
             --accent-light: #5b8fc7;
             --accent-neon: #10b981;
@@ -1404,7 +1405,7 @@ div[data-baseweb="input"] input {{ color: var(--text-color) !important; font-siz
 
 div.stButton > button, div[data-testid="stFormSubmitButton"] > button {{
     background: var(--input-bg) !important;
-    color: var(--text-color) !important;
+    color: #2c3e50 !important;
     border-radius: 12px !important;
     border: 1px solid var(--border-color) !important;
     font-weight: 600 !important;
@@ -1514,10 +1515,10 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
 
 .page-header {{ margin-bottom: 25px; padding-bottom: 10px; }}
 .page-title {{ font-size: 32px; font-weight: 700; color: var(--text-color) !important; letter-spacing: 0.5px; }}
-.page-subtitle {{ font-size: 14px; color: var(--text-secondary) !important; margin-top: 4px; }}
+.page-subtitle { font-size: 14px; color: #3d5066 !important; margin-top: 4px; font-weight: 500; }
 
 .section-title {{ font-size: 18px; font-weight: 600; color: var(--text-color); margin-bottom: 4px; }}
-.section-subtitle {{ font-size: 12px; color: var(--text-secondary); margin-bottom: 15px; }}
+.section-subtitle { font-size: 12px; color: #3d5066 !important; margin-bottom: 15px; font-weight: 500; }
 
 .metric-card {{
     background: var(--card-bg); backdrop-filter: blur(20px);
@@ -1527,7 +1528,7 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
     height: 100%; animation: fadeInUp 0.4s ease;
 }}
 .metric-value {{ font-size: 32px; font-weight: 800; color: var(--accent) !important; margin-top: 8px; }}
-.metric-label {{ font-size: 11px; color: var(--text-secondary) !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }}
+.metric-label { font-size: 11px; color: #3d5066 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
 
 .user-profile-compact {{
     background: rgba(124, 77, 252, 0.08); padding: 10px 12px; border-radius: 12px;
@@ -1613,7 +1614,7 @@ label, .stMarkdown p {{
     color: var(--text-color) !important;
 }}
 .stCaption, div[data-testid="stCaptionContainer"] * {{
-    color: var(--text-secondary) !important;
+    color: #3d5066 !important;
     opacity: 1 !important;
 }}
 
