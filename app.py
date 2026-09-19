@@ -1755,7 +1755,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
           max-width: 1450px;
           margin: 0 auto;
           padding: 40px 60px 50px 60px;
-          background: linear-gradient(135deg, #dce8f5 0%, #e8f1fa 50%, #d6e6f2 100%);
+          background: linear-gradient(135deg, #d0e0f0 0%, #e2eef8 50%, #cadcee 100%);
           border-radius: 32px;
           overflow: hidden;
           box-shadow: 0 20px 60px rgba(74, 111, 165, 0.15);
@@ -1772,7 +1772,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
           background-size: contain;
           background-repeat: no-repeat;
           background-position: center;
-          opacity: 0.25;
+          opacity: 0.45;
           pointer-events: none;
           z-index: 0;
         }
@@ -1838,11 +1838,12 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         }
         .hero-new-desc {
           font-family: 'Poppins', sans-serif;
-          font-size: 15px;
-          color: #3d5066;
+          font-size: 16px;
+          color: #2c3e50 !important;
           line-height: 1.6;
           margin-bottom: 35px;
           max-width: 650px;
+          font-weight: 500;
         }
         .hero-new-pills {
           display: flex;
