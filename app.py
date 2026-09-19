@@ -1747,128 +1747,185 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         porcentaje_ok_hero = round(int((df["cantidad"] > df["alerta"]).sum()) / total_prendas_hero * 100)
     else:
         porcentaje_ok_hero = 0
-
+        
     hero_html = """
         <style>
-        .block-container { padding: 3.5rem 2rem 2rem 2rem !important; max-width: 100% !important; }
-        .full-hero-wrapper {
-            background: var(--card-bg); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
-            border: 1px solid var(--border-color); border-radius: 32px; padding: 50px 70px 55px 70px;
-            display: flex; flex-direction: column; position: relative;
-            overflow: hidden; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.08);
-            margin: 0 auto; max-width: 1450px;
+        .hero-new {
+          position: relative;
+          max-width: 1450px;
+          margin: 0 auto;
+          padding: 40px 60px 50px 60px;
+          background: linear-gradient(135deg, #e8f0f8 0%, #f5f9fc 50%, #eaf2fa 100%);
+          border-radius: 32px;
+          overflow: hidden;
+          box-shadow: 0 20px 60px rgba(74, 111, 165, 0.15);
+          border: 1px solid rgba(74, 111, 165, 0.12);
         }
-        @keyframes floatParticle {
-            0%   { transform: translateY(0px) translateX(0px); opacity: 0.25; }
-            50%  { transform: translateY(-18px) translateX(8px); opacity: 0.6; }
-            100% { transform: translateY(0px) translateX(0px); opacity: 0.25; }
+        .hero-new::before {
+          content: "";
+          position: absolute;
+          right: -100px;
+          bottom: -120px;
+          width: 620px;
+          height: 620px;
+          background-image: url('https://qhihqujbzjcuxshndsez.supabase.co/storage/v1/object/public/productos-fotos/1787708461873-removebg-preview.png');
+          background-size: contain;
+          background-repeat: no-repeat;
+          background-position: center;
+          opacity: 0.13;
+          pointer-events: none;
+          z-index: 0;
         }
-        @keyframes pulseGlowHero {
-            0%, 100% { box-shadow: 0 8px 25px rgba(124, 77, 252, 0.35); }
-            50% { box-shadow: 0 8px 40px rgba(99, 184, 254, 0.65); }
+        .hero-new-topbar {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 55px;
+          gap: 20px;
         }
-        @keyframes kenBurnsHero {
-            0% { transform: scale(1) translate(0,0); }
-            100% { transform: scale(1.08) translate(-1%, -1%); }
+        .hero-new-brand {
+          flex: 1;
+          text-align: center;
         }
-        .bg-photo-hero {
-            position: absolute; top: -10%; right: -15%; width: 55%; height: 130%;
-            background: radial-gradient(circle at 30% 30%, rgba(124, 77, 252, 0.30), transparent 60%);
-            border-radius: 50%; filter: blur(10px);
-            animation: kenBurnsHero 14s ease-in-out infinite alternate; z-index: 0;
+        .hero-new-brand-title {
+          font-family: 'Poppins', sans-serif;
+          font-size: 18px;
+          font-weight: 600;
+          letter-spacing: 3px;
+          color: #2c3e50;
+          margin-bottom: 6px;
         }
-        .particle-hero {
-            position: absolute; border-radius: 50%; background: #63b8fe; filter: blur(1px); z-index: 0;
+        .hero-new-brand-sub {
+          font-family: 'Poppins', sans-serif;
+          font-size: 11px;
+          font-weight: 500;
+          letter-spacing: 4px;
+          color: #6b7c93;
+          text-transform: uppercase;
         }
-        .stitch-line-hero { position: absolute; border-top: 1.5px dashed rgba(167, 139, 250, 0.4); z-index: 0; }
-        .hero-inner { position: relative; z-index: 1; }
-        .hero-topbar {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px;
-            padding-bottom: 20px; gap: 20px;
+        .hero-new-inicio {
+          background: linear-gradient(135deg, #5b8fc7 0%, #4a6fa5 100%);
+          color: #ffffff !important;
+          text-decoration: none !important;
+          padding: 12px 32px;
+          border-radius: 10px;
+          font-family: 'Poppins', sans-serif;
+          font-weight: 600;
+          font-size: 13px;
+          letter-spacing: 1px;
+          box-shadow: 0 8px 20px rgba(74, 111, 165, 0.35);
+          transition: all 0.3s ease;
         }
+        .hero-new-inicio:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 28px rgba(74, 111, 165, 0.45);
         }
-        .hero-brand { display: flex; align-items: center; gap: 12px; }
-        .brand-icon-hero {
-            display: flex; align-items: center; justify-content: center;
+        .hero-new-content {
+          position: relative;
+          z-index: 1;
+          max-width: 800px;
         }
-        .hero-brand-name {
-            font-family: 'Poppins', sans-serif !important; font-size: 15px; font-weight: 700; color: var(--text-color); letter-spacing: 2px;
+        .hero-new-title {
+          font-family: Georgia, 'Times New Roman', serif !important;
+          font-size: 58px;
+          font-weight: 700 !important;
+          color: #2c3e50 !important;
+          line-height: 1.1;
+          margin-bottom: 20px;
+          letter-spacing: -1px;
         }
-        h1.hero-title, .hero-title {
-            font-family: 'Poppins', sans-serif !important; font-size: 52px; font-weight: 800 !important; color: var(--text-color);
-            letter-spacing: 2px; line-height: 1.1; margin-bottom: 16px;
+        .hero-new-desc {
+          font-family: 'Poppins', sans-serif;
+          font-size: 15px;
+          color: #5a6b80;
+          line-height: 1.6;
+          margin-bottom: 35px;
+          max-width: 650px;
         }
-        .hero-subtitle-tag {
-            font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 3px;
-            font-weight: 700; margin-bottom: 20px;
+        .hero-new-pills {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          margin-bottom: 30px;
         }
-        .hero-desc { color: var(--text-secondary); font-size: 15px; line-height: 1.6; max-width: 650px; margin-bottom: 35px; }
-        .feature-pills-container { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 32px; }
-        .feature-pill {
-            background: rgba(124, 77, 252, 0.1); border: 1px solid var(--border-color); color: var(--accent);
-            padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
+        .hero-new-pill {
+          background: #ffffff;
+          border: 1px solid rgba(74, 111, 165, 0.15);
+          color: #4a6fa5;
+          padding: 9px 18px;
+          border-radius: 20px;
+          font-family: 'Poppins', sans-serif;
+          font-size: 12.5px;
+          font-weight: 500;
+          box-shadow: 0 2px 8px rgba(74, 111, 165, 0.08);
         }
-        .stats-row-hero { display: flex; gap: 40px; }
-        .stat-value-hero { font-family: 'Poppins', sans-serif !important; font-size: 26px; font-weight: 800; color: var(--text-color); }
-        .stat-label-hero {
-            font-size: 10px; color: var(--text-secondary); text-transform: uppercase;
-            letter-spacing: 1.5px; font-weight: 700; margin-top: 2px;
+        .hero-new-stats {
+          display: inline-flex;
+          background: #ffffff;
+          border-radius: 18px;
+          padding: 25px 45px;
+          gap: 50px;
+          box-shadow: 0 8px 30px rgba(74, 111, 165, 0.12);
+          border: 1px solid rgba(74, 111, 165, 0.1);
         }
-        .hero-cta-box {
-            max-width: 1450px; margin: 0 auto; background: var(--card-bg); backdrop-filter: blur(40px);
-            border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 32px 32px;
-            padding: 25px 70px 30px 70px;
+        .hero-new-stat {
+          text-align: left;
         }
-        .hero-inicio-link {
-            background: linear-gradient(135deg, #7c4dfc 0%, #63b8fe 100%);
-            color: #ffffff !important; text-decoration: none !important;
-            padding: 10px 26px; border-radius: 10px; font-weight: 700; font-size: 13px;
-            letter-spacing: 0.5px; animation: pulseGlowHero 2.6s ease-in-out infinite;
-            display: inline-block;
+        .hero-new-stat-value {
+          font-family: 'Poppins', sans-serif;
+          font-size: 32px;
+          font-weight: 800;
+          color: #2c3e50;
+          line-height: 1;
+          margin-bottom: 8px;
         }
-        div[data-testid="stButton"] { max-width: 340px; margin: 0 auto; }
-        div[data-testid="stButton"] > button {
-            background: linear-gradient(135deg, #7c4dfc 0%, #63b8fe 100%) !important;
-            color: #ffffff !important; border: none !important;
-            animation: pulseGlowHero 2.6s ease-in-out infinite !important;
+        .hero-new-stat-label {
+          font-family: 'Poppins', sans-serif;
+          font-size: 10px;
+          font-weight: 700;
+          color: #6b7c93;
+          letter-spacing: 1.5px;
+          text-transform: uppercase;
         }
-        .footer-signature-hero { margin-top: 10px; text-align: center; font-size: 10px; color: var(--text-secondary); }
         </style>
-        <div class="full-hero-wrapper">
-            <div class="bg-photo-hero"></div>
-            <div class="particle-hero" style="width:5px; height:5px; top:15%; left:60%; animation: floatParticle 6s ease-in-out infinite;"></div>
-            <div class="particle-hero" style="width:3px; height:3px; top:35%; left:75%; animation: floatParticle 8s ease-in-out infinite 1s;"></div>
-            <div class="particle-hero" style="width:4px; height:4px; top:55%; left:68%; animation: floatParticle 7s ease-in-out infinite 2s;"></div>
-            <div class="particle-hero" style="width:3px; height:3px; top:25%; left:85%; animation: floatParticle 9s ease-in-out infinite 0.5s;"></div>
-            <div class="hero-inner">
-            <div class="hero-topbar">
-            <div class="hero-brand">
-                <div class="brand-icon-hero">LOGO_SVG_PLACEHOLDER</div>
+        <div class="hero-new">
+          <div class="hero-new-topbar">
+            <div class="hero-new-logo">LOGO_SVG_PLACEHOLDER</div>
+            <div class="hero-new-brand">
+              <div class="hero-new-brand-title">TIENDA LEWIN</div>
+              <div class="hero-new-brand-sub">Boutique Inventario</div>
             </div>
-            <div style="flex: 1; text-align: center;">
-                <div class="hero-brand-name" style="font-size: 18px; letter-spacing: 3px;">TIENDA LEWIN</div>
-                <div class="hero-subtitle-tag" style="margin-top: 6px; margin-bottom: 0;">BOUTIQUE INVENTARIO</div>
+            <a class="hero-new-inicio" href="?ir=login">INICIO</a>
+          </div>
+          <div class="hero-new-content">
+            <h1 class="hero-new-title">Lewin Boutique<br>Control Center</h1>
+            <p class="hero-new-desc">Gestion completa de inventario, ventas, reportes y catalogo visual en una sola plataforma.</p>
+            <div class="hero-new-pills">
+              <span class="hero-new-pill">Fotos de productos</span>
+              <span class="hero-new-pill">Ventas y compras</span>
+              <span class="hero-new-pill">Reportes de rentabilidad</span>
+              <span class="hero-new-pill">Roles de usuario</span>
             </div>
-            <a class="hero-inicio-link" href="?ir=login">INICIO</a>
+            <div class="hero-new-stats">
+              <div class="hero-new-stat">
+                <div class="hero-new-stat-value">PLACEHOLDER_TOTAL</div>
+                <div class="hero-new-stat-label">Prendas en catalogo</div>
+              </div>
+              <div class="hero-new-stat">
+                <div class="hero-new-stat-value">PLACEHOLDER_PORC%</div>
+                <div class="hero-new-stat-label">Stock por encima del minimo</div>
+              </div>
+              <div class="hero-new-stat">
+                <div class="hero-new-stat-value">24/7</div>
+                <div class="hero-new-stat-label">Acceso en la nube</div>
+              </div>
+            </div>
+          </div>
         </div>
-                <h1 class="hero-title">Lewin Boutique<br>Control Center</h1>
-                <p class="hero-desc">
-                    Gestión completa de inventario, ventas, reportes y catálogo visual en una sola plataforma.
-                </p>
-                <div class="feature-pills-container">
-                    <span class="feature-pill">📷 Fotos de productos</span>
-                    <span class="feature-pill">💳 Ventas y compras</span>
-                    <span class="feature-pill">📈 Reportes de rentabilidad</span>
-                    <span class="feature-pill">👥 Roles de usuario</span>
-                </div>
-                <div class="stats-row-hero">
-                    <div><div class="stat-value-hero">PLACEHOLDER_TOTAL</div><div class="stat-label-hero">Prendas en catálogo</div></div>
-                    <div><div class="stat-value-hero">PLACEHOLDER_PORC%</div><div class="stat-label-hero">Stock por encima del mínimo</div></div>
-                    <div><div class="stat-value-hero">24/7</div><div class="stat-label-hero">Acceso en la nube</div></div>
-                </div>
-                <div class="footer-signature-hero">Diseñado con ♥ para Lewin Boutique</div>
-            </div>
-            """
+        """
+    
     logo_html_hero = f'<img src="{LOGO_URL}" style="width: 200px; height: auto;" />'
     hero_html = hero_html.replace("PLACEHOLDER_TOTAL", str(total_prendas_hero)).replace("PLACEHOLDER_PORC", str(porcentaje_ok_hero)).replace("LOGO_SVG_PLACEHOLDER",logo_html_hero)
     hero_html = textwrap.dedent(hero_html)
