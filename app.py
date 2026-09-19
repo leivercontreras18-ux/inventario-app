@@ -1298,7 +1298,7 @@ def render_copy_button(text_to_copy: str, label: str = "Copiar Código"):
 # ESTILOS (con soporte de tema claro / oscuro mediante variables CSS)
 # =====================================================================================
 
-if tema == "claro":
+    if tema == "claro":
         variables = """
             --bg-gradient: radial-gradient(circle at 20% 20%, rgba(74, 111, 165, 0.06) 0%, transparent 40%),
                            radial-gradient(circle at 80% 80%, rgba(91, 143, 199, 0.05) 0%, transparent 40%),
