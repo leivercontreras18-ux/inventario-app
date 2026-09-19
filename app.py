@@ -1405,10 +1405,10 @@ div[data-baseweb="input"] input {{ color: var(--text-color) !important; font-siz
 
 div.stButton > button, div[data-testid="stFormSubmitButton"] > button {{
     background: var(--input-bg) !important;
-    color: #2c3e50 !important;
+    color: #1a2b3d !important;
+    font-weight: 600 !important;
     border-radius: 12px !important;
     border: 1px solid var(--border-color) !important;
-    font-weight: 600 !important;
     padding: 12px 20px !important;
     transition: all 0.3s ease !important;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
@@ -1416,10 +1416,10 @@ div.stButton > button, div[data-testid="stFormSubmitButton"] > button {{
     width: 100% !important;
 }}
 div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {{
-    background: linear-gradient(135deg, #7c4dfc 0%, #63b8fe 100%) !important;
-    border-color: #63b8fe !important;
+    background: linear-gradient(135deg, #5b8fc7 0%, #4a6fa5 100%) !important;
+    border-color: #5b8fc7 !important;
     color: #ffffff !important;
-    box-shadow: 0 8px 25px rgba(124, 77, 252, 0.4) !important;
+    box-shadow: 0 8px 25px rgba(74, 111, 165, 0.4) !important;
     transform: translateY(-2px);
 }}
 
