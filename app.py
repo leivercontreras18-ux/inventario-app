@@ -1306,7 +1306,7 @@ def get_css(tema: str, compacto: bool = False) -> str:
                            radial-gradient(circle at 80% 80%, rgba(91, 143, 199, 0.05) 0%, transparent 40%),
                            linear-gradient(160deg, #e8f0f8 0%, #f0f5fb 50%, #eaf2fa 100%);
             --text-color: #2c3e50;
-            --text-secondary: #6b7c93;
+            --text-secondary: #2c3e50;
             --accent: #4a6fa5;
             --accent-light: #5b8fc7;
             --accent-neon: #10b981;
