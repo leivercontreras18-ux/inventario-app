@@ -1755,7 +1755,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
           max-width: 1450px;
           margin: 0 auto;
           padding: 40px 60px 50px 60px;
-          background: linear-gradient(135deg, #e8f0f8 0%, #f5f9fc 50%, #eaf2fa 100%);
+          background: linear-gradient(135deg, #dce8f5 0%, #e8f1fa 50%, #d6e6f2 100%);
           border-radius: 32px;
           overflow: hidden;
           box-shadow: 0 20px 60px rgba(74, 111, 165, 0.15);
@@ -1772,7 +1772,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
           background-size: contain;
           background-repeat: no-repeat;
           background-position: center;
-          opacity: 0.13;
+          opacity: 0.25;
           pointer-events: none;
           z-index: 0;
         }
@@ -1839,7 +1839,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
         .hero-new-desc {
           font-family: 'Poppins', sans-serif;
           font-size: 15px;
-          color: #5a6b80;
+          color: #3d5066;
           line-height: 1.6;
           margin-bottom: 35px;
           max-width: 650px;
@@ -1885,7 +1885,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
           font-family: 'Poppins', sans-serif;
           font-size: 10px;
           font-weight: 700;
-          color: #6b7c93;
+          color: #4a5c73;
           letter-spacing: 1.5px;
           text-transform: uppercase;
         }
