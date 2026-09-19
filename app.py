@@ -1298,39 +1298,37 @@ def render_copy_button(text_to_copy: str, label: str = "Copiar Código"):
 # ESTILOS (con soporte de tema claro / oscuro mediante variables CSS)
 # =====================================================================================
 
-def get_css(tema: str, compacto: bool = False) -> str:
-    ancho_sidebar = "84px" if compacto else "260px"
-    if tema == "claro":
+if tema == "claro":
         variables = """
-            --bg-gradient: radial-gradient(circle at 20% 20%, rgba(124, 77, 252, 0.06) 0%, transparent 40%),
-                           radial-gradient(circle at 80% 80%, rgba(99, 184, 254, 0.05) 0%, transparent 40%),
-                           linear-gradient(160deg, #f3f0fb 0%, #eef2fb 50%, #f6f0fb 100%);
-            --text-color: #2c2450;
-            --text-secondary: #7d76a0;
-            --accent: #7c4dfc;
-            --accent-light: #63b8fe;
-            --accent-neon: #22c55e;
-            --card-bg: rgba(255, 255, 255, 0.92);
-            --border-color: rgba(124, 77, 252, 0.14);
-            --sidebar-bg: rgba(255, 255, 255, 0.97);
-            --input-bg: rgba(246, 244, 255, 0.9);
+            --bg-gradient: radial-gradient(circle at 20% 20%, rgba(74, 111, 165, 0.06) 0%, transparent 40%),
+                           radial-gradient(circle at 80% 80%, rgba(91, 143, 199, 0.05) 0%, transparent 40%),
+                           linear-gradient(160deg, #e8f0f8 0%, #f0f5fb 50%, #eaf2fa 100%);
+            --text-color: #2c3e50;
+            --text-secondary: #6b7c93;
+            --accent: #4a6fa5;
+            --accent-light: #5b8fc7;
+            --accent-neon: #10b981;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --border-color: rgba(74, 111, 165, 0.15);
+            --sidebar-bg: rgba(255, 255, 255, 0.98);
+            --input-bg: rgba(240, 245, 250, 0.9);
         """
     else:
         variables = """
-            --bg-gradient: radial-gradient(circle at 20% 20%, rgba(124, 77, 252, 0.14) 0%, transparent 40%),
-                           radial-gradient(circle at 80% 80%, rgba(99, 184, 254, 0.09) 0%, transparent 40%),
-                           linear-gradient(135deg, #14121f 0%, #1a1730 50%, #15131f 100%);
-            --text-color: #f1eefc;
-            --text-secondary: #a89fd1;
-            --accent: #8b7ff0;
-            --accent-light: #63b8fe;
+            --bg-gradient: radial-gradient(circle at 20% 20%, rgba(74, 111, 165, 0.15) 0%, transparent 40%),
+                           radial-gradient(circle at 80% 80%, rgba(91, 143, 199, 0.10) 0%, transparent 40%),
+                           linear-gradient(135deg, #0f1a2b 0%, #15253d 50%, #101c2e 100%);
+            --text-color: #e8f0f8;
+            --text-secondary: #8ba3c0;
+            --accent: #6b9bd8;
+            --accent-light: #8db8e8;
             --accent-neon: #34d399;
-            --card-bg: rgba(26, 23, 42, 0.85);
-            --border-color: rgba(139, 127, 240, 0.2);
-            --sidebar-bg: rgba(20, 18, 32, 0.96);
-            --input-bg: rgba(32, 29, 50, 0.85);
+            --card-bg: rgba(20, 32, 50, 0.85);
+            --border-color: rgba(107, 155, 216, 0.2);
+            --sidebar-bg: rgba(15, 26, 43, 0.96);
+            --input-bg: rgba(26, 40, 62, 0.85);
         """
-
+        
     return f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
