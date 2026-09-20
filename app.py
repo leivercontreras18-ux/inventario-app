@@ -2094,50 +2094,38 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
             background-color: #ffffff !important;
             background: #ffffff !important;
         }}
-         /* Botón del ojito (solo el de la contraseña) */
+         /* Botón del ojito (mostrar/ocultar contraseña) */
         div[data-testid="stForm"] div[data-baseweb="input"] button,
-        div[data-testid="stForm"] div[data-baseweb="base-input"] button {
+        div[data-testid="stForm"] div[data-baseweb="base-input"] button,
+        div[data-testid="stForm"] div[data-baseweb="input"] button[type="button"],
+        div[data-testid="stForm"] button[aria-label*="assword"],
+        div[data-testid="stForm"] button[aria-label*="ontraseña"] {{
             background-color: #ffffff !important;
+            background: #ffffff !important;
             color: #4a6fa5 !important;
-            border: none !important;
-            border-left: 1px solid rgba(74, 111, 165, 0.25) !important;
-            border-radius: 0 8px 8px 0 !important;
-        }
-        div[data-testid="stForm"] div[data-baseweb="input"] button:hover {
-            background-color: #e8f0f8 !important;
-            color: #2c3e50 !important;
-        }
-        div[data-testid="stForm"] div[data-baseweb="input"] button svg,
-        div[data-testid="stForm"] div[data-baseweb="input"] button svg path {
-            fill: #4a6fa5 !important;
-            color: #4a6fa5 !important;
-        }
-
-        div[data-testid="stForm"] div[data-baseweb="input"] button:hover,
-        div[data-testid="stForm"] button[kind="secondary"]:hover {
-            background-color: #e8f0f8 !important;
-            color: #2c3e50 !important;
-        }
-        div[data-testid="stForm"] div[data-baseweb="input"] button svg,
-        div[data-testid="stForm"] button[kind="secondary"] svg {
-            fill: #4a6fa5 !important;
-            color: #4a6fa5 !important;
-        }
-        div[data-testid="stForm"] div[data-baseweb="input"],
-        div[data-testid="stForm"] div[data-baseweb="input"] > div,
-        div[data-testid="stForm"] div[data-baseweb="base-input"],
-        div[data-testid="stForm"] div[data-baseweb="base-input"] > div,
-        div[data-testid="stForm"] input[type="text"],
-        div[data-testid="stForm"] input[type="password"],
-        div[data-testid="stForm"] .stTextInput input,
-        div[data-testid="stForm"] [data-testid="stTextInput"] input {
-            background-color: #ffffff !important;
-            color: #2c3e50 !important;
             border: 1px solid rgba(74, 111, 165, 0.25) !important;
-            border-radius: 8px !important;
-            -webkit-text-fill-color: #2c3e50 !important;
-            caret-color: #4a6fa5 !important;
-        }
+            border-radius: 0 8px 8px 0 !important;
+        }}
+        div[data-testid="stForm"] div[data-baseweb="input"] button:hover,
+        div[data-testid="stForm"] button[aria-label*="assword"]:hover {{
+            background-color: #e8f0f8 !important;
+            background: #e8f0f8 !important;
+            color: #2c3e50 !important;
+        }}
+        /* Icono del ojito */
+        div[data-testid="stForm"] div[data-baseweb="input"] button svg,
+        div[data-testid="stForm"] div[data-baseweb="input"] button svg path,
+        div[data-testid="stForm"] button[aria-label*="assword"] svg,
+        div[data-testid="stForm"] button[aria-label*="assword"] svg path {{
+            fill: #4a6fa5 !important;
+            color: #4a6fa5 !important;
+            stroke: #4a6fa5 !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: block !important;
+            width: 18px !important;
+            height: 18px !important;
+        }}
         div[data-testid="stForm"] div[data-baseweb="input"]:focus-within,
         div[data-testid="stForm"] div[data-baseweb="base-input"]:focus-within {
             border-color: #4a6fa5 !important;
