@@ -1624,14 +1624,26 @@ label, .stMarkdown p {{
             font-weight: 500 !important;
        }}
 
-div[data-testid="stTextArea"] textarea {{
-    background-color: var(--input-bg) !important;
-    color: var(--text-secondary) !important;
-    border: 1px solid var(--border-color) !important;
-    border-radius: 8px !important;
-    font-size: 12px !important;
-    resize: none !important;
-}}
+div[data-testid="stTextArea"] textarea,
+        div[data-testid="stTextArea"] textarea:disabled,
+        div[data-testid="stTextArea"] textarea[disabled],
+        div[data-testid="stTextArea"] div[data-baseweb="textarea"],
+        div[data-testid="stTextArea"] div[data-baseweb="base-input"] {{
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            color: #1a2b3d !important;
+            -webkit-text-fill-color: #1a2b3d !important;
+            border: 1px solid rgba(74, 111, 165, 0.2) !important;
+            border-radius: 8px !important;
+            font-size: 12px !important;
+            resize: none !important;
+            opacity: 1 !important;
+            font-weight: 500 !important;
+        }
+        div[data-testid="stTextArea"] textarea:disabled,
+        div[data-testid="stTextArea"] textarea[disabled] {{
+            cursor: default !important;
+        }}
 
 .alert-banner {{
     background: rgba(99, 184, 254, 0.12); border: 1px solid var(--accent);
