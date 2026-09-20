@@ -1959,6 +1959,31 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
           font-weight: 500;
           box-shadow: 0 2px 8px rgba(74, 111, 165, 0.08);
         }
+
+        /* Botón INICIO real */
+        .st-key-btn_inicio_hero_real button,
+        div[class*="st-key-btn_inicio_hero_real"] button {{
+            background: linear-gradient(135deg, #5b8fc7 0%, #4a6fa5 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 10px !important;
+            padding: 10px 24px !important;
+            font-family: 'Poppins', sans-serif !important;
+            font-weight: 600 !important;
+            font-size: 13px !important;
+            letter-spacing: 1px !important;
+            box-shadow: 0 8px 20px rgba(74, 111, 165, 0.35) !important;
+            margin-top: -420px !important;
+            z-index: 999 !important;
+            position: relative !important;
+        }}
+        .st-key-btn_inicio_hero_real button:hover,
+        div[class*="st-key-btn_inicio_hero_real"] button:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(74, 111, 165, 0.45) !important;
+            color: #ffffff !important;
+        }}
+        
         .hero-new-stats {
           display: inline-flex;
           background: #ffffff;
@@ -1995,7 +2020,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
               <div class="hero-new-brand-title">TIENDA LEWIN</div>
               <div class="hero-new-brand-sub">Boutique Inventario</div>
             </div>
-            <a class="hero-new-inicio" href="?ir=login">INICIO</a>
+            <div class="hero-new-inicio" style="opacity:0; pointer-events:none;">INICIO</div>
           </div>
           <div class="hero-new-content">
             <h1 class="hero-new-title">Lewin Boutique<br>Control Center</h1>
@@ -2029,6 +2054,13 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
     hero_html = textwrap.dedent(hero_html)
 
     st.markdown(hero_html, unsafe_allow_html=True)
+
+    _, col_btn_hero = st.columns([6, 1])
+    with col_btn_hero:
+        if st.button("INICIO", key="btn_inicio_hero_real", use_container_width=True):
+            st.query_params["ir"] = "login"
+            st.rerun()
+
     st.stop()
 
 # =====================================================================================
