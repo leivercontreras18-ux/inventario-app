@@ -1439,21 +1439,17 @@ section[data-testid="stSidebar"] * {{ color: var(--text-color) !important; }}
             -webkit-text-fill-color: #1a2b3d !important;
         }}
         
-        /* ===== BOTONES SECUNDARIOS (QR) ===== */
-        div.stButton > button[kind="secondary"],
-        div.stButton > button[kind="secondary"] *,
-        div.stButton > button[kind="secondary"] p {{
+        /* ===== BOTONES SECUNDARIOS (QR) - SOLO FUERA DEL SIDEBAR ===== */
+        section.main div.stButton > button[kind="secondary"],
+        div[data-testid="stAppViewContainer"] > section > div > div > div > div.stButton > button[kind="secondary"] {{
             background-color: #ffffff !important;
             background: #ffffff !important;
             color: #1a2b3d !important;
-            -webkit-text-fill-color: #1a2b3d !important;
             border: 1px solid rgba(74, 111, 165, 0.2) !important;
+            border-radius: 8px !important;
         }}
-        
-        div.stButton > button[kind="secondary"]:hover,
-        div.stButton > button[kind="secondary"]:hover * {{
+        section.main div.stButton > button[kind="secondary"]:hover {{
             background-color: #e8f0f8 !important;
-            background: #e8f0f8 !important;
             color: #4a6fa5 !important;
         }}
         
@@ -1472,6 +1468,16 @@ section[data-testid="stSidebar"] * {{ color: var(--text-color) !important; }}
             background-color: #e8f0f8 !important;
             background: #e8f0f8 !important;
             color: #4a6fa5 !important;
+        }}
+        
+        /* QR Popover */
+        div[data-testid="stPopover"] > button,
+        div[data-testid="stPopover"] > button * {{
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            color: #1a2b3d !important;
+            -webkit-text-fill-color: #1a2b3d !important;
+            border: 1px solid rgba(74, 111, 165, 0.2) !important;
         }}
 
 .form-section-header {{
@@ -2052,6 +2058,13 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
             box-shadow: 0 8px 20px rgba(74, 111, 165, 0.35) !important;
         }
         /* Inputs en blanco para el login - VERSIÓN AGRESIVA */
+        /* Reforzar el fondo blanco de los inputs del login */
+        div[data-testid="stForm"] div[data-baseweb="input"],
+        div[data-testid="stForm"] div[data-baseweb="input"] > div,
+        div[data-testid="stForm"] div[data-baseweb="base-input"] {{
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+        }}
          /* Botón del ojito (solo el de la contraseña) */
         div[data-testid="stForm"] div[data-baseweb="input"] button,
         div[data-testid="stForm"] div[data-baseweb="base-input"] button {
