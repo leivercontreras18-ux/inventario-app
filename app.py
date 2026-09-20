@@ -1996,7 +1996,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
               <div class="hero-new-brand-title">TIENDA LEWIN</div>
               <div class="hero-new-brand-sub">Boutique Inventario</div>
             </div>
-            <div class="hero-new-inicio" style="opacity:0; pointer-events:none;">INICIO</div>
+            <a class="hero-new-inicio" href="?ir=login" target="_top">INICIO</a>
           </div>
           <div class="hero-new-content">
             <h1 class="hero-new-title">Lewin Boutique<br>Control Center</h1>
@@ -2030,33 +2030,6 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
     hero_html = textwrap.dedent(hero_html)
 
     st.markdown(hero_html, unsafe_allow_html=True)
-
-    _, col_btn_hero = st.columns([6, 1])
-    with col_btn_hero:
-        if st.button("INICIO", key="btn_inicio_hero_real", use_container_width=True):
-            st.query_params["ir"] = "login"
-            st.rerun()
-
-    # Mover el botón con JavaScript
-    components.html("""
-    <script>
-    setTimeout(function() {
-        const doc = window.parent.document;
-        const btn = doc.querySelector('button[kind="primary"]');
-        if (btn) {
-            let wrapper = btn.closest('div[data-testid="stButton"]');
-            if (wrapper) {
-                wrapper.style.position = 'fixed';
-                wrapper.style.top = '85px';
-                wrapper.style.right = '110px';
-                wrapper.style.width = '140px';
-                wrapper.style.zIndex = '99999';
-            }
-        }
-    }, 500);
-    </script>
-    """, height=0)
-
     st.stop()
 
 # =====================================================================================
