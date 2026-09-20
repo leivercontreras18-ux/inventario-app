@@ -1960,13 +1960,13 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
           box-shadow: 0 2px 8px rgba(74, 111, 165, 0.08);
         }
 
-        /* Botón INICIO real - posicionado absolute */
+        /* Botón INICIO real - fijo en pantalla */
         div[class*="st-key-btn_inicio_hero_real"] {{
-            position: absolute !important;
-            top: 40px !important;
-            right: 60px !important;
-            width: 140px !important;
-            z-index: 999 !important;
+            position: fixed !important;
+            top: 100px !important;
+            right: 100px !important;
+            width: 150px !important;
+            z-index: 99999 !important;
         }}
         div[class*="st-key-btn_inicio_hero_real"] button {{
             background: linear-gradient(135deg, #5b8fc7 0%, #4a6fa5 100%) !important;
