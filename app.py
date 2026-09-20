@@ -2094,6 +2094,7 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
             background-color: #ffffff !important;
             background: #ffffff !important;
         }}
+        
         /* ==== LOGIN - Inputs blancos, sin tooltip, ojito visible ==== */
         
         /* 1. Ocultar el tooltip "Press Enter to submit form" */
@@ -2192,6 +2193,37 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
             fill: #ffffff !important;
             color: #ffffff !important;
             stroke: #ffffff !important;
+        }}
+
+        /* ===== BOTÓN DEL OJITO (contraseña) ===== */
+        div[data-testid="stForm"] div[data-baseweb="input"] button {{
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            border: none !important;
+            border-left: 1px solid rgba(74, 111, 165, 0.2) !important;
+            border-radius: 0 8px 8px 0 !important;
+            min-width: 44px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }}
+        div[data-testid="stForm"] div[data-baseweb="input"] button:hover {{
+            background-color: #e8f0f8 !important;
+        }}
+        div[data-testid="stForm"] div[data-baseweb="input"] button svg {{
+            width: 20px !important;
+            height: 20px !important;
+            display: block !important;
+            visibility: visible !important;
+        }}
+        div[data-testid="stForm"] div[data-baseweb="input"] button svg,
+        div[data-testid="stForm"] div[data-baseweb="input"] button svg path,
+        div[data-testid="stForm"] div[data-baseweb="input"] button svg circle,
+        div[data-testid="stForm"] div[data-baseweb="input"] button svg line {{
+            fill: #4a6fa5 !important;
+            stroke: #4a6fa5 !important;
+            color: #4a6fa5 !important;
+            opacity: 1 !important;
         }}
         
         </style>
