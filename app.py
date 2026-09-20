@@ -1427,34 +1427,46 @@ section[data-testid="stSidebar"] * {{ color: var(--text-color) !important; }}
             -webkit-text-fill-color: #8ba3c0 !important;
         }}
         
-        /* ===== VALORES DE INPUTS Y SELECTS ===== */
+        /* ===== VALORES DE INPUTS Y SELECTS - VERSIÓN AGRESIVA ===== */
         div[data-baseweb="input"] input,
         div[data-baseweb="input"] input:focus,
-        div[data-baseweb="input"] input:active,
         div[data-baseweb="base-input"] input,
-        div[data-baseweb="base-input"] input:focus,
         [data-testid="stTextInput"] input,
         [data-testid="stNumberInput"] input,
-        [data-testid="stTextArea"] textarea {{
+        [data-testid="stTextArea"] textarea,
+        [data-testid="stTextArea"] textarea:disabled,
+        [data-testid="stTextArea"] textarea[disabled] {{
             color: #1a2b3d !important;
             -webkit-text-fill-color: #1a2b3d !important;
             caret-color: #4a6fa5 !important;
+            opacity: 1 !important;
         }}
         
-        /* Valor del select (dropdown) */
-        div[data-baseweb="select"] div[role="button"] *,
-        div[data-baseweb="select"] div[role="button"] span,
-        div[data-baseweb="select"] div[aria-haspopup="listbox"] *,
-        div[data-baseweb="select"] div[aria-haspopup="listbox"] span,
-        div[data-baseweb="select"] > div > div > div,
-        div[data-baseweb="select"] > div > div > div *,
-        [data-testid="stSelectbox"] div[data-baseweb="select"] *,
-        [data-testid="stSelectbox"] div[data-baseweb="select"] span {{
+        /* Selectbox - valor seleccionado */
+        [data-testid="stSelectbox"] div[data-baseweb="select"] > div,
+        [data-testid="stSelectbox"] div[data-baseweb="select"] > div > div,
+        [data-testid="stSelectbox"] div[data-baseweb="select"] div[role="button"],
+        [data-testid="stSelectbox"] div[data-baseweb="select"] div[role="button"] div,
+        [data-testid="stSelectbox"] div[data-baseweb="select"] div[role="button"] span,
+        [data-testid="stSelectbox"] div[data-baseweb="select"] input,
+        [data-testid="stSelectbox"] div[data-baseweb="select"] svg {{
             color: #1a2b3d !important;
             -webkit-text-fill-color: #1a2b3d !important;
+            fill: #1a2b3d !important;
+            opacity: 1 !important;
         }}
         
-        /* Placeholder */
+        /* Selectbox - texto del valor */
+        [data-testid="stSelectbox"] div[data-baseweb="select"] [class*="ValueContainer"] *,
+        [data-testid="stSelectbox"] div[data-baseweb="select"] [class*="singleValue"],
+        [data-testid="stSelectbox"] div[data-baseweb="select"] [class*="SingleValue"],
+        [data-testid="stSelectbox"] div[data-baseweb="select"] [class*="placeholder"] {{
+            color: #1a2b3d !important;
+            -webkit-text-fill-color: #1a2b3d !important;
+            opacity: 1 !important;
+        }}
+        
+        /* Placeholder de inputs */
         div[data-baseweb="input"] input::placeholder,
         [data-testid="stTextInput"] input::placeholder {{
             color: #6b7c93 !important;
