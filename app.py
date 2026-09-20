@@ -1391,29 +1391,29 @@ section[data-testid="stSidebar"] {{
 }}
 section[data-testid="stSidebar"] * {{ color: var(--text-color) !important; }}
 
-div[data-baseweb="input"], div[data-baseweb="select"] > div {
+div[data-baseweb="input"], div[data-baseweb="select"] > div {{
             background-color: #ffffff !important;
             background: #ffffff !important;
             border-radius: 8px !important;
             border: 1px solid rgba(74, 111, 165, 0.2) !important;
             color: #1a2b3d !important;
-        }
-        div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-within {
+        }}
+        div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-within {{
             border-color: #4a6fa5 !important;
             box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.15) !important;
-        }
-        div[data-baseweb="input"] input {
+        }}
+        div[data-baseweb="input"] input {{
             color: #1a2b3d !important;
             -webkit-text-fill-color: #1a2b3d !important;
-        }
-        div[data-baseweb="input"] input::placeholder {
+        }}
+        div[data-baseweb="input"] input::placeholder {{
             color: #8ba3c0 !important;
             -webkit-text-fill-color: #8ba3c0 !important;
-        }
+        }}
         div[data-baseweb="select"] div[role="button"],
-        div[data-baseweb="select"] span {
+        div[data-baseweb="select"] span {{
             color: #1a2b3d !important;
-        }
+        }}
         
 div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-within {{
     border-color: var(--accent) !important;
