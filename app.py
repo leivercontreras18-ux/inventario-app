@@ -2094,67 +2094,65 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
             background-color: #ffffff !important;
             background: #ffffff !important;
         }}
-         /* Botón del ojito (mostrar/ocultar contraseña) */
-        div[data-testid="stForm"] div[data-baseweb="input"] button,
-        div[data-testid="stForm"] div[data-baseweb="base-input"] button,
-        div[data-testid="stForm"] div[data-baseweb="input"] button[type="button"],
-        div[data-testid="stForm"] button[aria-label*="assword"],
-        div[data-testid="stForm"] button[aria-label*="ontraseña"] {{
+        /* ==== LOGIN - Inputs blancos, sin tooltip, ojito visible ==== */
+        
+        /* 1. Ocultar el tooltip "Press Enter to submit form" */
+        div[data-testid="stForm"] input::-webkit-input-placeholder,
+        div[data-testid="stForm"] input::-webkit-calendar-picker-indicator {{
+            display: none !important;
+        }}
+        div[data-testid="stForm"] input[title] {{
+            pointer-events: auto !important;
+        }}
+        div[data-testid="stForm"] input::-webkit-datetime-edit {{
+            display: none !important;
+        }}
+        
+        /* 2. Inputs blancos (forzado) */
+        div[data-testid="stForm"] div[data-baseweb="input"],
+        div[data-testid="stForm"] div[data-baseweb="input"] > div,
+        div[data-testid="stForm"] div[data-baseweb="base-input"],
+        div[data-testid="stForm"] div[data-baseweb="base-input"] > div,
+        div[data-testid="stForm"] input,
+        div[data-testid="stForm"] input[type="text"],
+        div[data-testid="stForm"] input[type="password"] {{
             background-color: #ffffff !important;
             background: #ffffff !important;
-            color: #4a6fa5 !important;
-            border: 1px solid rgba(74, 111, 165, 0.25) !important;
-            border-radius: 0 8px 8px 0 !important;
+            color: #1a2b3d !important;
+            -webkit-text-fill-color: #1a2b3d !important;
+            caret-color: #4a6fa5 !important;
+            border-color: rgba(74, 111, 165, 0.25) !important;
         }}
-        div[data-testid="stForm"] div[data-baseweb="input"] button:hover,
-        div[data-testid="stForm"] button[aria-label*="assword"]:hover {{
+        
+        /* 3. Botón del ojito (fondo blanco, icono azul) */
+        div[data-testid="stForm"] div[data-baseweb="input"] button,
+        div[data-testid="stForm"] div[data-baseweb="base-input"] button {{
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            border: 1px solid rgba(74, 111, 165, 0.25) !important;
+            border-left: none !important;
+            border-radius: 0 8px 8px 0 !important;
+            min-width: 40px !important;
+            height: 100% !important;
+        }}
+        div[data-testid="stForm"] div[data-baseweb="input"] button:hover {{
             background-color: #e8f0f8 !important;
             background: #e8f0f8 !important;
-            color: #2c3e50 !important;
         }}
-        /* Icono del ojito */
+        
+        /* 4. Icono del ojito (eye) - usar stroke y fill juntos */
         div[data-testid="stForm"] div[data-baseweb="input"] button svg,
         div[data-testid="stForm"] div[data-baseweb="input"] button svg path,
-        div[data-testid="stForm"] button[aria-label*="assword"] svg,
-        div[data-testid="stForm"] button[aria-label*="assword"] svg path {{
+        div[data-testid="stForm"] div[data-baseweb="input"] button svg circle,
+        div[data-testid="stForm"] div[data-baseweb="input"] button svg line {{
             fill: #4a6fa5 !important;
             color: #4a6fa5 !important;
             stroke: #4a6fa5 !important;
             opacity: 1 !important;
             visibility: visible !important;
-            display: block !important;
             width: 18px !important;
             height: 18px !important;
         }}
-        div[data-testid="stForm"] div[data-baseweb="input"]:focus-within,
-        div[data-testid="stForm"] div[data-baseweb="base-input"]:focus-within {
-            border-color: #4a6fa5 !important;
-            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.18) !important;
-        }
-        div[data-testid="stForm"] div[data-baseweb="input"] input::placeholder,
-        div[data-testid="stForm"] input::placeholder {
-            color: #8ba3c0 !important;
-            -webkit-text-fill-color: #8ba3c0 !important;
-        }
-        /* Checkbox "Arma de grabación" */
-        div[data-testid="stForm"] .stCheckbox label,
-        div[data-testid="stForm"] .stCheckbox label * {
-            color: #2c3e50 !important;
-        }
-        div[data-testid="stForm"] .stCheckbox label > div:first-child,
-        div[data-testid="stForm"] .stCheckbox label > span:first-child {
-            background-color: #ffffff !important;
-            border: 1.5px solid rgba(74, 111, 165, 0.4) !important;
-        }
-        div[data-testid="stForm"] .stCheckbox label input:checked ~ div {
-            background-color: #4a6fa5 !important;
-            border-color: #4a6fa5 !important;
-        }
-        div[data-testid="stForm"] [data-baseweb="checkbox"] svg,
-        div[data-testid="stForm"] [data-baseweb="checkbox"] svg path {
-            fill: #ffffff !important;
-            color: #ffffff !important;
-        }
         </style>
         <div class="particle-login" style="width:5px; height:5px; top:15%; left:10%; animation: floatParticleLogin 7s ease-in-out infinite;"></div>
         <div class="particle-login" style="width:3px; height:3px; top:75%; left:15%; animation: floatParticleLogin 9s ease-in-out infinite 1s;"></div>
