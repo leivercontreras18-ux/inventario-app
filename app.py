@@ -1391,64 +1391,88 @@ section[data-testid="stSidebar"] {{
 }}
 section[data-testid="stSidebar"] * {{ color: var(--text-color) !important; }}
 
-div[data-baseweb="input"], div[data-baseweb="select"] > div {{
+/* ===== INPUTS Y SELECTORES EN BLANCO ===== */
+        div[data-baseweb="input"], 
+        div[data-baseweb="select"] > div,
+        div[data-baseweb="select"] div[role="button"],
+        div[data-baseweb="select"] [data-baseweb="select"] > div,
+        div[data-baseweb="base-input"],
+        [data-testid="stSelectbox"] > div > div,
+        [data-testid="stSelectbox"] div[data-baseweb="select"] > div,
+        [data-testid="stTextInput"] > div > div,
+        [data-testid="stNumberInput"] > div > div {{
             background-color: #ffffff !important;
             background: #ffffff !important;
             border-radius: 8px !important;
             border: 1px solid rgba(74, 111, 165, 0.2) !important;
             color: #1a2b3d !important;
         }}
-        div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-within {{
+        
+        div[data-baseweb="input"]:focus-within, 
+        div[data-baseweb="select"] > div:focus-within {{
             border-color: #4a6fa5 !important;
             box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.15) !important;
         }}
-        div[data-baseweb="input"] input {{
+        
+        div[data-baseweb="input"] input,
+        [data-testid="stTextInput"] input,
+        [data-testid="stNumberInput"] input {{
             color: #1a2b3d !important;
             -webkit-text-fill-color: #1a2b3d !important;
+            background-color: #ffffff !important;
         }}
+        
         div[data-baseweb="input"] input::placeholder {{
             color: #8ba3c0 !important;
             -webkit-text-fill-color: #8ba3c0 !important;
         }}
+        
+        /* Selectores (dropdowns) */
         div[data-baseweb="select"] div[role="button"],
-        div[data-baseweb="select"] span {{
+        div[data-baseweb="select"] div[role="button"] span,
+        div[data-baseweb="select"] [aria-haspopup="listbox"],
+        div[data-baseweb="select"] [aria-haspopup="listbox"] *,
+        [data-testid="stSelectbox"] div,
+        [data-testid="stSelectbox"] span {{
             color: #1a2b3d !important;
+            background-color: #ffffff !important;
+            -webkit-text-fill-color: #1a2b3d !important;
         }}
         
-div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-within {{
-    border-color: var(--accent) !important;
-    box-shadow: 0 0 10px rgba(124, 77, 252, 0.3) !important;
-}}
-div[data-baseweb="input"] input {{ color: var(--text-color) !important; font-size: 13px !important; }}
-
-div.stButton > button, div[data-testid="stFormSubmitButton"] > button {{
-    background: var(--input-bg) !important;
-    color: #1a2b3d !important;
-    font-weight: 600 !important;
-    border-radius: 12px !important;
-    border: 1px solid var(--border-color) !important;
-    padding: 12px 20px !important;
-    transition: all 0.3s ease !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
-    display: flex; justify-content: center; align-items: center;
-    width: 100% !important;
-}}
-div.stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {{
-    background: linear-gradient(135deg, #5b8fc7 0%, #4a6fa5 100%) !important;
-    border-color: #5b8fc7 !important;
-    color: #ffffff !important;
-    box-shadow: 0 8px 25px rgba(74, 111, 165, 0.4) !important;
-    transform: translateY(-2px);
-}}
-
-div[data-testid="stForm"] {{
-    background: var(--card-bg) !important;
-    backdrop-filter: blur(20px) !important;
-    border: 1px solid var(--border-color) !important;
-    border-radius: 20px !important;
-    padding: 25px !important;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25) !important;
-}}
+        /* ===== BOTONES SECUNDARIOS (QR) ===== */
+        div.stButton > button[kind="secondary"],
+        div.stButton > button[kind="secondary"] *,
+        div.stButton > button[kind="secondary"] p {{
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            color: #1a2b3d !important;
+            -webkit-text-fill-color: #1a2b3d !important;
+            border: 1px solid rgba(74, 111, 165, 0.2) !important;
+        }}
+        
+        div.stButton > button[kind="secondary"]:hover,
+        div.stButton > button[kind="secondary"]:hover * {{
+            background-color: #e8f0f8 !important;
+            background: #e8f0f8 !important;
+            color: #4a6fa5 !important;
+        }}
+        
+        /* Botones de descarga (Exportar CSV) */
+        div[data-testid="stDownloadButton"] > button,
+        div[data-testid="stDownloadButton"] > button * {{
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            color: #1a2b3d !important;
+            -webkit-text-fill-color: #1a2b3d !important;
+            border: 1px solid rgba(74, 111, 165, 0.2) !important;
+        }}
+        
+        div[data-testid="stDownloadButton"] > button:hover,
+        div[data-testid="stDownloadButton"] > button:hover * {{
+            background-color: #e8f0f8 !important;
+            background: #e8f0f8 !important;
+            color: #4a6fa5 !important;
+        }}
 
 .form-section-header {{
     display: flex; align-items: center; gap: 10px;
