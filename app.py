@@ -2140,19 +2140,60 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
             background: #e8f0f8 !important;
         }}
         
-        /* 4. Icono del ojito (eye) - usar stroke y fill juntos */
+       /* 4. Icono del ojito (eye) - FORZAR VISIBILIDAD */
         div[data-testid="stForm"] div[data-baseweb="input"] button svg,
+        div[data-testid="stForm"] div[data-baseweb="input"] button svg *,
         div[data-testid="stForm"] div[data-baseweb="input"] button svg path,
         div[data-testid="stForm"] div[data-baseweb="input"] button svg circle,
-        div[data-testid="stForm"] div[data-baseweb="input"] button svg line {{
+        div[data-testid="stForm"] div[data-baseweb="input"] button svg line,
+        div[data-testid="stForm"] div[data-baseweb="input"] button svg polyline {{
             fill: #4a6fa5 !important;
             color: #4a6fa5 !important;
             stroke: #4a6fa5 !important;
+            stroke-width: 2 !important;
             opacity: 1 !important;
             visibility: visible !important;
-            width: 18px !important;
-            height: 18px !important;
+            display: inline-block !important;
+            width: 20px !important;
+            height: 20px !important;
+            min-width: 20px !important;
+            min-height: 20px !important;
         }}
+        div[data-testid="stForm"] div[data-baseweb="input"] button {{
+            color: #4a6fa5 !important;
+            opacity: 1 !important;
+        }}
+
+        /* 5. Checkbox "Recordarme" en blanco */
+        div[data-testid="stForm"] .stCheckbox,
+        div[data-testid="stForm"] .stCheckbox *,
+        div[data-testid="stForm"] [data-baseweb="checkbox"] * {{
+            color: #1a2b3d !important;
+            -webkit-text-fill-color: #1a2b3d !important;
+            opacity: 1 !important;
+        }}
+        div[data-testid="stForm"] .stCheckbox > div:first-child,
+        div[data-testid="stForm"] [data-baseweb="checkbox"] > div:first-child,
+        div[data-testid="stForm"] [data-baseweb="checkbox"] > div > div:first-child,
+        div[data-testid="stForm"] [data-baseweb="checkbox"] > div:first-child > div {{
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            border: 2px solid rgba(74, 111, 165, 0.4) !important;
+            border-radius: 4px !important;
+        }}
+        div[data-testid="stForm"] [data-baseweb="checkbox"] input:checked + div,
+        div[data-testid="stForm"] [data-baseweb="checkbox"] input:checked ~ div {{
+            background-color: #4a6fa5 !important;
+            background: #4a6fa5 !important;
+            border-color: #4a6fa5 !important;
+        }}
+        div[data-testid="stForm"] [data-baseweb="checkbox"] svg,
+        div[data-testid="stForm"] [data-baseweb="checkbox"] svg * {{
+            fill: #ffffff !important;
+            color: #ffffff !important;
+            stroke: #ffffff !important;
+        }}
+        
         </style>
         <div class="particle-login" style="width:5px; height:5px; top:15%; left:10%; animation: floatParticleLogin 7s ease-in-out infinite;"></div>
         <div class="particle-login" style="width:3px; height:3px; top:75%; left:15%; animation: floatParticleLogin 9s ease-in-out infinite 1s;"></div>
