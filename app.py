@@ -2195,35 +2195,28 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
             stroke: #ffffff !important;
         }}
 
-        /* ===== BOTÓN DEL OJITO (contraseña) ===== */
-        div[data-testid="stForm"] div[data-baseweb="input"] button {{
-            background-color: #ffffff !important;
-            background: #ffffff !important;
-            border: none !important;
-            border-left: 1px solid rgba(74, 111, 165, 0.2) !important;
-            border-radius: 0 8px 8px 0 !important;
-            min-width: 44px !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-        }}
-        div[data-testid="stForm"] div[data-baseweb="input"] button:hover {{
-            background-color: #e8f0f8 !important;
-        }}
-        div[data-testid="stForm"] div[data-baseweb="input"] button svg {{
-            width: 20px !important;
-            height: 20px !important;
-            display: block !important;
-            visibility: visible !important;
-        }}
-        div[data-testid="stForm"] div[data-baseweb="input"] button svg,
-        div[data-testid="stForm"] div[data-baseweb="input"] button svg path,
-        div[data-testid="stForm"] div[data-baseweb="input"] button svg circle,
-        div[data-testid="stForm"] div[data-baseweb="input"] button svg line {{
+        /* ===== BOTÓN DEL OJITO - Material Symbols ===== */
+        div[data-testid="stForm"] [data-testid="stIconMaterial"],
+        div[data-testid="stForm"] [data-testid="stIconMaterial"] *,
+        div[data-testid="stForm"] .material-symbols-rounded,
+        div[data-testid="stForm"] span[class*="material"] {{
+            color: #4a6fa5 !important;
+            -webkit-text-fill-color: #4a6fa5 !important;
             fill: #4a6fa5 !important;
-            stroke: #4a6fa5 !important;
+            font-size: 22px !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: inline-block !important;
+        }}
+        div[data-testid="stForm"] button[aria-label] {{
+            background-color: #ffffff !important;
+            border: 1px solid rgba(74, 111, 165, 0.25) !important;
+            border-radius: 8px !important;
             color: #4a6fa5 !important;
             opacity: 1 !important;
+        }}
+        div[data-testid="stForm"] button[aria-label]:hover {{
+            background-color: #e8f0f8 !important;
         }}
         
         </style>
@@ -2236,7 +2229,7 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
         """
     )
     st.markdown(login_style_html, unsafe_allow_html=True)
-
+    
     components.html("""
     <script>
     setTimeout(function() {
