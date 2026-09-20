@@ -1639,7 +1639,7 @@ div[data-testid="stTextArea"] textarea,
             resize: none !important;
             opacity: 1 !important;
             font-weight: 500 !important;
-        }
+        }}
         div[data-testid="stTextArea"] textarea:disabled,
         div[data-testid="stTextArea"] textarea[disabled] {{
             cursor: default !important;
