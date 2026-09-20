@@ -1439,45 +1439,44 @@ section[data-testid="stSidebar"] * {{ color: var(--text-color) !important; }}
             -webkit-text-fill-color: #1a2b3d !important;
         }}
         
-        /* ===== BOTONES SECUNDARIOS (QR) - SOLO FUERA DEL SIDEBAR ===== */
-        section.main div.stButton > button[kind="secondary"],
-        div[data-testid="stAppViewContainer"] > section > div > div > div > div.stButton > button[kind="secondary"] {{
+        /* ===== BOTONES DEL CONTENIDO PRINCIPAL (NO SIDEBAR) ===== */
+        div[data-testid="stAppViewContainer"] div.stButton > button,
+        div[data-testid="stAppViewContainer"] button[kind="secondary"],
+        div[data-testid="stAppViewContainer"] div[data-testid="stFormSubmitButton"] > button {{
             background-color: #ffffff !important;
             background: #ffffff !important;
             color: #1a2b3d !important;
+            -webkit-text-fill-color: #1a2b3d !important;
             border: 1px solid rgba(74, 111, 165, 0.2) !important;
-            border-radius: 8px !important;
+            border-radius: 12px !important;
         }}
-        section.main div.stButton > button[kind="secondary"]:hover {{
-            background-color: #e8f0f8 !important;
-            color: #4a6fa5 !important;
+        div[data-testid="stAppViewContainer"] div.stButton > button:hover,
+        div[data-testid="stAppViewContainer"] button[kind="secondary"]:hover {{
+            background: linear-gradient(135deg, #5b8fc7 0%, #4a6fa5 100%) !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            border-color: #5b8fc7 !important;
+        }}
+        div[data-testid="stAppViewContainer"] div.stButton > button *,
+        div[data-testid="stAppViewContainer"] button[kind="secondary"] * {{
+            color: inherit !important;
+            -webkit-text-fill-color: inherit !important;
         }}
         
-        /* Botones de descarga (Exportar CSV) */
-        div[data-testid="stDownloadButton"] > button,
-        div[data-testid="stDownloadButton"] > button * {{
+       /* QR Popover (solo contenido principal) */
+        div[data-testid="stAppViewContainer"] div[data-testid="stPopover"] > button,
+        div[data-testid="stAppViewContainer"] div[data-testid="stPopover"] > button * {{
             background-color: #ffffff !important;
             background: #ffffff !important;
             color: #1a2b3d !important;
             -webkit-text-fill-color: #1a2b3d !important;
             border: 1px solid rgba(74, 111, 165, 0.2) !important;
         }}
-        
-        div[data-testid="stDownloadButton"] > button:hover,
-        div[data-testid="stDownloadButton"] > button:hover * {{
+        div[data-testid="stAppViewContainer"] div[data-testid="stPopover"] > button:hover,
+        div[data-testid="stAppViewContainer"] div[data-testid="stPopover"] > button:hover * {{
             background-color: #e8f0f8 !important;
-            background: #e8f0f8 !important;
             color: #4a6fa5 !important;
-        }}
-        
-        /* QR Popover */
-        div[data-testid="stPopover"] > button,
-        div[data-testid="stPopover"] > button * {{
-            background-color: #ffffff !important;
-            background: #ffffff !important;
-            color: #1a2b3d !important;
-            -webkit-text-fill-color: #1a2b3d !important;
-            border: 1px solid rgba(74, 111, 165, 0.2) !important;
+            -webkit-text-fill-color: #4a6fa5 !important;
         }}
 
 .form-section-header {{
