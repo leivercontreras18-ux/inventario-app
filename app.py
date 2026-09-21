@@ -1035,112 +1035,7 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
         return buf.getvalue()
     except Exception as e:
         st.warning(f"No se pudo generar la ficha como imagen: {e}")
-        return None
-        
-def generar_ficha_digital_pdf(prenda, tasa_cambio):
-    """Genera un PDF con formato de ficha digital para compartir por WhatsApp."""
-    if not PDF_DISPONIBLE:
-        return None
-    try:
-        ancho_mm = 90
-        alto_mm = 130
-        pdf = FPDF(orientation="P", unit="mm", format=(ancho_mm, alto_mm))
-        pdf.add_page()
-        pdf.set_auto_page_break(auto=False)
-
-        # Banda superior con logo
-        pdf.set_fill_color(124, 77, 252)
-        pdf.rect(0, 0, ancho_mm, 22, style="F")
-        try:
-            logo_bytes = base64.b64decode(LOGO_LEWIN_BASE64)
-            pdf.image(BytesIO(logo_bytes), x=5, y=4, w=12, type="PNG")
-        except Exception:
-            pass
-        pdf.set_xy(20, 6)
-        pdf.set_font("Helvetica", "B", 13)
-        pdf.set_text_color(255, 255, 255)
-        pdf.cell(0, 5, "LEWIN BOUTIQUE", ln=True)
-        pdf.set_xy(20, 12)
-        pdf.set_font("Helvetica", "", 8)
-        pdf.set_text_color(235, 230, 255)
-        pdf.cell(0, 4, "Boutique", ln=True)
-
-        # Foto del producto
-        y_foto = 26
-        ancho_foto = ancho_mm - 10
-        alto_foto = 50
-        pdf.set_fill_color(245, 243, 255)
-        pdf.rect(5, y_foto, ancho_foto, alto_foto, style="F")
-        if prenda.get("foto_url"):
-            try:
-                foto_resp = requests.get(prenda["foto_url"], timeout=10)
-                if foto_resp.status_code == 200:
-                    img_buf = BytesIO(foto_resp.content)
-                    pdf.image(img_buf, x=5, y=y_foto, w=ancho_foto, h=alto_foto)
-            except Exception:
-                pass
-        pdf.set_draw_color(124, 77, 252)
-        pdf.set_line_width(0.3)
-        pdf.rect(5, y_foto, ancho_foto, alto_foto)
-
-        # Nombre
-        pdf.set_xy(5, y_foto + alto_foto + 4)
-        pdf.set_font("Helvetica", "B", 12)
-        pdf.set_text_color(30, 30, 30)
-        pdf.cell(ancho_foto, 6, str(prenda.get("Producto", ""))[:35], align="C")
-
-        # Talla y color
-        pdf.set_xy(5, y_foto + alto_foto + 12)
-        pdf.set_font("Helvetica", "", 9)
-        pdf.set_text_color(90, 80, 130)
-        pdf.cell(ancho_foto, 4, f"Talla: {prenda.get('talla', '-')}   |   Color: {prenda.get('color', '-')}", align="C")
-
-        # Precio
-        precio_usd = float(prenda.get("precio_venta", 0) or 0)
-        pdf.set_xy(5, y_foto + alto_foto + 20)
-        pdf.set_font("Helvetica", "B", 20)
-        pdf.set_text_color(124, 77, 252)
-        pdf.cell(ancho_foto, 10, f"${precio_usd:,.2f}", align="C")
-
-        if tasa_cambio > 0 and precio_usd > 0:
-            pdf.set_xy(5, y_foto + alto_foto + 31)
-            pdf.set_font("Helvetica", "", 9)
-            pdf.set_text_color(140, 140, 140)
-            pdf.cell(ancho_foto, 4, f"{precio_usd * tasa_cambio:,.2f} Bs", align="C")
-
-        # QR al catálogo
-        if QR_DISPONIBLE:
-            qr_bytes = generar_qr_bytes(URL_CATALOGO_WEB)
-            if qr_bytes:
-                qr_buf = BytesIO(qr_bytes)
-                pdf.image(qr_buf, x=(ancho_mm - 22) / 2, y=alto_mm - 42, w=22, h=22)
-                pdf.set_xy(5, alto_mm - 16)
-                pdf.set_font("Helvetica", "", 7)
-                pdf.set_text_color(120, 120, 120)
-                pdf.cell(ancho_foto, 4, "Escanea para ver mas productos", align="C")
-
-        # Datos de contacto (solo si están configurados)
-        pie_y = alto_mm - 8
-        pie_textos = []
-        if WHATSAPP_BOUTIQUE:
-            num = WHATSAPP_BOUTIQUE
-            if len(num) == 12:
-                num_formateado = f"+{num[:2]} {num[2:5]} {num[5:8]} {num[8:]}"
-            else:
-                num_formateado = f"+{num}"
-            pie_textos.append(f"WhatsApp: {num_formateado}")
-        if INSTAGRAM_BOUTIQUE:
-            pie_textos.append(INSTAGRAM_BOUTIQUE)
-        if pie_textos:
-            pdf.set_xy(5, pie_y)
-            pdf.set_font("Helvetica", "", 7)
-            pdf.set_text_color(140, 140, 140)
-            pdf.cell(ancho_foto, 4, " | ".join(pie_textos), align="C")
-
-        return bytes(pdf.output())
-    except Exception as e:
-        st.warning(f"No se pudo generar la ficha: {e}")
-        return None
+        return None        
 
 
 def generar_ficha_digital_pdf(prenda, tasa_cambio):
@@ -2098,24 +1993,24 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
         /* Reforzar el fondo blanco de los inputs del login */
         div[data-testid="stForm"] div[data-baseweb="input"],
         div[data-testid="stForm"] div[data-baseweb="input"] > div,
-        div[data-testid="stForm"] div[data-baseweb="base-input"] {{
+        div[data-testid="stForm"] div[data-baseweb="base-input"] {
             background-color: #ffffff !important;
             background: #ffffff !important;
-        }}
+        }
         
         /* ==== LOGIN - Inputs blancos, sin tooltip, ojito visible ==== */
         
         /* 1. Ocultar el tooltip "Press Enter to submit form" */
         div[data-testid="stForm"] input::-webkit-input-placeholder,
-        div[data-testid="stForm"] input::-webkit-calendar-picker-indicator {{
+        div[data-testid="stForm"] input::-webkit-calendar-picker-indicator {
             display: none !important;
-        }}
-        div[data-testid="stForm"] input[title] {{
+        }
+        div[data-testid="stForm"] input[title] {
             pointer-events: auto !important;
-        }}
-        div[data-testid="stForm"] input::-webkit-datetime-edit {{
+        }
+        div[data-testid="stForm"] input::-webkit-datetime-edit {
             display: none !important;
-        }}
+        }
         
         /* 2. Inputs blancos (forzado) */
         div[data-testid="stForm"] div[data-baseweb="input"],
@@ -2124,18 +2019,18 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
         div[data-testid="stForm"] div[data-baseweb="base-input"] > div,
         div[data-testid="stForm"] input,
         div[data-testid="stForm"] input[type="text"],
-        div[data-testid="stForm"] input[type="password"] {{
+        div[data-testid="stForm"] input[type="password"] {
             background-color: #ffffff !important;
             background: #ffffff !important;
             color: #1a2b3d !important;
             -webkit-text-fill-color: #1a2b3d !important;
             caret-color: #4a6fa5 !important;
             border-color: rgba(74, 111, 165, 0.25) !important;
-        }}
+        }
         
         /* 3. Botón del ojito (fondo blanco, icono azul) */
         div[data-testid="stForm"] div[data-baseweb="input"] button,
-        div[data-testid="stForm"] div[data-baseweb="base-input"] button {{
+        div[data-testid="stForm"] div[data-baseweb="base-input"] button {
             background-color: #ffffff !important;
             background: #ffffff !important;
             border: 1px solid rgba(74, 111, 165, 0.25) !important;
@@ -2143,11 +2038,11 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
             border-radius: 0 8px 8px 0 !important;
             min-width: 40px !important;
             height: 100% !important;
-        }}
-        div[data-testid="stForm"] div[data-baseweb="input"] button:hover {{
+        }
+        div[data-testid="stForm"] div[data-baseweb="input"] button:hover {
             background-color: #e8f0f8 !important;
             background: #e8f0f8 !important;
-        }}
+        }
         
        /* 4. Icono del ojito (eye) - FORZAR VISIBILIDAD */
         div[data-testid="stForm"] div[data-baseweb="input"] button svg,
@@ -2155,7 +2050,7 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
         div[data-testid="stForm"] div[data-baseweb="input"] button svg path,
         div[data-testid="stForm"] div[data-baseweb="input"] button svg circle,
         div[data-testid="stForm"] div[data-baseweb="input"] button svg line,
-        div[data-testid="stForm"] div[data-baseweb="input"] button svg polyline {{
+        div[data-testid="stForm"] div[data-baseweb="input"] button svg polyline {
             fill: #4a6fa5 !important;
             color: #4a6fa5 !important;
             stroke: #4a6fa5 !important;
@@ -2167,47 +2062,47 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
             height: 20px !important;
             min-width: 20px !important;
             min-height: 20px !important;
-        }}
-        div[data-testid="stForm"] div[data-baseweb="input"] button {{
+        }
+        div[data-testid="stForm"] div[data-baseweb="input"] button {
             color: #4a6fa5 !important;
             opacity: 1 !important;
-        }}
+        }
 
         /* 5. Checkbox "Recordarme" en blanco */
         div[data-testid="stForm"] .stCheckbox,
         div[data-testid="stForm"] .stCheckbox *,
-        div[data-testid="stForm"] [data-baseweb="checkbox"] * {{
+        div[data-testid="stForm"] [data-baseweb="checkbox"] * {
             color: #1a2b3d !important;
             -webkit-text-fill-color: #1a2b3d !important;
             opacity: 1 !important;
-        }}
+        }
         div[data-testid="stForm"] .stCheckbox > div:first-child,
         div[data-testid="stForm"] [data-baseweb="checkbox"] > div:first-child,
         div[data-testid="stForm"] [data-baseweb="checkbox"] > div > div:first-child,
-        div[data-testid="stForm"] [data-baseweb="checkbox"] > div:first-child > div {{
+        div[data-testid="stForm"] [data-baseweb="checkbox"] > div:first-child > div {
             background-color: #ffffff !important;
             background: #ffffff !important;
             border: 2px solid rgba(74, 111, 165, 0.4) !important;
             border-radius: 4px !important;
-        }}
+        }
         div[data-testid="stForm"] [data-baseweb="checkbox"] input:checked + div,
-        div[data-testid="stForm"] [data-baseweb="checkbox"] input:checked ~ div {{
+        div[data-testid="stForm"] [data-baseweb="checkbox"] input:checked ~ div {
             background-color: #4a6fa5 !important;
             background: #4a6fa5 !important;
             border-color: #4a6fa5 !important;
-        }}
+        }
         div[data-testid="stForm"] [data-baseweb="checkbox"] svg,
-        div[data-testid="stForm"] [data-baseweb="checkbox"] svg * {{
+        div[data-testid="stForm"] [data-baseweb="checkbox"] svg * {
             fill: #ffffff !important;
             color: #ffffff !important;
             stroke: #ffffff !important;
-        }}
+        }
 
         /* ===== BOTÓN DEL OJITO - Material Symbols ===== */
         div[data-testid="stForm"] [data-testid="stIconMaterial"],
         div[data-testid="stForm"] [data-testid="stIconMaterial"] *,
         div[data-testid="stForm"] .material-symbols-rounded,
-        div[data-testid="stForm"] span[class*="material"] {{
+        div[data-testid="stForm"] span[class*="material"] {
             color: #4a6fa5 !important;
             -webkit-text-fill-color: #4a6fa5 !important;
             fill: #4a6fa5 !important;
@@ -2215,17 +2110,17 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
             opacity: 1 !important;
             visibility: visible !important;
             display: inline-block !important;
-        }}
-        div[data-testid="stForm"] button[aria-label] {{
+        }
+        div[data-testid="stForm"] button[aria-label] {
             background-color: #ffffff !important;
             border: 1px solid rgba(74, 111, 165, 0.25) !important;
             border-radius: 8px !important;
             color: #4a6fa5 !important;
             opacity: 1 !important;
-        }}
-        div[data-testid="stForm"] button[aria-label]:hover {{
+        }
+        div[data-testid="stForm"] button[aria-label]:hover {
             background-color: #e8f0f8 !important;
-        }}
+        }
         
         </style>
         <div class="particle-login" style="width:5px; height:5px; top:15%; left:10%; animation: floatParticleLogin 7s ease-in-out infinite;"></div>
