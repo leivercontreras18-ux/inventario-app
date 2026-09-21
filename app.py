@@ -1431,6 +1431,52 @@ section[data-testid="stFileUploaderDropzone"] button {{
     border: 1px solid var(--border-color) !important;
 }}
 
+/* ===== PESTAÑAS (Tabs) en azul ===== */
+.stTabs [data-baseweb="tab-list"] {{
+    gap: 8px;
+    border-bottom: 1px solid var(--border-color);
+}}
+.stTabs [data-baseweb="tab"] {{
+    background-color: transparent !important;
+    color: #4a5c73 !important;
+    font-weight: 600 !important;
+    padding: 10px 20px !important;
+    border-radius: 8px 8px 0 0 !important;
+}}
+.stTabs [aria-selected="true"] {{
+    background-color: rgba(74, 111, 165, 0.12) !important;
+    color: #2c3e50 !important;
+    font-weight: 700 !important;
+}}
+.stTabs [data-baseweb="tab-highlight"] {{
+    background-color: #4a6fa5 !important;
+    height: 3px !important;
+}}
+.stTabs [data-baseweb="tab-border"] {{
+    background-color: transparent !important;
+}}
+
+/* ===== TAGS del multiselect en azul ===== */
+div[data-baseweb="tag"] {{
+    background-color: #4a6fa5 !important;
+    background: #4a6fa5 !important;
+    color: #ffffff !important;
+    border-radius: 6px !important;
+    border: none !important;
+}}
+div[data-baseweb="tag"] * {{
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}}
+div[data-baseweb="tag"] svg {{
+    fill: #ffffff !important;
+    color: #ffffff !important;
+}}
+div[data-baseweb="tag"]:hover {{
+    background-color: #3d5a80 !important;
+    background: #3d5a80 !important;
+}}
+
 .tabla-movimientos-wrapper {{
     max-height: 480px; overflow-y: auto; border: 1px solid var(--border-color);
     border-radius: 14px; background: var(--card-bg); backdrop-filter: blur(20px);
