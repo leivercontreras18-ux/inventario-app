@@ -1996,7 +1996,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
               <div class="hero-new-brand-title">TIENDA LEWIN</div>
               <div class="hero-new-brand-sub">Boutique Inventario</div>
             </div>
-            <a class="hero-new-inicio" href="?ir=login" target="_top">INICIO</a>
+            <div class="hero-new-inicio" style="opacity:0; pointer-events:none;">INICIO</div>
           </div>
           <div class="hero-new-content">
             <h1 class="hero-new-title">Lewin Boutique<br>Control Center</h1>
@@ -2031,25 +2031,12 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
 
     st.markdown(hero_html, unsafe_allow_html=True)
 
-    components.html("""
-    <script>
-    setTimeout(function() {
-        try {
-            const doc = window.parent.document;
-            const links = doc.querySelectorAll('a.hero-new-inicio');
-            links.forEach(function(link) {
-                link.style.cursor = 'pointer';
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    window.parent.location.href = window.parent.location.origin + window.parent.location.pathname + '?ir=login';
-                });
-            });
-        } catch (err) {
-            console.log('Error INICIO:', err);
-        }
-    }, 800);
-    </script>
-    """, height=0)
+    st.markdown("<br>", unsafe_allow_html=True)
+    _, col_btn_centro, _ = st.columns([2, 1, 2])
+    with col_btn_centro:
+        if st.button("INICIO", key="btn_inicio_real", use_container_width=True):
+            st.query_params["ir"] = "login"
+            st.rerun()
 
     st.stop()
 
