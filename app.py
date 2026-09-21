@@ -2132,29 +2132,6 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
         """
     )
     st.markdown(login_style_html, unsafe_allow_html=True)
-    
-    components.html("""
-    <script>
-    setTimeout(function() {
-        const botones = window.parent.document.querySelectorAll('div[data-testid="stForm"] div[data-baseweb="input"] button');
-        botones.forEach(function(btn) {
-            btn.style.background = '#ffffff';
-            btn.style.border = '1px solid rgba(74, 111, 165, 0.2)';
-            btn.style.borderRadius = '0 8px 8px 0';
-            const svg = btn.querySelector('svg');
-            if (svg) {
-                svg.style.fill = '#4a6fa5';
-                svg.style.stroke = '#4a6fa5';
-                svg.style.color = '#4a6fa5';
-                svg.style.width = '20px';
-                svg.style.height = '20px';
-                svg.style.opacity = '1';
-                svg.style.visibility = 'visible';
-            }
-        });
-    }, 800);
-    </script>
-    """, height=0)
 
     if st.button("← Volver a la portada"):
         st.session_state.etapa = "bienvenida"
