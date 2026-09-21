@@ -2929,13 +2929,32 @@ else:
                     with col_btn_print:
                         if pdf_etiquetas:
                             pdf_b64 = base64.b64encode(pdf_etiquetas).decode()
-                            print_html = f"""<a href="data:application/pdf;base64,{pdf_b64}" target="_blank" 
-style="display:block; text-align:center; padding:11px 20px; 
-background: linear-gradient(135deg, #4a6fa5 0%, #5b8fc7 100%);
-color: #ffffff; text-decoration: none; border-radius: 12px; 
-font-weight: 600; font-family: 'Poppins', sans-serif; font-size: 14px;
-box-shadow: 0 4px 20px rgba(74, 111, 165, 0.4);
-">🖨️ Abrir e Imprimir</a>"""
+                            print_html = f"""<style>
+.link-imprimir {{
+    display: block;
+    text-align: center;
+    padding: 11px 20px;
+    background-color: #ffffff;
+    color: #1a2b3d !important;
+    text-decoration: none !important;
+    border-radius: 12px;
+    border: 1px solid rgba(74, 111, 165, 0.2);
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}}
+.link-imprimir:hover {{
+    background: linear-gradient(135deg, #5b8fc7 0%, #4a6fa5 100%) !important;
+    color: #ffffff !important;
+    border-color: #5b8fc7;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(74, 111, 165, 0.4);
+}}
+</style>
+<a class="link-imprimir" href="data:application/pdf;base64,{pdf_b64}" target="_blank">
+    🖨️ Abrir e Imprimir
+</a>"""
                             st.markdown(print_html, unsafe_allow_html=True)
                         else:
                             st.caption("&nbsp;")
