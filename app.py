@@ -2030,6 +2030,27 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
     hero_html = textwrap.dedent(hero_html)
 
     st.markdown(hero_html, unsafe_allow_html=True)
+
+    components.html("""
+    <script>
+    setTimeout(function() {
+        try {
+            const doc = window.parent.document;
+            const links = doc.querySelectorAll('a.hero-new-inicio');
+            links.forEach(function(link) {
+                link.style.cursor = 'pointer';
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.parent.location.href = window.parent.location.origin + window.parent.location.pathname + '?ir=login';
+                });
+            });
+        } catch (err) {
+            console.log('Error INICIO:', err);
+        }
+    }, 800);
+    </script>
+    """, height=0)
+
     st.stop()
 
 # =====================================================================================
