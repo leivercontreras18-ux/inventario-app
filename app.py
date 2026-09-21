@@ -540,7 +540,7 @@ def render_tabla_deudas(df_deudas):
     for _, fila in df_deudas.iterrows():
         tipo = str(fila.get("tipo", ""))
         if tipo == "cargo":
-            badge = "<span style='background: rgba(244,114,182,0.15); color:#63b8fe; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>Cargo (le fié)</span>"
+            badge = "<span style='background: rgba(244,114,182,0.15); color:#5b8fc7; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>Cargo (le fié)</span>"
         elif tipo == "abono":
             badge = "<span style='background: rgba(52,211,153,0.15); color:#34d399; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>Abono (pagó)</span>"
         else:
@@ -580,7 +580,7 @@ def render_tabla_movimientos(df_mov):
         if tipo == "venta":
             badge = "<span style='background: rgba(52,211,153,0.15); color:#34d399; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>Venta</span>"
         elif tipo == "compra":
-            badge = "<span style='background: rgba(212,175,120,0.15); color:#a78bfa; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>Compra</span>"
+            badge = "<span style='background: rgba(212,175,120,0.15); color:#6b9bd8; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>Compra</span>"
         else:
             badge = f"<span style='background: rgba(219,39,119,0.15); color:var(--accent); padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;'>{tipo.capitalize()}</span>"
 
@@ -611,8 +611,8 @@ def render_tabla_movimientos(df_mov):
 
 def colores_grafico():
     if st.session_state.get("tema") == "claro":
-        return {"texto": "#2b1f26", "grid": "rgba(124, 77, 252, 0.15)"}
-    return {"texto": "#f9f6f8", "grid": "rgba(124, 77, 252, 0.15)"}
+        return {"texto": "#2b1f26", "grid": "rgba(74, 111, 165, 0.15)"}
+    return {"texto": "#f9f6f8", "grid": "rgba(74, 111, 165, 0.15)"}
 
 
 def grafico_barras_vertical(serie, formato_valor=None, altura=300):
@@ -624,7 +624,7 @@ def grafico_barras_vertical(serie, formato_valor=None, altura=300):
         x=x_valores, y=serie.values,
         marker=dict(
             color=serie.values,
-            colorscale=[[0, "#4c3fb0"], [0.5, "#7c4dfc"], [1, "#63b8fe"]],
+            colorscale=[[0, "#3d5a80"], [0.5, "#4a6fa5"], [1, "#5b8fc7"]],
             line=dict(width=0),
         ),
         text=etiquetas, textposition="outside", textfont=dict(color=c["texto"], size=12),
@@ -648,7 +648,7 @@ def grafico_barras_horizontal(serie, altura=300):
         x=serie.values, y=list(serie.index), orientation="h",
         marker=dict(
             color=serie.values,
-            colorscale=[[0, "#4c3fb0"], [0.5, "#7c4dfc"], [1, "#63b8fe"]],
+            colorscale=[[0, "#3d5a80"], [0.5, "#4a6fa5"], [1, "#5b8fc7"]],
             line=dict(width=0),
         ),
         text=[str(int(v)) for v in serie.values], textposition="outside", textfont=dict(color=c["texto"], size=12),
@@ -668,7 +668,7 @@ def grafico_barras_horizontal(serie, altura=300):
 def grafico_dona(serie, texto_centro_arriba="", texto_centro_abajo="", altura=340):
     """Gráfica de dona (pastel) con la paleta rosa/oro, con un total destacado en el centro."""
     c = colores_grafico()
-    paleta = ["#4c3fb0", "#7c4dfc", "#63b8fe", "#c7bdf5", "#a78bfa", "#5c50d6", "#8b7ff0", "#5347c9"]
+    paleta = ["#3d5a80", "#4a6fa5", "#5b8fc7", "#8db8e8", "#6b9bd8", "#5b8fc7", "#6b9bd8", "#4a6fa5"]
     colores_segmentos = [paleta[i % len(paleta)] for i in range(len(serie))]
     fig = go.Figure(data=[go.Pie(
         labels=list(serie.index), values=list(serie.values), hole=0.62,
@@ -738,7 +738,7 @@ def generar_factura_pdf(venta_id, cliente, fecha_texto, items_factura, total_fac
     ancho_pagina = pdf.w - 2 * pdf.l_margin
 
     # ---  de color con logo y datos de la marca ---
-    pdf.set_fill_color(124, 77, 252)
+    pdf.set_fill_color(74, 111, 165)
     pdf.rect(0, 0, pdf.w, 32, style="F")
     try:
         logo_bytes = base64.b64decode(LOGO_LEWIN_BASE64)
@@ -776,7 +776,7 @@ def generar_factura_pdf(venta_id, cliente, fecha_texto, items_factura, total_fac
     # --- Tabla de productos ---
     anchos = [ancho_pagina * 0.44, ancho_pagina * 0.16, ancho_pagina * 0.20, ancho_pagina * 0.20]
     pdf.set_font("Helvetica", "B", 10)
-    pdf.set_fill_color(124, 77, 252)
+    pdf.set_fill_color(74, 111, 165)
     pdf.set_text_color(255, 255, 255)
     pdf.cell(anchos[0], 9, "  Producto", fill=True)
     pdf.cell(anchos[1], 9, "Cantidad", fill=True, align="C")
@@ -801,7 +801,7 @@ def generar_factura_pdf(venta_id, cliente, fecha_texto, items_factura, total_fac
     # --- Total destacado ---
     ancho_total = 80
     pdf.set_x(pdf.w - pdf.r_margin - ancho_total)
-    pdf.set_fill_color(124, 77, 252)
+    pdf.set_fill_color(74, 111, 165)
     pdf.set_text_color(255, 255, 255)
     pdf.set_font("Helvetica", "B", 12)
     pdf.cell(ancho_total * 0.45, 11, "  TOTAL", fill=True, align="L")
@@ -850,7 +850,7 @@ def generar_etiquetas_pdf(lista_prendas, tasa_cambio):
                 pdf.set_dash_pattern(dash=0.8, gap=0.8)
             except Exception:
                 pass
-            pdf.set_draw_color(124, 77, 252)
+            pdf.set_draw_color(74, 111, 165)
             pdf.set_line_width(0.3)
             pdf.rect(x, y, ancho_etiqueta, alto_etiqueta)
             try:
@@ -860,7 +860,7 @@ def generar_etiquetas_pdf(lista_prendas, tasa_cambio):
 
             pdf.set_xy(x, y + 1.5)
             pdf.set_font("Helvetica", "B", 8)
-            pdf.set_text_color(124, 77, 252)
+            pdf.set_text_color(74, 111, 165)
             pdf.cell(ancho_etiqueta, 4, "LEWIN BOUTIQUE", align="C")
 
             pdf.set_xy(x, y + 6)
@@ -881,7 +881,7 @@ def generar_etiquetas_pdf(lista_prendas, tasa_cambio):
             precio_usd = float(prenda.get("precio_venta", 0) or 0)
             pdf.set_xy(x, y + 22)
             pdf.set_font("Helvetica", "B", 14)
-            pdf.set_text_color(124, 77, 252)
+            pdf.set_text_color(74, 111, 165)
             pdf.cell(ancho_etiqueta, 6, f"${precio_usd:,.2f}", align="C")
 
             if tasa_cambio > 0:
@@ -966,14 +966,14 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
         alto_info = 200
 
         # Línea divisoria morada arriba del card
-        draw.rectangle([(0, y_info), (ancho, y_info + 4)], fill=(124, 77, 252))
+        draw.rectangle([(0, y_info), (ancho, y_info + 4)], fill=(74, 111, 165))
 
         # Nombre del producto (izquierda)
         nombre = str(prenda.get("Producto", ""))[:22]
         draw.text((30, y_info + 35), nombre, fill=(0, 0, 0), font=font_nombre)
 
         # Línea decorativa
-        draw.line([(30, y_info + 90), (180, y_info + 90)], fill=(124, 77, 252), width=2)
+        draw.line([(30, y_info + 90), (180, y_info + 90)], fill=(74, 111, 165), width=2)
 
         # Talla y color (izquierda, abajo)
         draw.text((30, y_info + 105), f"Talla: {prenda.get('talla', '-')}", fill=(45, 35, 75), font=font_pequena)
@@ -984,7 +984,7 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
         precio_txt = f"${precio_usd:,.2f}"
         bbox_p = draw.textbbox((0, 0), precio_txt, font=font_precio)
         ancho_p = bbox_p[2] - bbox_p[0]
-        draw.text((ancho - 30 - ancho_p, y_info + 35), precio_txt, fill=(124, 77, 252), font=font_precio)
+        draw.text((ancho - 30 - ancho_p, y_info + 35), precio_txt, fill=(74, 111, 165), font=font_precio)
 
         # Precio Bs (derecha, abajo)
         if tasa_cambio > 0 and precio_usd > 0:
@@ -995,7 +995,7 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
 
         # ===== BOTTOM MORADO: QR + CONTACTO =====
         y_bottom = y_info + alto_info  # 600
-        draw.rectangle([(0, y_bottom), (ancho, alto)], fill=(124, 77, 252))
+        draw.rectangle([(0, y_bottom), (ancho, alto)], fill=(74, 111, 165))
 
         # QR a la izquierda (con fondo blanco)
         if QR_DISPONIBLE:
@@ -1050,7 +1050,7 @@ def generar_ficha_digital_pdf(prenda, tasa_cambio):
         pdf.set_auto_page_break(auto=False)
 
         # ===== BANDA SUPERIOR CON LOGO =====
-        pdf.set_fill_color(124, 77, 252)
+        pdf.set_fill_color(74, 111, 165)
         pdf.rect(0, 0, ancho_mm, 20, style="F")
         try:
             logo_bytes = base64.b64decode(LOGO_LEWIN_BASE64)
@@ -1080,7 +1080,7 @@ def generar_ficha_digital_pdf(prenda, tasa_cambio):
                     pdf.image(img_buf, x=5, y=y_foto, w=ancho_foto, h=alto_foto)
             except Exception:
                 pass
-        pdf.set_draw_color(124, 77, 252)
+        pdf.set_draw_color(74, 111, 165)
         pdf.set_line_width(0.3)
         pdf.rect(5, y_foto, ancho_foto, alto_foto)
 
@@ -1100,7 +1100,7 @@ def generar_ficha_digital_pdf(prenda, tasa_cambio):
         precio_usd = float(prenda.get("precio_venta", 0) or 0)
         pdf.set_xy(5, 95)
         pdf.set_font("Helvetica", "B", 22)
-        pdf.set_text_color(124, 77, 252)
+        pdf.set_text_color(74, 111, 165)
         pdf.cell(ancho_foto, 12, f"${precio_usd:,.2f}", align="C")
 
         # ===== PRECIO EN BOLIVARES (opcional) =====
@@ -1157,9 +1157,9 @@ def render_copy_button(text_to_copy: str, label: str = "Copiar Código"):
     component_code = f"""
     <div style="display: inline-block; width: 100%;">
         <button id="copy-btn" onclick="copyText()" style="
-            background: rgba(124, 77, 252, 0.12);
-            color: #63b8fe;
-            border: 1px solid rgba(124, 77, 252, 0.35);
+            background: rgba(74, 111, 165, 0.12);
+            color: #5b8fc7;
+            border: 1px solid rgba(74, 111, 165, 0.35);
             padding: 6px 12px;
             border-radius: 8px;
             cursor: pointer;
@@ -1174,7 +1174,7 @@ def render_copy_button(text_to_copy: str, label: str = "Copiar Código"):
         ">
             📋 {label}
         </button>
-        <div id="feedback" style="text-align: center; font-size: 11px; color: #63b8fe; opacity: 0; transition: opacity 0.3s; margin-top: 4px;">¡Copiado con éxito!</div>
+        <div id="feedback" style="text-align: center; font-size: 11px; color: #5b8fc7; opacity: 0; transition: opacity 0.3s; margin-top: 4px;">¡Copiado con éxito!</div>
     </div>
     <script>
     function copyText() {{
@@ -1411,9 +1411,9 @@ section[data-testid="stSidebar"] * {{ color: var(--text-color) !important; }}
 .form-section-header:first-of-type {{ margin-top: 2px; }}
 .form-section-icon {{
     width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
-    background: linear-gradient(135deg, #7c4dfc 0%, #63b8fe 100%);
+    background: linear-gradient(135deg, #4a6fa5 0%, #5b8fc7 100%);
     display: flex; align-items: center; justify-content: center;
-    font-size: 13px; box-shadow: 0 0 10px rgba(124, 77, 252, 0.45);
+    font-size: 13px; box-shadow: 0 0 10px rgba(74, 111, 165, 0.45);
 }}
 .form-section-title {{
     font-size: 13px; font-weight: 700; color: var(--text-color);
@@ -1426,7 +1426,7 @@ section[data-testid="stFileUploaderDropzone"] {{
     border-radius: 14px !important;
 }}
 section[data-testid="stFileUploaderDropzone"] button {{
-    background: rgba(124, 77, 252, 0.15) !important;
+    background: rgba(74, 111, 165, 0.15) !important;
     color: var(--text-color) !important;
     border: 1px solid var(--border-color) !important;
 }}
@@ -1437,14 +1437,14 @@ section[data-testid="stFileUploaderDropzone"] button {{
 }}
 .tabla-movimientos {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
 .tabla-movimientos thead th {{
-    position: sticky; top: 0; background: rgba(124, 77, 252, 0.15); color: var(--text-color);
+    position: sticky; top: 0; background: rgba(74, 111, 165, 0.15); color: var(--text-color);
     text-align: left; padding: 12px 14px; font-size: 11px; text-transform: uppercase;
     letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); z-index: 1;
 }}
 .tabla-movimientos tbody td {{
     padding: 10px 14px; color: var(--text-color); border-bottom: 1px solid var(--border-color);
 }}
-.tabla-movimientos tbody tr:hover {{ background: rgba(124, 77, 252, 0.06); }}
+.tabla-movimientos tbody tr:hover {{ background: rgba(74, 111, 165, 0.06); }}
 .tabla-movimientos tbody tr:last-child td {{ border-bottom: none; }}
 
 div[data-testid="stVerticalBlockBorderWrapper"] {{
@@ -1454,7 +1454,7 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
     backdrop-filter: blur(20px);
 }}
 .config-chip {{
-    background: rgba(124, 77, 252, 0.07); border: 1px solid var(--border-color);
+    background: rgba(74, 111, 165, 0.07); border: 1px solid var(--border-color);
     border-radius: 10px; padding: 8px 14px; margin-bottom: 6px;
     font-size: 13px; color: var(--text-color); display: flex; align-items: center; height: 38px;
 }}
@@ -1463,7 +1463,7 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
     background: var(--card-bg); backdrop-filter: blur(20px);
     border: 1px solid var(--border-color); border-radius: 16px;
     padding: 18px 20px; margin-bottom: 12px; animation: fadeInUp 0.35s ease;
-    box-shadow: 0 8px 24px rgba(124, 77, 252, 0.08);
+    box-shadow: 0 8px 24px rgba(74, 111, 165, 0.08);
 }}
 .kpi-icon-box {{
     width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center;
@@ -1502,14 +1502,14 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
 .metric-label {{ font-size: 11px; color: #3d5066 !important; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }}
 
 .user-profile-compact {{
-    background: rgba(124, 77, 252, 0.08); padding: 10px 12px; border-radius: 12px;
+    background: rgba(74, 111, 165, 0.08); padding: 10px 12px; border-radius: 12px;
     border: 1px solid var(--border-color); margin-bottom: 10px;
     display: flex; align-items: center; gap: 10px;
 }}
 .user-avatar {{
-    width: 32px; height: 32px; background: linear-gradient(135deg, #7c4dfc 0%, #63b8fe 100%); color: #ffffff;
+    width: 32px; height: 32px; background: linear-gradient(135deg, #4a6fa5 0%, #5b8fc7 100%); color: #ffffff;
     font-weight: 800; border-radius: 50%; display: flex; align-items: center;
-    justify-content: center; font-size: 13px; box-shadow: 0 0 15px rgba(124, 77, 252, 0.5); flex-shrink: 0;
+    justify-content: center; font-size: 13px; box-shadow: 0 0 15px rgba(74, 111, 165, 0.5); flex-shrink: 0;
 }}
 .user-info-name {{ font-size: 13px; font-weight: 700; color: var(--text-color); line-height: 1.2; }}
 .user-info-rol {{ font-size: 9px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }}
@@ -1565,7 +1565,7 @@ section[data-testid="stSidebar"] button[kind="primary"]:hover {{
 .product-photo {{ width: 100%; height: 160px; object-fit: cover; display: block; }}
 .product-photo-placeholder {{
     width: 100%; height: 160px; display: flex; align-items: center; justify-content: center;
-    background: rgba(124, 77, 252, 0.08); font-size: 34px; color: var(--accent);
+    background: rgba(74, 111, 165, 0.08); font-size: 34px; color: var(--accent);
 }}
 div[data-testid="stCode"] {{
     width: 100% !important;
@@ -2386,8 +2386,8 @@ else:
                     st.markdown(f"<div style='color:{color_cambio}; font-size:12px; font-weight:700;'>{flecha} {abs(cambio_pct):.1f}% vs mes anterior</div>", unsafe_allow_html=True)
                 fig_tendencia = go.Figure(data=[go.Scatter(
                     x=list(tendencia_mensual.index), y=tendencia_mensual.values,
-                    mode="lines", line=dict(color="#7c4dfc", width=3, shape="spline"),
-                    fill="tozeroy", fillcolor="rgba(124, 77, 252, 0.12)",
+                    mode="lines", line=dict(color="#4a6fa5", width=3, shape="spline"),
+                    fill="tozeroy", fillcolor="rgba(74, 111, 165, 0.12)",
                 )])
                 fig_tendencia.update_layout(
                     paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
@@ -2601,7 +2601,7 @@ else:
                     is_alerta = int(row["cantidad"]) <= int(row["alerta"])
                     borde_color = "var(--accent)" if is_alerta else "var(--border-color)"
                     badge_stock = (
-                        f"<span style='color: #63b8fe; font-weight: 700;'>Stock Bajo ({row['cantidad']})</span>"
+                        f"<span style='color: #5b8fc7; font-weight: 700;'>Stock Bajo ({row['cantidad']})</span>"
                         if is_alerta else
                         f"<span style='color: #34d399; font-weight: 700;'>Stock: {row['cantidad']}</span>"
                     )
@@ -2619,7 +2619,7 @@ else:
 {foto_html}
 <div class="product-card-body">
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-<span style="background: rgba(124, 77, 252, 0.15); color: var(--accent); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">ID: {row['ID']}</span>
+<span style="background: rgba(74, 111, 165, 0.15); color: var(--accent); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">ID: {row['ID']}</span>
 <span style="font-size: 12px; color: var(--text-secondary);">{row['Categoria']}</span>
 </div>
 <div style="font-size: 16px; font-weight: 700; color: var(--text-color); margin-bottom: 8px;">{estrella} {row['Producto']}</div>
@@ -2806,9 +2806,9 @@ else:
                         precio_bs = precio_usd * tasa_etiqueta if tasa_etiqueta > 0 else 0.0
                         bs_txt = f"<br><span style='font-size:11px; color:#666;'>{precio_bs:,.2f} Bs</span>" if precio_bs > 0 else ""
 
-                        card_html = f"""<div style="background: #ffffff; color: #1a1a1a; padding: 16px; border-radius: 12px; border: 2px dashed #7c4dfc; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                        card_html = f"""<div style="background: #ffffff; color: #1a1a1a; padding: 16px; border-radius: 12px; border: 2px dashed #4a6fa5; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
 <div style="text-align: center; border-bottom: 1px solid #eee; padding-bottom: 6px; margin-bottom: 8px;">
-<div style="font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 11px; letter-spacing: 2px; color: #7c4dfc;">LEWIN BOUTIQUE</div>
+<div style="font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 11px; letter-spacing: 2px; color: #4a6fa5;">LEWIN BOUTIQUE</div>
 <div style="font-weight: 700; font-size: 13px; color: #111;">{fila_p['Producto']}</div>
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -2819,7 +2819,7 @@ else:
 </div>
 </div>
 <div style="border-top: 1px solid #eee; padding-top: 6px; display: flex; justify-content: space-between; align-items: center;">
-<span style="font-size: 18px; font-weight: 800; color: #7c4dfc;">{moneda(precio_usd)}</span>
+<span style="font-size: 18px; font-weight: 800; color: #4a6fa5;">{moneda(precio_usd)}</span>
 {bs_txt}
 </div>
 </div>"""
@@ -2855,10 +2855,10 @@ else:
                             pdf_b64 = base64.b64encode(pdf_etiquetas).decode()
                             print_html = f"""<a href="data:application/pdf;base64,{pdf_b64}" target="_blank" 
 style="display:block; text-align:center; padding:11px 20px; 
-background: linear-gradient(135deg, #7c4dfc 0%, #63b8fe 100%);
+background: linear-gradient(135deg, #4a6fa5 0%, #5b8fc7 100%);
 color: #ffffff; text-decoration: none; border-radius: 12px; 
 font-weight: 600; font-family: 'Poppins', sans-serif; font-size: 14px;
-box-shadow: 0 4px 20px rgba(124, 77, 252, 0.4);
+box-shadow: 0 4px 20px rgba(74, 111, 165, 0.4);
 ">🖨️ Abrir e Imprimir</a>"""
                             st.markdown(print_html, unsafe_allow_html=True)
                         else:
@@ -3385,7 +3385,7 @@ box-shadow: 0 4px 20px rgba(124, 77, 252, 0.4);
             )
 
             factura_preview_html = f"""<div style="background:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 15px 40px rgba(0,0,0,0.18); max-width:640px; margin:0 auto; font-family:'Poppins',sans-serif;">
-<div style="background:linear-gradient(135deg,#7c4dfc,#63b8fe); padding:22px 26px; display:flex; justify-content:space-between; align-items:center;">
+<div style="background:linear-gradient(135deg,#4a6fa5,#5b8fc7); padding:22px 26px; display:flex; justify-content:space-between; align-items:center;">
 <div style="display:flex; align-items:center; gap:12px;">
 {logo_svg_markup(32)}
 <div>
@@ -3406,7 +3406,7 @@ box-shadow: 0 4px 20px rgba(124, 77, 252, 0.4);
 <div>{estado_badge}</div>
 </div>
 <table style="width:100%; border-collapse:collapse; margin-top:14px; font-size:13px;">
-<thead><tr style="background:#7c4dfc;">
+<thead><tr style="background:#4a6fa5;">
 <th style="padding:10px 14px; text-align:left; color:#fff; font-size:11px;">PRODUCTO</th>
 <th style="padding:10px 14px; text-align:center; color:#fff; font-size:11px;">CANT.</th>
 <th style="padding:10px 14px; text-align:right; color:#fff; font-size:11px;">PRECIO UNIT.</th>
@@ -3415,7 +3415,7 @@ box-shadow: 0 4px 20px rgba(124, 77, 252, 0.4);
 <tbody style="color:#3a3355;">{filas_preview}</tbody>
 </table>
 <div style="display:flex; justify-content:flex-end; padding:16px 26px;">
-<div style="background:#7c4dfc; color:#fff; padding:10px 24px; border-radius:10px; font-weight:800; font-size:15px; display:flex; gap:18px;">
+<div style="background:#4a6fa5; color:#fff; padding:10px 24px; border-radius:10px; font-weight:800; font-size:15px; display:flex; gap:18px;">
 <span>TOTAL</span><span>{moneda(fila_resumen['total'])}</span>
 </div>
 </div>
@@ -3499,7 +3499,7 @@ box-shadow: 0 4px 20px rgba(124, 77, 252, 0.4);
                 deudores_ordenado = deudores_df.sort_values("saldo", ascending=False)
                 for _, fila in deudores_ordenado.iterrows():
                     saldo_val = float(fila.get("saldo", 0) or 0)
-                    color_saldo = "#63b8fe" if saldo_val > 0 else "#34d399"
+                    color_saldo = "#5b8fc7" if saldo_val > 0 else "#34d399"
                     telefono_txt = fila.get("telefono") or "—"
                     st.markdown(
                         f"<div class='config-chip' style='justify-content: space-between;'>"
@@ -3527,7 +3527,7 @@ box-shadow: 0 4px 20px rgba(124, 77, 252, 0.4);
             )
             fila_buscada = deudores_df[deudores_df["id"].astype(str) == str(id_buscado)].iloc[0]
             saldo_buscado = float(fila_buscada.get("saldo", 0) or 0)
-            color_saldo_buscado = "#63b8fe" if saldo_buscado > 0 else "#34d399"
+            color_saldo_buscado = "#5b8fc7" if saldo_buscado > 0 else "#34d399"
             telefono_buscado = fila_buscada.get("telefono") or "—"
 
             st.markdown(
