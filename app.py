@@ -1431,29 +1431,59 @@ section[data-testid="stFileUploaderDropzone"] button {{
     border: 1px solid var(--border-color) !important;
 }}
 
-/* ===== PESTAÑAS (Tabs) en azul ===== */
-.stTabs [data-baseweb="tab-list"] {{
-    gap: 8px;
-    border-bottom: 1px solid var(--border-color);
-}}
-.stTabs [data-baseweb="tab"] {{
+/* ===== PESTAÑAS (Tabs) en azul - VERSIÓN AGRESIVA ===== */
+.stTabs [data-baseweb="tab-list"] button {{
     background-color: transparent !important;
     color: #4a5c73 !important;
+    -webkit-text-fill-color: #4a5c73 !important;
     font-weight: 600 !important;
-    padding: 10px 20px !important;
-    border-radius: 8px 8px 0 0 !important;
 }}
-.stTabs [aria-selected="true"] {{
-    background-color: rgba(74, 111, 165, 0.12) !important;
+.stTabs [data-baseweb="tab-list"] button p,
+.stTabs [data-baseweb="tab-list"] button span,
+.stTabs [data-baseweb="tab-list"] button * {{
+    color: #4a5c73 !important;
+    -webkit-text-fill-color: #4a5c73 !important;
+    font-weight: 600 !important;
+}}
+.stTabs [data-baseweb="tab-list"] button[aria-selected="true"] {{
+    background-color: rgba(74, 111, 165, 0.15) !important;
+}}
+.stTabs [data-baseweb="tab-list"] button[aria-selected="true"] p,
+.stTabs [data-baseweb="tab-list"] button[aria-selected="true"] span,
+.stTabs [data-baseweb="tab-list"] button[aria-selected="true"] * {{
     color: #2c3e50 !important;
+    -webkit-text-fill-color: #2c3e50 !important;
     font-weight: 700 !important;
 }}
-.stTabs [data-baseweb="tab-highlight"] {{
-    background-color: #4a6fa5 !important;
-    height: 3px !important;
-}}
+.stTabs [data-baseweb="tab-highlight"],
 .stTabs [data-baseweb="tab-border"] {{
-    background-color: transparent !important;
+    background-color: #4a6fa5 !important;
+}}
+
+/* ===== TAGS (multiselect) - VERSIÓN AGRESIVA ===== */
+.stMultiSelect span[data-baseweb="tag"],
+div[data-baseweb="tag"],
+span[data-baseweb="tag"] {{
+    background-color: #4a6fa5 !important;
+    background: #4a6fa5 !important;
+    color: #ffffff !important;
+    border-radius: 6px !important;
+    border: none !important;
+}}
+.stMultiSelect span[data-baseweb="tag"] *,
+div[data-baseweb="tag"] *,
+span[data-baseweb="tag"] * {{
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}}
+.stMultiSelect span[data-baseweb="tag"] svg,
+div[data-baseweb="tag"] svg {{
+    fill: #ffffff !important;
+    color: #ffffff !important;
+}}
+.stMultiSelect [data-baseweb="tag"]:hover,
+div[data-baseweb="tag"]:hover {{
+    background-color: #3d5a80 !important;
 }}
 
 /* ===== TAGS del multiselect en azul ===== */
