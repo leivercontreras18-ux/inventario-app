@@ -2714,13 +2714,24 @@ else:
                     with col_actual:
                         st.markdown(tarjeta_html, unsafe_allow_html=True)
 
-                        c_fav, c_qr = st.columns(2)
+                                               c_fav, c_oferta, c_qr = st.columns(3)
                         with c_fav:
                             if st.button("⭐ Favorito" if not row.get("favorito", False) else "☆ Quitar", key=f"fav_{row['ID']}", use_container_width=True):
                                 datos_act = row.to_dict()
                                 datos_act["favorito"] = not bool(row.get("favorito", False))
                                 if actualizar_prenda(row["ID"], datos_act):
                                     st.rerun()
+                        with c_oferta:
+                            en_oferta_actual = bool(row.get("en_oferta", False))
+                            if st.button("🎁 Oferta" if not en_oferta_actual else "✕ Quitar", key=f"oferta_{row['ID']}", use_container_width=True):
+                                datos_act = row.to_dict()
+                                if en_oferta_actual:
+                                    datos_act["en_oferta"] = False
+                                    datos_act["precio_oferta"] = 0.0
+                                    if actualizar_prenda(row["ID"], datos_act):
+                                        st.rerun()
+                                else:
+                                    st.session_state[f"editando_oferta_{row['ID']}"] = True
                         with c_qr:
                             with st.popover("🔗 QR", use_container_width=True) if hasattr(st, "popover") else st.expander("🔗 QR"):
                                 if QR_DISPONIBLE:
@@ -2728,6 +2739,46 @@ else:
                                     st.image(qr_bytes, width=140)
                                 else:
                                     st.caption("Instala 'qrcode' en requirements.txt para activar esta función.")
+                        
+                        # Editor de oferta (aparece solo cuando se activa)
+                        if st.session_state.get(f"editando_oferta_{row['ID']}", False):
+                            with st.container(border=True):
+                                st.markdown(f"**🎁 Poner en oferta: {row['Producto']}**")
+                                precio_normal_row = float(row.get("precio_venta", 0) or 0)
+                                costo_row = float(row.get("costo", 0) or 0)
+                                st.caption(f"Precio normal: {moneda(precio_normal_row)}")
+                                precio_oferta_input = st.number_input(
+                                    "Precio de oferta",
+                                    min_value=0.0,
+                                    value=float(row.get("precio_oferta", 0) or 0) if row.get("precio_oferta", 0) else precio_normal_row,
+                                    step=0.5,
+                                    key=f"input_oferta_{row['ID']}"
+                                )
+                                if precio_oferta_input > 0 and precio_oferta_input < precio_normal_row:
+                                    ganancia = precio_oferta_input - costo_row
+                                    rebaja = precio_normal_row - precio_oferta_input
+                                    porcentaje = (rebaja / precio_normal_row * 100) if precio_normal_row > 0 else 0
+                                    if ganancia < 0:
+                                        st.error(f"⚠️ ¡Atención! Vas a perder {moneda(abs(ganancia))} por unidad")
+                                    else:
+                                        st.markdown(f"📉 Rebaja: {moneda(rebaja)} ({porcentaje:.0f}%)")
+                                        st.markdown(f"💰 Ganancia por unidad: {moneda(ganancia)}")
+                                col_btn1, col_btn2 = st.columns(2)
+                                with col_btn1:
+                                    if st.button("✅ Aplicar oferta", key=f"aplicar_oferta_{row['ID']}", use_container_width=True):
+                                        if precio_oferta_input <= 0 or precio_oferta_input >= precio_normal_row:
+                                            st.error("El precio de oferta debe ser mayor a 0 y menor al precio normal.")
+                                        else:
+                                            datos_act = row.to_dict()
+                                            datos_act["en_oferta"] = True
+                                            datos_act["precio_oferta"] = precio_oferta_input
+                                            if actualizar_prenda(row["ID"], datos_act):
+                                                st.session_state[f"editando_oferta_{row['ID']}"] = False
+                                                st.rerun()
+                                with col_btn2:
+                                    if st.button("❌ Cancelar", key=f"cancelar_oferta_{row['ID']}", use_container_width=True):
+                                        st.session_state[f"editando_oferta_{row['ID']}"] = False
+                                        st.rerun()
 
                         detalles_texto = f"ID: {row['ID']} - {row['Producto']} ({row['Categoria']}) - Talla: {row['talla']} - Color: {row['color']} - Stock: {row['cantidad']}"
                         st.text_area(
