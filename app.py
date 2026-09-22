@@ -2714,7 +2714,7 @@ else:
                     with col_actual:
                         st.markdown(tarjeta_html, unsafe_allow_html=True)
 
-                                               c_fav, c_oferta, c_qr = st.columns(3)
+                        c_fav, c_oferta, c_qr = st.columns(3)
                         with c_fav:
                             if st.button("⭐ Favorito" if not row.get("favorito", False) else "☆ Quitar", key=f"fav_{row['ID']}", use_container_width=True):
                                 datos_act = row.to_dict()
