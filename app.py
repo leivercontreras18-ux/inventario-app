@@ -2691,11 +2691,24 @@ else:
                         if row.get("foto_url") else
                         '<div class="product-photo-placeholder">👕</div>'
                     )
+                    en_oferta_row = bool(row.get("en_oferta", False))
+                    precio_normal = float(row.get("precio_venta", 0) or 0)
+                    precio_of_row = float(row.get("precio_oferta", 0) or 0)
                     precio_html = ""
-                    if float(row.get("precio_venta", 0) or 0) > 0:
-                        precio_html = f"<div style='margin-top:6px; font-size:14px; font-weight:700; color: var(--accent);'>{moneda(row.get('precio_venta', 0))}</div>"
+                    if en_oferta_row and precio_of_row > 0 and precio_of_row < precio_normal:
+                        precio_html = f"""<div style='margin-top:6px; font-size:14px; font-weight:700;'>
+<span style='color: #999; text-decoration: line-through; font-weight:400;'>{moneda(precio_normal)}</span>
+<span style='color: var(--accent); margin-left:8px;'>{moneda(precio_of_row)}</span>
+</div>"""
+                    elif precio_normal > 0:
+                        precio_html = f"<div style='margin-top:6px; font-size:14px; font-weight:700; color: var(--accent);'>{moneda(precio_normal)}</div>"
 
-                    tarjeta_html = f"""<div class="product-card" style="border-color: {borde_color};">
+                    badge_oferta_html = ""
+                    if en_oferta_row and precio_of_row > 0 and precio_of_row < precio_normal:
+                        badge_oferta_html = "<div style='position:absolute; top:10px; left:10px; background: linear-gradient(135deg, #db2777 0%, #ec4899 100%); color: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(219, 39, 119, 0.35); z-index:10;'>🎁 OFERTA</div>"
+
+                    tarjeta_html = f"""<div class="product-card" style="border-color: {borde_color}; position:relative;">
+{badge_oferta_html}
 {foto_html}
 <div class="product-card-body">
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
