@@ -137,7 +137,7 @@ def cargar_datos_completos():
             st.warning(f"Aviso al cargar inventario de la nube: {e}")
 
     # Asegurar que existan las columnas nuevas aunque la tabla aún no las tenga
-    defaults_nuevos = {"foto_url": "", "costo": 0.0, "precio_venta": 0.0, "favorito": False}
+    defaults_nuevos = {"foto_url": "", "costo": 0.0, "precio_venta": 0.0, "favorito": False, "en_oferta": False, "precio_oferta": 0.0}
     for col, default in defaults_nuevos.items():
         if col not in df.columns:
             df[col] = default
@@ -399,6 +399,8 @@ def guardar_prenda(nueva_prenda):
                 "costo": float(nueva_prenda.get("costo", 0) or 0),
                 "precio_venta": float(nueva_prenda.get("precio_venta", 0) or 0),
                 "favorito": bool(nueva_prenda.get("favorito", False)),
+                "en_oferta": bool(nueva_prenda.get("en_oferta", False)),
+                "precio_oferta": float(nueva_prenda.get("precio_oferta", 0) or 0),
             }
             supabase.table("inventario").insert(datos_db).execute()
             cargar_datos_completos.clear()
@@ -430,6 +432,8 @@ def actualizar_prenda(id_prenda, datos_actualizados):
                 "costo": float(datos_actualizados.get("costo", 0) or 0),
                 "precio_venta": float(datos_actualizados.get("precio_venta", 0) or 0),
                 "favorito": bool(datos_actualizados.get("favorito", False)),
+                "en_oferta": bool(datos_actualizados.get("en_oferta", False)),
+                "precio_oferta": float(datos_actualizados.get("precio_oferta", 0) or 0),
             }
             supabase.table("inventario").update(datos_db).match({"id": id_prenda}).execute()
             cargar_datos_completos.clear()
