@@ -1230,7 +1230,7 @@ def get_css(tema: str, compacto: bool = False) -> str:
             --sidebar-bg: rgba(15, 26, 43, 0.96);
             --input-bg: rgba(26, 40, 62, 0.85);
         """
- CSS_DASHBOARD_NUEVO = """
+    CSS_DASHBOARD_NUEVO = """
 .win-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
 .win-greeting { font-size: 28px; font-weight: 700; color: #1e293b; margin: 0; }
 .win-subtitle { font-size: 14px; color: #64748b; margin-top: 4px; }
