@@ -1849,7 +1849,7 @@ if not st.session_state.autenticado and st.session_state.etapa == "bienvenida":
     else:
         porcentaje_ok_hero = 0
         
-    hero_html = """
+    hero_html = 
         <style>
         .hero-new {
           position: relative;
