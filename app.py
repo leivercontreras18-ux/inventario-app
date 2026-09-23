@@ -1771,36 +1771,6 @@ section[data-testid="stSidebar"] button[kind="primary"][aria-label^="​"],
 section[data-testid="stSidebar"] button[kind="primary"][aria-label^="​"] * {{
     color: var(--accent) !important;
 }}
-
-CSS_DASHBOARD_NUEVO = """
-.win-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-.win-greeting { font-size: 28px; font-weight: 700; color: #1e293b; margin: 0; }
-.win-subtitle { font-size: 14px; color: #64748b; margin-top: 4px; }
-.win-kpi-card { background: #ffffff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(74,111,165,0.06); border: 1px solid #eef2f9; position: relative; }
-.win-kpi-label { font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
-.win-kpi-icon { position: absolute; top: 18px; right: 18px; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
-.win-kpi-value { font-size: 26px; font-weight: 800; color: #1e293b; }
-.win-kpi-change { font-size: 11px; font-weight: 600; margin-top: 6px; }
-.win-up { color: #16a34a; }
-.win-down { color: #dc2626; }
-.win-neutral { color: #64748b; }
-.win-chart-card { background: #ffffff; padding: 22px; border-radius: 16px; box-shadow: 0 4px 20px rgba(74,111,165,0.06); border: 1px solid #eef2f9; margin-bottom: 25px; }
-.win-chart-title { font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 12px; }
-.win-section-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.win-section-title h3 { font-size: 18px; font-weight: 700; color: #1e293b; margin: 0; }
-.win-prod-card { background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(74,111,165,0.06); border: 1px solid #eef2f9; padding: 0; }
-.win-prod-img { width: 100%; height: 150px; object-fit: cover; display: block; background: #f1f5f9; }
-.win-prod-placeholder { width: 100%; height: 150px; display: flex; align-items: center; justify-content: center; background: #f1f5f9; font-size: 45px; color: #94a3b8; }
-.win-prod-info { padding: 14px 16px 8px 16px; }
-.win-prod-name { font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.win-prod-meta { font-size: 11px; color: #94a3b8; margin-bottom: 8px; }
-.win-prod-precio { font-size: 17px; font-weight: 800; color: #4a6fa5; margin-bottom: 10px; }
-.win-badge-oferta { position: absolute; top: 10px; left: 10px; background: linear-gradient(135deg, #db2777, #ec4899); color: white; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; letter-spacing: 0.5px; }
-.win-badge-stock { position: absolute; top: 10px; right: 10px; background: #dc2626; color: white; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; letter-spacing: 0.5px; }
-.win-prod-img-wrap { position: relative; }
-.win-btn-row button { background: #f1f5f9 !important; border: 1px solid #e2e8f0 !important; border-radius: 10px !important; color: #4a6fa5 !important; font-size: 16px !important; font-weight: 700 !important; min-height: 38px !important; -webkit-text-fill-color: #4a6fa5 !important; }
-.win-btn-row button:hover { background: #4a6fa5 !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; border-color: #4a6fa5 !important; }
-.win-btn-row button p, .win-btn-row button span { color: inherit !important; -webkit-text-fill-color: inherit !important; }
 """
 
 </style>
