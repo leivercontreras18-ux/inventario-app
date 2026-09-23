@@ -2587,8 +2587,8 @@ if menu == "inicio":
                     if st.button("✏️", key=f"dash_edit_{row['ID']}", use_container_width=True, help="Editar"):
                         st.session_state.menu_activo = "modificar"
                         st.rerun()
-   if df_dash.empty:
-        st.info("No hay productos que coincidan con la búsqueda.")
+       if df_dash.empty:
+           st.info("No hay productos que coincidan con la búsqueda.")
   
     # -----------------------------------------------------------------------------
     # EXISTENCIAS
