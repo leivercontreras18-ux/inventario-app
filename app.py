@@ -1772,9 +1772,8 @@ section[data-testid="stSidebar"] button[kind="primary"][aria-label^="​"] * {{
     color: var(--accent) !important;
 }}
 """
-
 </style>
-"""+ CSS_DASHBOARD_NUEVO
+"""
 
 
 # =====================================================================================
