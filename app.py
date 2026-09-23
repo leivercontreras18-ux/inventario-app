@@ -1772,7 +1772,7 @@ section[data-testid="stSidebar"] button[kind="primary"][aria-label^="​"] * {{
     color: var(--accent) !important;
 }}
 
-    CSS_DASHBOARD_NUEVO = """
+CSS_DASHBOARD_NUEVO = """
 .win-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
 .win-greeting { font-size: 28px; font-weight: 700; color: #1e293b; margin: 0; }
 .win-subtitle { font-size: 14px; color: #64748b; margin-top: 4px; }
