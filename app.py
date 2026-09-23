@@ -1773,19 +1773,7 @@ section[data-testid="stSidebar"] button[kind="primary"][aria-label^="​"] * {{
 /* ===== BOTONES DEL DASHBOARD ===== */
 .win-btn-row button {{ background: #f1f5f9 !important; border: 1px solid #e2e8f0 !important; border-radius: 10px !important; color: #4a6fa5 !important; font-size: 16px !important; font-weight: 700 !important; min-height: 38px !important; padding: 4px !important; transition: all 0.2s ease !important; -webkit-text-fill-color: #4a6fa5 !important; }}
 .win-btn-row button:hover {{ background: #4a6fa5 !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; border-color: #4a6fa5 !important; transform: translateY(-2px) !important; }}
-.win-btn-row button p, .win-btn-row button span {{ color: inherit !important; -webkit-text-fill-color: inherit !important; }}
-.win-btn-row button:hover {{
-
-    background: #4a6fa5 !important;
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-    border-color: #4a6fa5 !important;
-    transform: translateY(-2px) !important;
-}}
-.win-btn-row button p, .win-btn-row button span {{
-    color: inherit !important;
-    -webkit-text-fill-color: inherit !important;
-}}
+.win-btn-row button p, .win-btn-row button span {{ color: inherit !important; -webkit-text-fill-color: inherit !important; }}f
 
 </style>
 """
@@ -2605,7 +2593,7 @@ if menu == "inicio":
                         st.session_state.menu_activo = "modificar"
                         st.rerun()
                 st.markdown('</div>', unsafe_allow_html=True)
-  
+ 
     # -----------------------------------------------------------------------------
     # EXISTENCIAS
     # -----------------------------------------------------------------------------
