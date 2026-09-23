@@ -1770,21 +1770,12 @@ section[data-testid="stSidebar"] button[kind="primary"][aria-label^="​"] * {{
 .win-badge-oferta {{ position: absolute; top: 10px; left: 10px; background: linear-gradient(135deg, #db2777, #ec4899); color: white; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; letter-spacing: 0.5px; }}
 .win-badge-stock {{ position: absolute; top: 10px; right: 10px; background: #dc2626; color: white; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; letter-spacing: 0.5px; }}
 .win-prod-img-wrap {{ position: relative; }}
-
 /* ===== BOTONES DEL DASHBOARD ===== */
-.win-btn-row button {{
-    background: #f1f5f9 !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 10px !important;
-    color: #4a6fa5 !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    min-height: 38px !important;
-    padding: 4px !important;
-    transition: all 0.2s ease !important;
-    -webkit-text-fill-color: #4a6fa5 !important;
-}}
+.win-btn-row button {{ background: #f1f5f9 !important; border: 1px solid #e2e8f0 !important; border-radius: 10px !important; color: #4a6fa5 !important; font-size: 16px !important; font-weight: 700 !important; min-height: 38px !important; padding: 4px !important; transition: all 0.2s ease !important; -webkit-text-fill-color: #4a6fa5 !important; }}
+.win-btn-row button:hover {{ background: #4a6fa5 !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; border-color: #4a6fa5 !important; transform: translateY(-2px) !important; }}
+.win-btn-row button p, .win-btn-row button span {{ color: inherit !important; -webkit-text-fill-color: inherit !important; }}
 .win-btn-row button:hover {{
+
     background: #4a6fa5 !important;
     color: #ffffff !important;
     -webkit-text-fill-color: #ffffff !important;
