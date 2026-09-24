@@ -914,7 +914,7 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
     try:
         ancho = 540
         alto_foto = 400
-        alto_info = 200
+        alto_info = 140
         alto_bottom = 100
         alto = alto_foto + alto_info + alto_bottom  # 700
         img = Image.new("RGB", (ancho, alto), (255, 255, 255))
