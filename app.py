@@ -2450,97 +2450,75 @@ else:
     # DASHBOARD (resumen)
     # -----------------------------------------------------------------------------
     def _sec_existencias():
-        st.markdown(
-            """
-<div class="page-header">
-    <div class="page-title">Panel Principal // Lewin Boutique</div>
-    <div class="page-subtitle">Control general de stock y monitoreo en tiempo real.</div>
-</div>
-""",
-            unsafe_allow_html=True,
-        )
-
-        total_prendas = len(df) if not df.empty else 0
-        stock_total = int(df["cantidad"].sum()) if not df.empty and "cantidad" in df.columns else 0
-        total_alertas = 0
-        prendas_alerta = pd.DataFrame()
-        if not df.empty and "cantidad" in df.columns and "alerta" in df.columns:
-            prendas_alerta = df[df["cantidad"] <= df["alerta"]]
-            total_alertas = int(prendas_alerta.shape[0])
-
-        valor_inventario = 0.0
-        if not df.empty and "cantidad" in df.columns and "precio_venta" in df.columns:
-            valor_inventario = float((df["cantidad"] * df["precio_venta"]).sum())
-
-        st.markdown("<div class='section-title'>Visión General del Inventario</div><div class='section-subtitle'>Resumen general de métricas y existencias.</div>", unsafe_allow_html=True)
-
-        col1, col2, col3, col4 = st.columns(4)
-        for col, label, value in [
-            (col1, "Total de Prendas / Modelos", total_prendas),
-            (col2, "Stock Total Acumulado", stock_total),
-            (col3, "Alertas de Stock Bajo", total_alertas),
-            (col4, "Valor de Inventario (venta)", moneda(valor_inventario)),
-        ]:
-            with col:
-                st.markdown(f"""<div class="metric-card"><div class="metric-label">{label}</div><div class="metric-value">{value}</div></div>""", unsafe_allow_html=True)
-
-        if total_alertas > 0:
-            st.markdown("<br>", unsafe_allow_html=True)
-            nombres_alerta = ", ".join(prendas_alerta["Producto"].astype(str).tolist()[:8])
+        col_tit1, col_tit2 = st.columns([3, 1])
+        with col_tit1:
             st.markdown(
-                f"""<div class="alert-banner">⚠️ <b>{total_alertas} prenda(s)</b> están en o por debajo del mínimo de stock: {nombres_alerta}{"..." if total_alertas > 8 else ""}</div>""",
+                "<div style='font-size:24px; font-weight:800; color:#1e293b;'>👕 Mis Prendas</div>",
                 unsafe_allow_html=True,
+            )
+        with col_tit2:
+            csv_data_top = df.to_csv(index=False, sep=';').encode('utf-8-sig') if not df.empty else b""
+            st.download_button(
+                "📥 Exportar CSV", data=csv_data_top, file_name="inventario_lewin.csv",
+                mime="text/csv", use_container_width=True, disabled=df.empty,
             )
 
         st.markdown("<br>", unsafe_allow_html=True)
 
+        total_prendas = len(df) if not df.empty else 0
+        stock_total = int(df["cantidad"].sum()) if not df.empty and "cantidad" in df.columns else 0
+        total_alertas = 0
+        if not df.empty and "cantidad" in df.columns and "alerta" in df.columns:
+            total_alertas = int((df["cantidad"] <= df["alerta"]).sum())
+        valor_inventario = 0.0
+        if not df.empty and "cantidad" in df.columns and "precio_venta" in df.columns:
+            valor_inventario = float((df["cantidad"] * df["precio_venta"]).sum())
+
+        kpis_existencias = [
+            ("TOTAL PRENDAS", str(total_prendas), "👕", "#e0ecff", "#4a6fa5"),
+            ("STOCK TOTAL", str(stock_total), "📦", "#dcfce7", "#16a34a"),
+            ("ALERTAS", str(total_alertas), "⚠️", "#fee2e2", "#dc2626"),
+            ("VALOR VENTA", moneda(valor_inventario), "💰", "#fed7aa", "#ea580c"),
+        ]
+        cols_kpi_exist = st.columns(4)
+        for col_k, (label_k, valor_k, icono_k, bg_k, color_k) in zip(cols_kpi_exist, kpis_existencias):
+            with col_k:
+                st.markdown(
+                    f"""<div class="win-kpi-card">
+<div class="win-kpi-top">
+<div class="win-kpi-label" style="text-transform:uppercase;">{label_k}</div>
+<div class="win-kpi-icon" style="background:{bg_k}; color:{color_k};">{icono_k}</div>
+</div>
+<div class="win-kpi-num">{valor_k}</div>
+</div>""",
+                    unsafe_allow_html=True,
+                )
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
         if not df.empty:
-            st.markdown("<div class='section-title'>⚡ Ajuste Rápido de Stock</div><div class='section-subtitle'>Modifica existencias de manera inmediata seleccionando la prenda.</div>", unsafe_allow_html=True)
-            col_q1, col_q2, col_q3 = st.columns([2, 1, 1])
-            with col_q1:
-                ids_rapidos = df["ID"].astype(str).tolist()
-                id_rapido = st.selectbox("Seleccionar Prenda", ids_rapidos, key="select_ajuste_rapido")
-            with col_q2:
-                st.markdown("<div style='height: 24px;'></div>", unsafe_allow_html=True)
-                if st.button("➖ Quitar 1 (-1)", use_container_width=True, key="btn_minus_1"):
-                    fila_actual = df[df["ID"].astype(str) == str(id_rapido)].iloc[0]
-                    nueva_cant = max(0, int(fila_actual["cantidad"]) - 1)
-                    datos_act = fila_actual.to_dict()
-                    datos_act["cantidad"] = nueva_cant
-                    if actualizar_prenda(id_rapido, datos_act):
-                        st.success(f"Stock actualizado a {nueva_cant}")
-                        st.rerun()
-            with col_q3:
-                st.markdown("<div style='height: 24px;'></div>", unsafe_allow_html=True)
-                if st.button("➕ Añadir 1 (+1)", use_container_width=True, key="btn_plus_1"):
-                    fila_actual = df[df["ID"].astype(str) == str(id_rapido)].iloc[0]
-                    nueva_cant = int(fila_actual["cantidad"]) + 1
-                    datos_act = fila_actual.to_dict()
-                    datos_act["cantidad"] = nueva_cant
-                    if actualizar_prenda(id_rapido, datos_act):
-                        st.success(f"Stock actualizado a {nueva_cant}")
-                        st.rerun()
+            busqueda = st.text_input(
+                "Buscar", placeholder="🔍 Buscar por nombre o ID...",
+                label_visibility="collapsed", key="buscar_prendas",
+            )
 
-            st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown("<div class='section-title'>📋 Búsqueda y Filtros Avanzados</div><div class='section-subtitle'>Combina filtros para encontrar exactamente lo que buscas.</div>", unsafe_allow_html=True)
-
-            col_f1, col_f2, col_f3 = st.columns([1.5, 1, 1])
+            col_f1, col_f2, col_f3, col_f4, col_f5 = st.columns([1, 1, 1, 1, 1])
             with col_f1:
-                busqueda = st.text_input("🔍 Buscar por nombre o ID", placeholder="Escribe el nombre de la prenda o su ID...")
-            with col_f2:
                 categorias_disponibles = ["Todas"] + sorted(list(df["Categoria"].dropna().unique()))
-                filtro_categoria = st.selectbox("📂 Categoría", categorias_disponibles)
-            with col_f3:
+                filtro_categoria = st.selectbox("Categoría", categorias_disponibles, label_visibility="collapsed")
+            with col_f2:
                 tallas_disponibles = ["Todas"] + sorted(list(df["talla"].dropna().unique()))
-                filtro_talla = st.selectbox("📏 Talla", tallas_disponibles)
-
-            col_f4, col_f5, col_f6 = st.columns([1, 1, 1])
-            with col_f4:
+                filtro_talla = st.selectbox("Talla", tallas_disponibles, label_visibility="collapsed")
+            with col_f3:
                 colores_disponibles = ["Todos"] + sorted(list(df["color"].dropna().unique()))
-                filtro_color = st.selectbox("🎨 Color", colores_disponibles)
+                filtro_color = st.selectbox("Color", colores_disponibles, label_visibility="collapsed")
+            with col_f4:
+                orden = st.selectbox(
+                    "Ordenar por",
+                    ["Nombre (A-Z)", "Stock (mayor a menor)", "Stock (menor a mayor)", "Más vendidos"],
+                    label_visibility="collapsed",
+                )
             with col_f5:
-                orden = st.selectbox("↕️ Ordenar por", ["Nombre (A-Z)", "Stock (mayor a menor)", "Stock (menor a mayor)", "Más vendidos"])
-            with col_f6:
                 solo_favoritos = st.checkbox("⭐ Solo favoritos", value=False)
 
             df_filtrado = df.copy()
@@ -2577,75 +2555,48 @@ else:
             if total_registros > 0:
                 items_por_pagina = 9
                 total_paginas = max(1, (total_registros - 1) // items_por_pagina + 1)
-
-                col_p1, col_p2 = st.columns([2, 2])
-                with col_p1:
-                    pagina_sel = st.selectbox("📄 Página", range(1, total_paginas + 1), key="paginacion_tabla") if total_paginas > 1 else 1
+                pagina_sel = st.selectbox("📄 Página", range(1, total_paginas + 1), key="paginacion_tabla") if total_paginas > 1 else 1
 
                 inicio = (pagina_sel - 1) * items_por_pagina
                 fin = min(inicio + items_por_pagina, total_registros)
                 df_paginado = df_filtrado.iloc[inicio:fin]
 
-                csv_data = df_filtrado.to_csv(index=False, sep=';').encode('utf-8-sig')
-                with col_p2:
-                    st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
-                    st.download_button("📥 Exportar Inventario a CSV", data=csv_data,
-                                        file_name="inventario_lewin.csv", mime="text/csv",
-                                        use_container_width=True)
-
-                st.markdown(f"<div class='section-title'>Resultados (Mostrando {inicio+1} - {fin} de {total_registros})</div>", unsafe_allow_html=True)
-                st.markdown("<br>", unsafe_allow_html=True)
-
                 cols_tarjetas = st.columns(3)
                 for idx, (_, row) in enumerate(df_paginado.iterrows()):
                     col_actual = cols_tarjetas[idx % 3]
                     is_alerta = int(row["cantidad"]) <= int(row["alerta"])
-                    borde_color = "var(--accent)" if is_alerta else "var(--border-color)"
-                    badge_stock = (
-                        f"<span style='color: #5b8fc7; font-weight: 700;'>Stock Bajo ({row['cantidad']})</span>"
-                        if is_alerta else
-                        f"<span style='color: #34d399; font-weight: 700;'>Stock: {row['cantidad']}</span>"
-                    )
-                    estrella = "⭐" if bool(row.get("favorito", False)) else "☆"
                     foto_html = (
-                        f'<img class="product-photo" src="{row["foto_url"]}" />'
+                        f'<img class="win-prod-photo" src="{row["foto_url"]}" />'
                         if row.get("foto_url") else
-                        '<div class="product-photo-placeholder">👕</div>'
+                        '<div class="win-prod-photo-placeholder">👕</div>'
                     )
                     en_oferta_row = bool(row.get("en_oferta", False))
                     precio_normal = float(row.get("precio_venta", 0) or 0)
                     precio_of_row = float(row.get("precio_oferta", 0) or 0)
-                    precio_html = ""
-                    if en_oferta_row and precio_of_row > 0 and precio_of_row < precio_normal:
-                        precio_html = f"""<div style='margin-top:6px; font-size:14px; font-weight:700;'>
-<span style='color: #999; text-decoration: line-through; font-weight:400;'>{moneda(precio_normal)}</span>
-<span style='color: var(--accent); margin-left:8px;'>{moneda(precio_of_row)}</span>
-</div>"""
-                    elif precio_normal > 0:
-                        precio_html = f"<div style='margin-top:6px; font-size:14px; font-weight:700; color: var(--accent);'>{moneda(precio_normal)}</div>"
+                    hay_oferta_valida = en_oferta_row and precio_of_row > 0 and precio_of_row < precio_normal
 
-                    badge_oferta_html = ""
-                    if en_oferta_row and precio_of_row > 0 and precio_of_row < precio_normal:
-                        badge_oferta_html = "<div style='position:absolute; top:10px; left:10px; background: linear-gradient(135deg, #db2777 0%, #ec4899 100%); color: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(219, 39, 119, 0.35); z-index:10;'>🎁 OFERTA</div>"
+                    if hay_oferta_valida:
+                        precio_html = (
+                            f"<span style='color:#999; text-decoration:line-through; font-weight:400; font-size:13px;'>{moneda(precio_normal)}</span> "
+                            f"<span style='color:#db2777; font-weight:800; font-size:17px;'>{moneda(precio_of_row)}</span>"
+                        )
+                    else:
+                        precio_html = f"<span style='color:#4a6fa5; font-weight:800; font-size:17px;'>{moneda(precio_normal)}</span>"
 
-                    tarjeta_html = f"""<div class="product-card" style="border-color: {borde_color}; position:relative;">
+                    badge_oferta_html = '<span class="win-badge win-badge-oferta">🎁 OFERTA</span>' if hay_oferta_valida else ""
+                    badge_stock_html = '<span class="win-badge win-badge-stock">STOCK BAJO</span>' if is_alerta else ""
+                    stock_color = "#dc2626" if is_alerta else "#16a34a"
+
+                    tarjeta_html = f"""<div class="win-prod-card">
 {badge_oferta_html}
+{badge_stock_html}
 {foto_html}
-<div class="product-card-body">
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-<span style="background: rgba(74, 111, 165, 0.15); color: var(--accent); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">ID: {row['ID']}</span>
-<span style="font-size: 12px; color: var(--text-secondary);">{row['Categoria']}</span>
-</div>
-<div style="font-size: 16px; font-weight: 700; color: var(--text-color); margin-bottom: 8px;">{estrella} {row['Producto']}</div>
-<div style="font-size: 13px; color: var(--text-secondary); display: flex; gap: 12px; margin-bottom: 8px;">
-<span>📏 Talla: <b>{row['talla']}</b></span>
-<span>🎨 Color: <b>{row['color']}</b></span>
-</div>
-{precio_html}
-<div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 10px; font-size: 13px;">
-{badge_stock}
-<span style="font-size: 11px; color: var(--text-secondary);">Alerta mín: {row['alerta']}</span>
-</div>
+<div class="win-prod-body">
+<div style="font-size:11px; color:#64748b;">ID: {row['ID']}</div>
+<div class="win-prod-name">{row['Producto']}</div>
+<div class="win-prod-meta">Talla: {row['talla']} · Color: {row['color']}</div>
+<div style="margin-top:6px;">{precio_html}</div>
+<div style="margin-top:4px; font-size:12px; font-weight:700; color:{stock_color};">Stock: {row['cantidad']}</div>
 </div>
 </div>"""
 
@@ -2677,7 +2628,7 @@ else:
                                     st.image(qr_bytes, width=140)
                                 else:
                                     st.caption("Instala 'qrcode' en requirements.txt para activar esta función.")
-                        
+
                         # Editor de oferta (aparece solo cuando se activa)
                         if st.session_state.get(f"editando_oferta_{row['ID']}", False):
                             with st.container(border=True):
@@ -2718,23 +2669,11 @@ else:
                                         st.session_state[f"editando_oferta_{row['ID']}"] = False
                                         st.rerun()
 
-                        detalles_texto = f"ID: {row['ID']} - {row['Producto']} ({row['Categoria']}) - Talla: {row['talla']} - Color: {row['color']} - Stock: {row['cantidad']}"
-                        st.text_area(
-                            "Detalles", value=detalles_texto, height=70, disabled=True,
-                            label_visibility="collapsed", key=f"detalle_{row['ID']}",
-                        )
                         st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
             else:
                 st.info("No se encontraron registros con los filtros seleccionados.")
         else:
             st.info("No hay prendas registradas todavía en el sistema.")
-
-        # -----------------------------------------------------------------------------
-    # ETIQUETAS DE PRECIOS
-    # -----------------------------------------------------------------------------
-        # -----------------------------------------------------------------------------
-    # ETIQUETAS Y FICHAS DE PRODUCTO
-    # -----------------------------------------------------------------------------
 
     def _sec_etiquetas():
         st.markdown(
