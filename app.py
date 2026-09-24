@@ -967,9 +967,14 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
             if logo_resp.status_code == 200:
                 logo_img = Image.open(BytesIO(logo_resp.content)).convert("RGBA")
                 logo_img.thumbnail((160, 60))
-                fondo_logo = Image.new("RGBA", (logo_img.width + 20, logo_img.height + 16), (255, 255, 255, 220))
+                pad_x, pad_y = 12, 10
+                w_fondo = logo_img.width + pad_x * 2
+                h_fondo = logo_img.height + pad_y * 2
+                fondo_logo = Image.new("RGBA", (w_fondo, h_fondo), (0, 0, 0, 0))
+                draw_fondo = ImageDraw.Draw(fondo_logo)
+                draw_fondo.rounded_rectangle([(0, 0), (w_fondo - 1, h_fondo - 1)], radius=12, fill=(255, 255, 255, 220))
+                fondo_logo.paste(logo_img, (pad_x, pad_y), logo_img)
                 img.paste(fondo_logo, (15, 15), fondo_logo)
-                img.paste(logo_img, (25, 23), logo_img)
         except Exception:
             pass
 
@@ -987,9 +992,9 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
         # Línea decorativa
         draw.line([(30, y_info + 90), (180, y_info + 90)], fill=(74, 111, 165), width=2)
 
-        # Talla y color (izquierda, abajo)
-        draw.text((30, y_info + 105), f"Talla: {prenda.get('talla', '-')}", fill=(45, 35, 75), font=font_pequena)
-        draw.text((30, y_info + 135), f"Color: {prenda.get('color', '-')}", fill=(45, 35, 75), font=font_pequena)
+        # Talla y color (izquierda, abajo) — una sola línea gris
+        talla_color_txt = f"Talla: {prenda.get('talla', '-')} · Color: {prenda.get('color', '-')}"
+        draw.text((30, y_info + 110), talla_color_txt, fill=(100, 116, 139), font=font_pequena)
 
         # Precio USD (derecha, alineado a la derecha)
         precio_usd = float(prenda.get("precio_venta", 0) or 0)
@@ -1003,7 +1008,7 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
             bs_txt = f"{precio_usd * tasa_cambio:,.2f} Bs"
             bbox_bs = draw.textbbox((0, 0), bs_txt, font=font_precio_bs)
             ancho_bs = bbox_bs[2] - bbox_bs[0]
-            draw.text((ancho - 30 - ancho_bs, y_info + 115), bs_txt, fill=(70, 70, 70), font=font_precio_bs)
+            draw.text((ancho - 30 - ancho_bs, y_info + 115), bs_txt, fill=(100, 116, 139), font=font_precio_bs)
 
         # ===== BOTTOM MORADO: QR + CONTACTO =====
         y_bottom = y_info + alto_info  # 600
@@ -1021,7 +1026,7 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
 
         # Texto a la derecha del QR
         draw.text((160, y_bottom + 35), "Escanea el QR", fill=(255, 255, 255), font=font_nombre)
-        draw.text((160, y_bottom + 80), "para ver más productos", fill=(235, 230, 255), font=font_small)
+        draw.text((160, y_bottom + 80), "para ver más productos", fill=(255, 255, 255), font=font_small)
 
        
         # Contacto abajo
@@ -1780,17 +1785,17 @@ section[data-testid="stSidebar"] button[kind="primary"][aria-label^="​"] * {{
 
 .win-prod-card {{
     background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(74,111,165,0.06); overflow: hidden; position: relative;
+    box-shadow: 0 4px 20px rgba(74,111,165,0.06); overflow: hidden; position: relative; padding: 0;
 }}
 .win-prod-img-wrap {{
-    position: relative; width: 100%; overflow: hidden; border-radius: 16px 16px 0 0;
+    position: relative; width: 100%; overflow: hidden; height: 180px;
 }}
 .win-prod-img {{
-    width: 100%; height: 150px; object-fit: cover; display: block;
-    background: #f1f5f9; border-radius: 16px 16px 0 0;
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    background: #f1f5f9;
 }}
 .win-prod-placeholder {{
-    width: 100%; height: 150px; display: flex; align-items: center; justify-content: center;
+    width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
     background: #f1f5f9; font-size: 45px; color: #94a3b8;
 }}
 .win-prod-body {{ padding: 14px; }}
@@ -2561,7 +2566,11 @@ else:
             if total_registros > 0:
                 items_por_pagina = 9
                 total_paginas = max(1, (total_registros - 1) // items_por_pagina + 1)
-                pagina_sel = st.selectbox("📄 Página", range(1, total_paginas + 1), key="paginacion_tabla") if total_paginas > 1 else 1
+
+                pagina_sel = st.session_state.get("pag_prendas_actual", 1)
+                if pagina_sel > total_paginas:
+                    pagina_sel = 1
+                    st.session_state["pag_prendas_actual"] = 1
 
                 inicio = (pagina_sel - 1) * items_por_pagina
                 fin = min(inicio + items_por_pagina, total_registros)
@@ -2676,6 +2685,43 @@ else:
                                         st.rerun()
 
                         st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
+
+                if total_paginas > 1:
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    _, col_pag_center, _ = st.columns([1, 3, 1])
+                    with col_pag_center:
+                        col_prev, col_pags, col_next = st.columns([1, 3, 1])
+
+                        with col_prev:
+                            if pagina_sel > 1:
+                                if st.button("◀ Prev", key="pag_prev"):
+                                    st.session_state["pag_prendas_actual"] = pagina_sel - 1
+                                    st.rerun()
+                            else:
+                                st.button("◀ Prev", key="pag_prev_disabled", disabled=True)
+
+                        with col_pags:
+                            inicio_rango = max(1, pagina_sel - 2)
+                            fin_rango = min(total_paginas, inicio_rango + 4)
+                            if fin_rango - inicio_rango < 4:
+                                inicio_rango = max(1, fin_rango - 4)
+                            paginas_mostrar = list(range(inicio_rango, fin_rango + 1))
+
+                            cols_nums = st.columns(len(paginas_mostrar))
+                            for i, num_pag in enumerate(paginas_mostrar):
+                                with cols_nums[i]:
+                                    tipo = "primary" if num_pag == pagina_sel else "secondary"
+                                    if st.button(str(num_pag), key=f"pag_num_{num_pag}", type=tipo, use_container_width=True):
+                                        st.session_state["pag_prendas_actual"] = num_pag
+                                        st.rerun()
+
+                        with col_next:
+                            if pagina_sel < total_paginas:
+                                if st.button("Next ▶", key="pag_next"):
+                                    st.session_state["pag_prendas_actual"] = pagina_sel + 1
+                                    st.rerun()
+                            else:
+                                st.button("Next ▶", key="pag_next_disabled", disabled=True)
             else:
                 st.info("No se encontraron registros con los filtros seleccionados.")
         else:
