@@ -2446,234 +2446,288 @@ else:
         seccion_activa = "dashboard"
         st.session_state.seccion_activa = "dashboard"
 
-def _sec_existencias():
-    # ===== TÍTULO =====
-    st.markdown('<div class="win-greeting">👕 Mis Prendas</div>', unsafe_allow_html=True)
+    # -----------------------------------------------------------------------------
+    # DASHBOARD (resumen)
+    # -----------------------------------------------------------------------------
+    def _sec_existencias():
+        st.markdown(
+            """
+<div class="page-header">
+    <div class="page-title">Panel Principal // Lewin Boutique</div>
+    <div class="page-subtitle">Control general de stock y monitoreo en tiempo real.</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
 
-    # ===== CÁLCULOS =====
-    total_prendas = len(df) if not df.empty else 0
-    stock_total = int(df["cantidad"].sum()) if not df.empty and "cantidad" in df.columns else 0
-    total_alertas = 0
-    prendas_alerta = pd.DataFrame()
-    if not df.empty and "cantidad" in df.columns and "alerta" in df.columns:
-        prendas_alerta = df[df["cantidad"] <= df["alerta"]]
-        total_alertas = int(prendas_alerta.shape[0])
+        total_prendas = len(df) if not df.empty else 0
+        stock_total = int(df["cantidad"].sum()) if not df.empty and "cantidad" in df.columns else 0
+        total_alertas = 0
+        prendas_alerta = pd.DataFrame()
+        if not df.empty and "cantidad" in df.columns and "alerta" in df.columns:
+            prendas_alerta = df[df["cantidad"] <= df["alerta"]]
+            total_alertas = int(prendas_alerta.shape[0])
 
-    valor_inventario = 0.0
-    if not df.empty and "cantidad" in df.columns and "precio_venta" in df.columns:
-        valor_inventario = float((df["cantidad"] * df["precio_venta"]).sum())
+        valor_inventario = 0.0
+        if not df.empty and "cantidad" in df.columns and "precio_venta" in df.columns:
+            valor_inventario = float((df["cantidad"] * df["precio_venta"]).sum())
 
-    # ===== 4 KPIs COMPACTOS =====
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.markdown(f"""<div class="win-kpi-card">
-<div class="win-kpi-label">Total Prendas</div>
-<div class="win-kpi-icon" style="background:#e0ecff; color:#4a6fa5;">👕</div>
-<div class="win-kpi-value">{total_prendas}</div>
-</div>""", unsafe_allow_html=True)
-    with col2:
-        st.markdown(f"""<div class="win-kpi-card">
-<div class="win-kpi-label">Stock Total</div>
-<div class="win-kpi-icon" style="background:#dcfce7; color:#16a34a;">📦</div>
-<div class="win-kpi-value">{stock_total}</div>
-</div>""", unsafe_allow_html=True)
-    with col3:
-        st.markdown(f"""<div class="win-kpi-card">
-<div class="win-kpi-label">Alertas</div>
-<div class="win-kpi-icon" style="background:#fee2e2; color:#dc2626;">⚠️</div>
-<div class="win-kpi-value">{total_alertas}</div>
-</div>""", unsafe_allow_html=True)
-    with col4:
-        st.markdown(f"""<div class="win-kpi-card">
-<div class="win-kpi-label">Valor Venta</div>
-<div class="win-kpi-icon" style="background:#fed7aa; color:#ea580c;">💰</div>
-<div class="win-kpi-value">{moneda(valor_inventario)}</div>
-</div>""", unsafe_allow_html=True)
+        st.markdown("<div class='section-title'>Visión General del Inventario</div><div class='section-subtitle'>Resumen general de métricas y existencias.</div>", unsafe_allow_html=True)
 
-    st.markdown("<div style='height:15px;'></div>", unsafe_allow_html=True)
+        col1, col2, col3, col4 = st.columns(4)
+        for col, label, value in [
+            (col1, "Total de Prendas / Modelos", total_prendas),
+            (col2, "Stock Total Acumulado", stock_total),
+            (col3, "Alertas de Stock Bajo", total_alertas),
+            (col4, "Valor de Inventario (venta)", moneda(valor_inventario)),
+        ]:
+            with col:
+                st.markdown(f"""<div class="metric-card"><div class="metric-label">{label}</div><div class="metric-value">{value}</div></div>""", unsafe_allow_html=True)
 
-    # ===== BUSCADOR =====
-    busqueda = st.text_input("Buscar", placeholder="🔍 Buscar por nombre o ID...", label_visibility="collapsed", key="buscar_prendas")
-
-    # ===== FILTROS EN UNA SOLA FILA =====
-    col_f1, col_f2, col_f3, col_f4, col_f5 = st.columns([1, 1, 1, 1.2, 1])
-    with col_f1:
-        categorias_disponibles = ["Categoría"] + sorted(list(df["Categoria"].dropna().unique())) if not df.empty else ["Categoría"]
-        filtro_categoria = st.selectbox("Categoría", categorias_disponibles, label_visibility="collapsed", key="fil_cat")
-    with col_f2:
-        tallas_disponibles = ["Talla"] + sorted(list(df["talla"].dropna().unique())) if not df.empty else ["Talla"]
-        filtro_talla = st.selectbox("Talla", tallas_disponibles, label_visibility="collapsed", key="fil_tal")
-    with col_f3:
-        colores_disponibles = ["Color"] + sorted(list(df["color"].dropna().unique())) if not df.empty else ["Color"]
-        filtro_color = st.selectbox("Color", colores_disponibles, label_visibility="collapsed", key="fil_col")
-    with col_f4:
-        orden = st.selectbox("Ordenar", ["Nombre (A-Z)", "Stock (mayor a menor)", "Stock (menor a mayor)", "Más vendidos"], label_visibility="collapsed", key="fil_ord")
-    with col_f5:
-        solo_favoritos = st.checkbox("⭐ Solo favoritos", value=False, key="fil_fav")
-
-    # ===== APLICAR FILTROS =====
-    df_filtrado = df.copy()
-    if busqueda.strip():
-        query = busqueda.strip().lower()
-        df_filtrado = df_filtrado[
-            df_filtrado["ID"].astype(str).str.lower().str.contains(query)
-            | df_filtrado["Producto"].astype(str).str.lower().str.contains(query)
-        ]
-    if filtro_categoria != "Categoría":
-        df_filtrado = df_filtrado[df_filtrado["Categoria"] == filtro_categoria]
-    if filtro_talla != "Talla":
-        df_filtrado = df_filtrado[df_filtrado["talla"] == filtro_talla]
-    if filtro_color != "Color":
-        df_filtrado = df_filtrado[df_filtrado["color"] == filtro_color]
-    if solo_favoritos:
-        df_filtrado = df_filtrado[df_filtrado["favorito"] == True]  # noqa: E712
-
-    if orden == "Nombre (A-Z)":
-        df_filtrado = df_filtrado.sort_values("Producto")
-    elif orden == "Stock (mayor a menor)":
-        df_filtrado = df_filtrado.sort_values("cantidad", ascending=False)
-    elif orden == "Stock (menor a mayor)":
-        df_filtrado = df_filtrado.sort_values("cantidad", ascending=True)
-    elif orden == "Más vendidos":
-        movs = cargar_movimientos()
-        if not movs.empty:
-            ventas = movs[movs["tipo"] == "venta"].groupby("prenda_id")["cantidad"].sum()
-            df_filtrado["_vendidos"] = df_filtrado["ID"].astype(str).map(ventas).fillna(0)
-            df_filtrado = df_filtrado.sort_values("_vendidos", ascending=False)
-
-    st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
-
-    # ===== PAGINACIÓN + EXPORTAR =====
-    total_registros = len(df_filtrado)
-    if total_registros > 0:
-        items_por_pagina = 9
-        total_paginas = max(1, (total_registros - 1) // items_por_pagina + 1)
-
-        col_pag, col_exp = st.columns([2, 1])
-        with col_pag:
-            if total_paginas > 1:
-                pagina_sel = st.selectbox("Página", range(1, total_paginas + 1), label_visibility="collapsed", key="pag_prendas")
-            else:
-                pagina_sel = 1
-        with col_exp:
-            csv_data = df_filtrado.to_csv(index=False, sep=';').encode('utf-8-sig')
-            st.download_button("📥 Exportar CSV", data=csv_data, file_name="inventario_lewin.csv", mime="text/csv", use_container_width=True, key="exp_csv_prendas")
-
-        inicio = (pagina_sel - 1) * items_por_pagina
-        fin = min(inicio + items_por_pagina, total_registros)
-        df_paginado = df_filtrado.iloc[inicio:fin]
-
-        # ===== GRID DE TARJETAS =====
-        cols_tarjetas = st.columns(3)
-        for idx, (_, row) in enumerate(df_paginado.iterrows()):
-            col_actual = cols_tarjetas[idx % 3]
-            is_alerta = int(row["cantidad"]) <= int(row["alerta"])
-            foto_html = (
-                f'<img class="win-prod-img" src="{row["foto_url"]}" />'
-                if row.get("foto_url") else
-                '<div class="win-prod-placeholder">👕</div>'
+        if total_alertas > 0:
+            st.markdown("<br>", unsafe_allow_html=True)
+            nombres_alerta = ", ".join(prendas_alerta["Producto"].astype(str).tolist()[:8])
+            st.markdown(
+                f"""<div class="alert-banner">⚠️ <b>{total_alertas} prenda(s)</b> están en o por debajo del mínimo de stock: {nombres_alerta}{"..." if total_alertas > 8 else ""}</div>""",
+                unsafe_allow_html=True,
             )
-            en_oferta_row = bool(row.get("en_oferta", False))
-            precio_normal = float(row.get("precio_venta", 0) or 0)
-            precio_of_row = float(row.get("precio_oferta", 0) or 0)
 
-            badge_oferta_html = ""
-            if en_oferta_row and precio_of_row > 0 and precio_of_row < precio_normal:
-                badge_oferta_html = '<span class="win-badge-oferta">🎁 OFERTA</span>'
-            badge_stock_html = ""
-            if is_alerta:
-                badge_stock_html = '<span class="win-badge-stock">STOCK BAJO</span>'
+        st.markdown("<br>", unsafe_allow_html=True)
 
-            precio_final_html = moneda(precio_normal)
-            if en_oferta_row and precio_of_row > 0 and precio_of_row < precio_normal:
-                precio_final_html = f'<span style="text-decoration:line-through; color:#999; font-size:13px; font-weight:400;">{moneda(precio_normal)}</span> <span style="color:#db2777;">{moneda(precio_of_row)}</span>'
+        if not df.empty:
+            st.markdown("<div class='section-title'>⚡ Ajuste Rápido de Stock</div><div class='section-subtitle'>Modifica existencias de manera inmediata seleccionando la prenda.</div>", unsafe_allow_html=True)
+            col_q1, col_q2, col_q3 = st.columns([2, 1, 1])
+            with col_q1:
+                ids_rapidos = df["ID"].astype(str).tolist()
+                id_rapido = st.selectbox("Seleccionar Prenda", ids_rapidos, key="select_ajuste_rapido")
+            with col_q2:
+                st.markdown("<div style='height: 24px;'></div>", unsafe_allow_html=True)
+                if st.button("➖ Quitar 1 (-1)", use_container_width=True, key="btn_minus_1"):
+                    fila_actual = df[df["ID"].astype(str) == str(id_rapido)].iloc[0]
+                    nueva_cant = max(0, int(fila_actual["cantidad"]) - 1)
+                    datos_act = fila_actual.to_dict()
+                    datos_act["cantidad"] = nueva_cant
+                    if actualizar_prenda(id_rapido, datos_act):
+                        st.success(f"Stock actualizado a {nueva_cant}")
+                        st.rerun()
+            with col_q3:
+                st.markdown("<div style='height: 24px;'></div>", unsafe_allow_html=True)
+                if st.button("➕ Añadir 1 (+1)", use_container_width=True, key="btn_plus_1"):
+                    fila_actual = df[df["ID"].astype(str) == str(id_rapido)].iloc[0]
+                    nueva_cant = int(fila_actual["cantidad"]) + 1
+                    datos_act = fila_actual.to_dict()
+                    datos_act["cantidad"] = nueva_cant
+                    if actualizar_prenda(id_rapido, datos_act):
+                        st.success(f"Stock actualizado a {nueva_cant}")
+                        st.rerun()
 
-            stock_color = "#dc2626" if is_alerta else "#16a34a"
-            stock_texto = f"Stock: {row['cantidad']}"
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown("<div class='section-title'>📋 Búsqueda y Filtros Avanzados</div><div class='section-subtitle'>Combina filtros para encontrar exactamente lo que buscas.</div>", unsafe_allow_html=True)
 
-            with col_actual:
-                st.markdown(f"""<div class="win-prod-card">
-<div class="win-prod-img-wrap">
-{foto_html}
+            col_f1, col_f2, col_f3 = st.columns([1.5, 1, 1])
+            with col_f1:
+                busqueda = st.text_input("🔍 Buscar por nombre o ID", placeholder="Escribe el nombre de la prenda o su ID...")
+            with col_f2:
+                categorias_disponibles = ["Todas"] + sorted(list(df["Categoria"].dropna().unique()))
+                filtro_categoria = st.selectbox("📂 Categoría", categorias_disponibles)
+            with col_f3:
+                tallas_disponibles = ["Todas"] + sorted(list(df["talla"].dropna().unique()))
+                filtro_talla = st.selectbox("📏 Talla", tallas_disponibles)
+
+            col_f4, col_f5, col_f6 = st.columns([1, 1, 1])
+            with col_f4:
+                colores_disponibles = ["Todos"] + sorted(list(df["color"].dropna().unique()))
+                filtro_color = st.selectbox("🎨 Color", colores_disponibles)
+            with col_f5:
+                orden = st.selectbox("↕️ Ordenar por", ["Nombre (A-Z)", "Stock (mayor a menor)", "Stock (menor a mayor)", "Más vendidos"])
+            with col_f6:
+                solo_favoritos = st.checkbox("⭐ Solo favoritos", value=False)
+
+            df_filtrado = df.copy()
+            if busqueda.strip():
+                query = busqueda.strip().lower()
+                df_filtrado = df_filtrado[
+                    df_filtrado["ID"].astype(str).str.lower().str.contains(query)
+                    | df_filtrado["Producto"].astype(str).str.lower().str.contains(query)
+                ]
+            if filtro_categoria != "Todas":
+                df_filtrado = df_filtrado[df_filtrado["Categoria"] == filtro_categoria]
+            if filtro_talla != "Todas":
+                df_filtrado = df_filtrado[df_filtrado["talla"] == filtro_talla]
+            if filtro_color != "Todos":
+                df_filtrado = df_filtrado[df_filtrado["color"] == filtro_color]
+            if solo_favoritos:
+                df_filtrado = df_filtrado[df_filtrado["favorito"] == True]  # noqa: E712
+
+            if orden == "Nombre (A-Z)":
+                df_filtrado = df_filtrado.sort_values("Producto")
+            elif orden == "Stock (mayor a menor)":
+                df_filtrado = df_filtrado.sort_values("cantidad", ascending=False)
+            elif orden == "Stock (menor a mayor)":
+                df_filtrado = df_filtrado.sort_values("cantidad", ascending=True)
+            elif orden == "Más vendidos":
+                movs = cargar_movimientos()
+                if not movs.empty:
+                    ventas = movs[movs["tipo"] == "venta"].groupby("prenda_id")["cantidad"].sum()
+                    df_filtrado["_vendidos"] = df_filtrado["ID"].astype(str).map(ventas).fillna(0)
+                    df_filtrado = df_filtrado.sort_values("_vendidos", ascending=False)
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            total_registros = len(df_filtrado)
+            if total_registros > 0:
+                items_por_pagina = 9
+                total_paginas = max(1, (total_registros - 1) // items_por_pagina + 1)
+
+                col_p1, col_p2 = st.columns([2, 2])
+                with col_p1:
+                    pagina_sel = st.selectbox("📄 Página", range(1, total_paginas + 1), key="paginacion_tabla") if total_paginas > 1 else 1
+
+                inicio = (pagina_sel - 1) * items_por_pagina
+                fin = min(inicio + items_por_pagina, total_registros)
+                df_paginado = df_filtrado.iloc[inicio:fin]
+
+                csv_data = df_filtrado.to_csv(index=False, sep=';').encode('utf-8-sig')
+                with col_p2:
+                    st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+                    st.download_button("📥 Exportar Inventario a CSV", data=csv_data,
+                                        file_name="inventario_lewin.csv", mime="text/csv",
+                                        use_container_width=True)
+
+                st.markdown(f"<div class='section-title'>Resultados (Mostrando {inicio+1} - {fin} de {total_registros})</div>", unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html=True)
+
+                cols_tarjetas = st.columns(3)
+                for idx, (_, row) in enumerate(df_paginado.iterrows()):
+                    col_actual = cols_tarjetas[idx % 3]
+                    is_alerta = int(row["cantidad"]) <= int(row["alerta"])
+                    borde_color = "var(--accent)" if is_alerta else "var(--border-color)"
+                    badge_stock = (
+                        f"<span style='color: #5b8fc7; font-weight: 700;'>Stock Bajo ({row['cantidad']})</span>"
+                        if is_alerta else
+                        f"<span style='color: #34d399; font-weight: 700;'>Stock: {row['cantidad']}</span>"
+                    )
+                    estrella = "⭐" if bool(row.get("favorito", False)) else "☆"
+                    foto_html = (
+                        f'<img class="product-photo" src="{row["foto_url"]}" />'
+                        if row.get("foto_url") else
+                        '<div class="product-photo-placeholder">👕</div>'
+                    )
+                    en_oferta_row = bool(row.get("en_oferta", False))
+                    precio_normal = float(row.get("precio_venta", 0) or 0)
+                    precio_of_row = float(row.get("precio_oferta", 0) or 0)
+                    precio_html = ""
+                    if en_oferta_row and precio_of_row > 0 and precio_of_row < precio_normal:
+                        precio_html = f"""<div style='margin-top:6px; font-size:14px; font-weight:700;'>
+<span style='color: #999; text-decoration: line-through; font-weight:400;'>{moneda(precio_normal)}</span>
+<span style='color: var(--accent); margin-left:8px;'>{moneda(precio_of_row)}</span>
+</div>"""
+                    elif precio_normal > 0:
+                        precio_html = f"<div style='margin-top:6px; font-size:14px; font-weight:700; color: var(--accent);'>{moneda(precio_normal)}</div>"
+
+                    badge_oferta_html = ""
+                    if en_oferta_row and precio_of_row > 0 and precio_of_row < precio_normal:
+                        badge_oferta_html = "<div style='position:absolute; top:10px; left:10px; background: linear-gradient(135deg, #db2777 0%, #ec4899 100%); color: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(219, 39, 119, 0.35); z-index:10;'>🎁 OFERTA</div>"
+
+                    tarjeta_html = f"""<div class="product-card" style="border-color: {borde_color}; position:relative;">
 {badge_oferta_html}
-{badge_stock_html}
+{foto_html}
+<div class="product-card-body">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+<span style="background: rgba(74, 111, 165, 0.15); color: var(--accent); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">ID: {row['ID']}</span>
+<span style="font-size: 12px; color: var(--text-secondary);">{row['Categoria']}</span>
 </div>
-<div class="win-prod-info">
-<div style="font-size:10px; color:#94a3b8; font-weight:700; margin-bottom:4px;">ID: {row['ID']}</div>
-<div class="win-prod-name">{row['Producto']}</div>
-<div class="win-prod-meta">Talla: {row['talla']} · Color: {row['color']}</div>
-<div class="win-prod-precio">{precio_final_html}</div>
-<div style="font-size:11px; color:{stock_color}; font-weight:700; margin-bottom:8px;">{stock_texto}</div>
+<div style="font-size: 16px; font-weight: 700; color: var(--text-color); margin-bottom: 8px;">{estrella} {row['Producto']}</div>
+<div style="font-size: 13px; color: var(--text-secondary); display: flex; gap: 12px; margin-bottom: 8px;">
+<span>📏 Talla: <b>{row['talla']}</b></span>
+<span>🎨 Color: <b>{row['color']}</b></span>
 </div>
-</div>""", unsafe_allow_html=True)
+{precio_html}
+<div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 10px; font-size: 13px;">
+{badge_stock}
+<span style="font-size: 11px; color: var(--text-secondary);">Alerta mín: {row['alerta']}</span>
+</div>
+</div>
+</div>"""
 
-                c1, c2, c3 = st.columns(3)
-                with c1:
-                    fav_label = "★" if bool(row.get("favorito", False)) else "⭐"
-                    if st.button(fav_label, key=f"fav_{row['ID']}", use_container_width=True, help="Favorito"):
-                        datos_act = row.to_dict()
-                        datos_act["favorito"] = not bool(row.get("favorito", False))
-                        if actualizar_prenda(row["ID"], datos_act):
-                            st.rerun()
-                with c2:
-                    if st.button("🎁", key=f"oferta_{row['ID']}", use_container_width=True, help="Oferta"):
-                        en_oferta_actual = bool(row.get("en_oferta", False))
-                        if en_oferta_actual:
-                            datos_act = row.to_dict()
-                            datos_act["en_oferta"] = False
-                            datos_act["precio_oferta"] = 0.0
-                            if actualizar_prenda(row["ID"], datos_act):
-                                st.rerun()
-                        else:
-                            st.session_state[f"editando_oferta_{row['ID']}"] = True
-                with c3:
-                    with st.popover("🔗", use_container_width=True):
-                        if QR_DISPONIBLE:
-                            qr_bytes = generar_qr_bytes(f"ID:{row['ID']} | {row['Producto']}")
-                            st.image(qr_bytes, width=140)
-                        else:
-                            st.caption("QR no disponible.")
+                    with col_actual:
+                        st.markdown(tarjeta_html, unsafe_allow_html=True)
 
-                if st.session_state.get(f"editando_oferta_{row['ID']}", False):
-                    with st.container(border=True):
-                        st.markdown(f"**🎁 Poner en oferta: {row['Producto']}**")
-                        precio_normal_row = float(row.get("precio_venta", 0) or 0)
-                        costo_row = float(row.get("costo", 0) or 0)
-                        st.caption(f"Precio normal: {moneda(precio_normal_row)}")
-                        precio_oferta_input = st.number_input(
-                            "Precio de oferta", min_value=0.0,
-                            value=float(row.get("precio_oferta", 0) or 0) if row.get("precio_oferta", 0) else precio_normal_row,
-                            step=0.5, key=f"input_oferta_{row['ID']}"
-                        )
-                        if precio_oferta_input > 0 and precio_oferta_input < precio_normal_row:
-                            ganancia = precio_oferta_input - costo_row
-                            rebaja = precio_normal_row - precio_oferta_input
-                            porcentaje = (rebaja / precio_normal_row * 100) if precio_normal_row > 0 else 0
-                            if ganancia < 0:
-                                st.error(f"⚠️ ¡Atención! Vas a perder {moneda(abs(ganancia))} por unidad")
-                            else:
-                                st.markdown(f"📉 Rebaja: {moneda(rebaja)} ({porcentaje:.0f}%)")
-                                st.markdown(f"💰 Ganancia por unidad: {moneda(ganancia)}")
-                        col_btn1, col_btn2 = st.columns(2)
-                        with col_btn1:
-                            if st.button("✅ Aplicar", key=f"aplicar_oferta_{row['ID']}", use_container_width=True):
-                                if precio_oferta_input <= 0 or precio_oferta_input >= precio_normal_row:
-                                    st.error("El precio debe ser mayor a 0 y menor al normal.")
-                                else:
-                                    datos_act = row.to_dict()
-                                    datos_act["en_oferta"] = True
-                                    datos_act["precio_oferta"] = precio_oferta_input
+                        c_fav, c_oferta, c_qr = st.columns(3)
+                        with c_fav:
+                            if st.button("⭐ Favorito" if not row.get("favorito", False) else "☆ Quitar", key=f"fav_{row['ID']}", use_container_width=True):
+                                datos_act = row.to_dict()
+                                datos_act["favorito"] = not bool(row.get("favorito", False))
+                                if actualizar_prenda(row["ID"], datos_act):
+                                    st.rerun()
+                        with c_oferta:
+                            en_oferta_actual = bool(row.get("en_oferta", False))
+                            if st.button("🎁 Oferta" if not en_oferta_actual else "✕ Quitar", key=f"oferta_{row['ID']}", use_container_width=True):
+                                datos_act = row.to_dict()
+                                if en_oferta_actual:
+                                    datos_act["en_oferta"] = False
+                                    datos_act["precio_oferta"] = 0.0
                                     if actualizar_prenda(row["ID"], datos_act):
+                                        st.rerun()
+                                else:
+                                    st.session_state[f"editando_oferta_{row['ID']}"] = True
+                        with c_qr:
+                            with st.popover("🔗 QR", use_container_width=True) if hasattr(st, "popover") else st.expander("🔗 QR"):
+                                if QR_DISPONIBLE:
+                                    qr_bytes = generar_qr_bytes(f"ID:{row['ID']} | {row['Producto']}")
+                                    st.image(qr_bytes, width=140)
+                                else:
+                                    st.caption("Instala 'qrcode' en requirements.txt para activar esta función.")
+                        
+                        # Editor de oferta (aparece solo cuando se activa)
+                        if st.session_state.get(f"editando_oferta_{row['ID']}", False):
+                            with st.container(border=True):
+                                st.markdown(f"**🎁 Poner en oferta: {row['Producto']}**")
+                                precio_normal_row = float(row.get("precio_venta", 0) or 0)
+                                costo_row = float(row.get("costo", 0) or 0)
+                                st.caption(f"Precio normal: {moneda(precio_normal_row)}")
+                                precio_oferta_input = st.number_input(
+                                    "Precio de oferta",
+                                    min_value=0.0,
+                                    value=float(row.get("precio_oferta", 0) or 0) if row.get("precio_oferta", 0) else precio_normal_row,
+                                    step=0.5,
+                                    key=f"input_oferta_{row['ID']}"
+                                )
+                                if precio_oferta_input > 0 and precio_oferta_input < precio_normal_row:
+                                    ganancia = precio_oferta_input - costo_row
+                                    rebaja = precio_normal_row - precio_oferta_input
+                                    porcentaje = (rebaja / precio_normal_row * 100) if precio_normal_row > 0 else 0
+                                    if ganancia < 0:
+                                        st.error(f"⚠️ ¡Atención! Vas a perder {moneda(abs(ganancia))} por unidad")
+                                    else:
+                                        st.markdown(f"📉 Rebaja: {moneda(rebaja)} ({porcentaje:.0f}%)")
+                                        st.markdown(f"💰 Ganancia por unidad: {moneda(ganancia)}")
+                                col_btn1, col_btn2 = st.columns(2)
+                                with col_btn1:
+                                    if st.button("✅ Aplicar oferta", key=f"aplicar_oferta_{row['ID']}", use_container_width=True):
+                                        if precio_oferta_input <= 0 or precio_oferta_input >= precio_normal_row:
+                                            st.error("El precio de oferta debe ser mayor a 0 y menor al precio normal.")
+                                        else:
+                                            datos_act = row.to_dict()
+                                            datos_act["en_oferta"] = True
+                                            datos_act["precio_oferta"] = precio_oferta_input
+                                            if actualizar_prenda(row["ID"], datos_act):
+                                                st.session_state[f"editando_oferta_{row['ID']}"] = False
+                                                st.rerun()
+                                with col_btn2:
+                                    if st.button("❌ Cancelar", key=f"cancelar_oferta_{row['ID']}", use_container_width=True):
                                         st.session_state[f"editando_oferta_{row['ID']}"] = False
                                         st.rerun()
-                        with col_btn2:
-                            if st.button("❌ Cancelar", key=f"cancelar_oferta_{row['ID']}", use_container_width=True):
-                                st.session_state[f"editando_oferta_{row['ID']}"] = False
-                                st.rerun()
 
-                st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
-    else:
-        st.info("No se encontraron registros con los filtros seleccionados.")
+                        detalles_texto = f"ID: {row['ID']} - {row['Producto']} ({row['Categoria']}) - Talla: {row['talla']} - Color: {row['color']} - Stock: {row['cantidad']}"
+                        st.text_area(
+                            "Detalles", value=detalles_texto, height=70, disabled=True,
+                            label_visibility="collapsed", key=f"detalle_{row['ID']}",
+                        )
+                        st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
+            else:
+                st.info("No se encontraron registros con los filtros seleccionados.")
+        else:
+            st.info("No hay prendas registradas todavía en el sistema.")
 
         # -----------------------------------------------------------------------------
     # ETIQUETAS DE PRECIOS
