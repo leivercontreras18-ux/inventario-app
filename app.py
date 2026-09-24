@@ -3,7 +3,7 @@ import json
 import textwrap
 import urllib.parse
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
 
@@ -101,7 +101,7 @@ def cargar_config_github():
 
 COLUMNAS_INVENTARIO = [
     "ID", "Producto", "Categoria", "talla", "color", "cantidad", "alerta",
-    "foto_url", "costo", "precio_venta", "favorito",
+    "foto_url", "costo", "precio_venta", "precio_final", "favorito",
 ]
 
 COLUMNAS_MOVIMIENTOS = [
@@ -137,12 +137,18 @@ def cargar_datos_completos():
             st.warning(f"Aviso al cargar inventario de la nube: {e}")
 
     # Asegurar que existan las columnas nuevas aunque la tabla aún no las tenga
-    defaults_nuevos = {"foto_url": "", "costo": 0.0, "precio_venta": 0.0, "favorito": False, "en_oferta": False, "precio_oferta": 0.0}
+    defaults_nuevos = {"foto_url": "", "costo": 0.0, "precio_venta": 0.0, "precio_final": 0.0, "favorito": False, "en_oferta": False, "precio_oferta": 0.0}
     for col, default in defaults_nuevos.items():
         if col not in df.columns:
             df[col] = default
         else:
             df[col] = df[col].fillna(default)
+
+    # precio_final: si no está definido (0 o vacío), usar precio_venta por defecto
+    if "precio_final" in df.columns and "precio_venta" in df.columns and not df.empty:
+        df["precio_final"] = pd.to_numeric(df["precio_final"], errors="coerce").fillna(0.0)
+        df["precio_venta"] = pd.to_numeric(df["precio_venta"], errors="coerce").fillna(0.0)
+        df.loc[df["precio_final"] <= 0, "precio_final"] = df.loc[df["precio_final"] <= 0, "precio_venta"]
 
     config_data = cargar_config_github()
     if config_data:
@@ -398,6 +404,7 @@ def guardar_prenda(nueva_prenda):
                 "foto_url": str(nueva_prenda.get("foto_url", "") or ""),
                 "costo": float(nueva_prenda.get("costo", 0) or 0),
                 "precio_venta": float(nueva_prenda.get("precio_venta", 0) or 0),
+                "precio_final": float(nueva_prenda.get("precio_final", 0) or nueva_prenda.get("precio_venta", 0) or 0),
                 "favorito": bool(nueva_prenda.get("favorito", False)),
                 "en_oferta": bool(nueva_prenda.get("en_oferta", False)),
                 "precio_oferta": float(nueva_prenda.get("precio_oferta", 0) or 0),
@@ -431,6 +438,7 @@ def actualizar_prenda(id_prenda, datos_actualizados):
                 "foto_url": str(datos_actualizados.get("foto_url", "") or ""),
                 "costo": float(datos_actualizados.get("costo", 0) or 0),
                 "precio_venta": float(datos_actualizados.get("precio_venta", 0) or 0),
+                "precio_final": float(datos_actualizados.get("precio_final", 0) or datos_actualizados.get("precio_venta", 0) or 0),
                 "favorito": bool(datos_actualizados.get("favorito", False)),
                 "en_oferta": bool(datos_actualizados.get("en_oferta", False)),
                 "precio_oferta": float(datos_actualizados.get("precio_oferta", 0) or 0),
@@ -1201,19 +1209,20 @@ def get_css(tema: str, compacto: bool = False) -> str:
     ancho_sidebar = "84px" if compacto else "260px"
     if tema == "claro":
         variables = """
-            --bg-gradient: radial-gradient(circle at 20% 20%, rgba(74, 111, 165, 0.06) 0%, transparent 40%),
-                           radial-gradient(circle at 80% 80%, rgba(91, 143, 199, 0.05) 0%, transparent 40%),
-                           linear-gradient(160deg, #e8f0f8 0%, #f0f5fb 50%, #eaf2fa 100%);
-            --text-color: #2c3e50;
-            --text-secondary: #2c3e50;
-            --text-muted: #4a5c73;
+            --bg-gradient: #f4f7fb;
+            --text-color: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #64748b;
             --accent: #4a6fa5;
-            --accent-light: #5b8fc7;
-            --accent-neon: #10b981;
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --border-color: rgba(74, 111, 165, 0.15);
-            --sidebar-bg: rgba(255, 255, 255, 0.98);
-            --input-bg: rgba(240, 245, 250, 0.9);
+            --accent-light: #e0ecff;
+            --accent-neon: #16a34a;
+            --card-bg: #ffffff;
+            --border-color: #eef2f9;
+            --sidebar-bg: #ffffff;
+            --input-bg: #f4f7fb;
+            --win-verde: #16a34a;
+            --win-rojo: #dc2626;
+            --win-naranja: #ea580c;
         """
     else:
         variables = """
@@ -1229,6 +1238,9 @@ def get_css(tema: str, compacto: bool = False) -> str:
             --border-color: rgba(107, 155, 216, 0.2);
             --sidebar-bg: rgba(15, 26, 43, 0.96);
             --input-bg: rgba(26, 40, 62, 0.85);
+            --win-verde: #34d399;
+            --win-rojo: #f87171;
+            --win-naranja: #fb923c;
         """
         
     return f"""
@@ -1540,10 +1552,10 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
 }}
 
 .kpi-card {{
-    background: var(--card-bg); backdrop-filter: blur(20px);
+    background: var(--card-bg);
     border: 1px solid var(--border-color); border-radius: 16px;
-    padding: 18px 20px; margin-bottom: 12px; animation: fadeInUp 0.35s ease;
-    box-shadow: 0 8px 24px rgba(74, 111, 165, 0.08);
+    padding: 20px; margin-bottom: 12px; animation: fadeInUp 0.35s ease;
+    box-shadow: 0 4px 20px rgba(74, 111, 165, 0.06);
 }}
 .kpi-icon-box {{
     width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center;
@@ -1572,10 +1584,10 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
 .section-subtitle {{ font-size: 12px; color: #3d5066 !important; margin-bottom: 15px; font-weight: 500; }}
 
 .metric-card {{
-    background: var(--card-bg); backdrop-filter: blur(20px);
+    background: var(--card-bg);
     border: 1px solid var(--border-color);
-    padding: 20px; border-radius: 18px; text-align: left;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    padding: 20px; border-radius: 16px; text-align: left;
+    box-shadow: 0 4px 20px rgba(74, 111, 165, 0.06);
     height: 100%; animation: fadeInUp 0.4s ease;
 }}
 .metric-value {{ font-size: 32px; font-weight: 800; color: var(--accent) !important; margin-top: 8px; }}
@@ -1635,10 +1647,10 @@ section[data-testid="stSidebar"] button[kind="primary"]:hover {{
 }}
 
 .product-card {{
-    background: var(--card-bg); backdrop-filter: blur(20px);
+    background: var(--card-bg);
     border: 1px solid var(--border-color);
     padding: 0; border-radius: 16px; margin-bottom: 8px; overflow: hidden;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 20px rgba(74, 111, 165, 0.06);
     animation: fadeInUp 0.35s ease;
 }}
 .product-card-body {{ padding: 16px; }}
@@ -1741,6 +1753,73 @@ section[data-testid="stSidebar"] button[aria-label^="​"] * {{
 section[data-testid="stSidebar"] button[kind="primary"][aria-label^="​"],
 section[data-testid="stSidebar"] button[kind="primary"][aria-label^="​"] * {{
     color: var(--accent) !important;
+}}
+
+/* ============================ CLASES "win-*" (rediseño premium SaaS) ============================ */
+.win-page-head {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; flex-wrap: wrap; gap: 12px; }}
+.win-greeting {{ font-size: 26px; font-weight: 700; color: var(--text-color); }}
+.win-greeting-sub {{ font-size: 14px; color: var(--text-secondary); margin-top: 2px; }}
+
+.win-kpi-card {{
+    background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(74,111,165,0.06); padding: 20px; height: 100%;
+}}
+.win-kpi-icon {{
+    width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center;
+    justify-content: center; font-size: 17px; margin-left: auto;
+}}
+.win-kpi-top {{ display: flex; justify-content: space-between; align-items: flex-start; }}
+.win-kpi-num {{ font-size: 24px; font-weight: 800; color: var(--text-color); margin-top: 14px; }}
+.win-kpi-label {{ font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-top: 2px; }}
+.win-kpi-tag {{ font-size: 11px; font-weight: 700; margin-top: 8px; }}
+
+.win-card {{
+    background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(74,111,165,0.06); padding: 20px;
+}}
+
+.win-prod-card {{
+    background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(74,111,165,0.06); overflow: hidden; position: relative;
+}}
+.win-prod-photo {{ width: 100%; height: 150px; object-fit: cover; display: block; }}
+.win-prod-photo-placeholder {{
+    width: 100%; height: 150px; display: flex; align-items: center; justify-content: center;
+    background: var(--accent-light); font-size: 30px; color: var(--accent);
+}}
+.win-prod-body {{ padding: 14px; }}
+.win-prod-name {{ font-size: 14.5px; font-weight: 700; color: var(--text-color); margin-bottom: 2px; }}
+.win-prod-meta {{ font-size: 11.5px; color: var(--text-secondary); margin-bottom: 6px; }}
+.win-prod-price {{ font-size: 15px; font-weight: 800; color: var(--accent); }}
+.win-badge {{
+    position: absolute; padding: 3px 10px; border-radius: 20px; font-size: 10px;
+    font-weight: 700; letter-spacing: 0.5px; color: #ffffff; z-index: 5;
+}}
+.win-badge-oferta {{ top: 8px; left: 8px; background: #db2777; }}
+.win-badge-stock {{ top: 8px; right: 8px; background: var(--win-rojo); }}
+
+.win-chip {{
+    background: var(--accent-light); color: #1e3a5f; border-radius: 20px;
+    padding: 6px 14px; font-size: 12.5px; font-weight: 600; display: inline-flex;
+    align-items: center; height: 34px;
+}}
+
+.win-sidebar-link {{
+    display: block; text-align: center; text-decoration: none !important;
+    background: transparent; border: 1px solid var(--border-color); border-radius: 10px;
+    padding: 9px 12px; font-size: 14px; font-weight: 500; color: var(--text-color) !important;
+    margin: 4px 0 2px 0; transition: background 0.15s ease;
+}}
+.win-sidebar-link:hover {{ background: var(--accent-light) !important; }}
+
+div[data-testid="stTabs"] button[role="tab"] {{
+    font-weight: 600; font-size: 14px; color: var(--text-secondary);
+}}
+div[data-testid="stTabs"] button[aria-selected="true"] {{
+    color: var(--accent) !important;
+}}
+div[data-testid="stTabs"] div[data-baseweb="tab-highlight"] {{
+    background-color: var(--accent) !important;
 }}
 </style>
 """
@@ -2307,78 +2386,47 @@ else:
 
     st.sidebar.markdown("<div class='menu-divider'></div>", unsafe_allow_html=True)
 
-    GRUPOS_CLAVES_MENU = {
-        "acc_inventario": ["existencias", "etiquetas", "registrar", "modificar"],
-        "acc_ventas": ["vender", "ventas_pagadas", "facturas", "deudores"],
-        "acc_compras": ["comprar", "movimientos"],
+    # --- Mapa de compatibilidad: si una sesión anterior dejó guardado un "menu_activo"
+    # con las claves del menú viejo, lo traducimos a la sección nueva correspondiente ---
+    _MAPA_MENU_A_SECCION = {
+        "inicio": "dashboard",
+        "existencias": "inventario", "etiquetas": "inventario", "registrar": "inventario", "modificar": "inventario",
+        "vender": "ventas", "ventas_pagadas": "ventas", "facturas": "ventas", "deudores": "ventas",
+        "comprar": "compras", "movimientos": "compras",
+        "reportes": "reportes",
+        "configuracion": "personalizar",
     }
-    if "grupo_menu_abierto" not in st.session_state:
-        st.session_state.grupo_menu_abierto = next(
-            (k for k, claves in GRUPOS_CLAVES_MENU.items() if menu_actual in claves), None
+    if "seccion_activa" not in st.session_state:
+        st.session_state.seccion_activa = _MAPA_MENU_A_SECCION.get(
+            st.session_state.get("menu_activo", "inicio"), "dashboard"
         )
-    if "grupo_menu_apertura_n" not in st.session_state:
-        st.session_state.grupo_menu_apertura_n = 0
 
-    def render_grupo_acordeon(icono_grupo, titulo_grupo, items, session_key):
-        """Botón principal con flechita (▼/▶). Solo un grupo puede estar abierto a la vez."""
-        claves_grupo = [c for c, _ in items]
-        activo_grupo = menu_actual in claves_grupo
-        tipo_grupo = "primary" if activo_grupo else "secondary"
+    SECCIONES_MENU = [
+        ("dashboard", "🏠", "Dashboard"),
+        ("inventario", "👕", "Inventario"),
+        ("ventas", "🛒", "Ventas"),
+        ("compras", "📥", "Compras"),
+        ("finanzas", "💰", "Finanzas"),
+        ("reportes", "📊", "Reportes"),
+    ]
+    if ES_ADMIN:
+        SECCIONES_MENU.append(("personalizar", "⚙️", "Personalizar Prendas"))
 
-        if compacto:
-            if st.sidebar.button(icono_grupo, use_container_width=True, key=f"grupo_{session_key}", type=tipo_grupo, help=titulo_grupo):
-                st.session_state.menu_activo = claves_grupo[0]
-                st.rerun()
-            return
-
-        expandido = st.session_state.grupo_menu_abierto == session_key
-        chevron = "▼" if expandido else "▶"
-        if st.sidebar.button(f"{icono_grupo}  {titulo_grupo}  {chevron}", use_container_width=True, key=f"grupo_{session_key}", type=tipo_grupo):
-            if not expandido:
-                st.session_state.grupo_menu_apertura_n += 1
-            st.session_state.grupo_menu_abierto = None if expandido else session_key
+    for clave_sec, icono_sec, etiqueta_sec in SECCIONES_MENU:
+        tipo_sec = "primary" if st.session_state.seccion_activa == clave_sec else "secondary"
+        label_sec = icono_sec if compacto else f"{icono_sec}  {etiqueta_sec}"
+        if st.sidebar.button(label_sec, use_container_width=True, key=f"seccion_{clave_sec}", type=tipo_sec, help=etiqueta_sec if compacto else None):
+            st.session_state.seccion_activa = clave_sec
+            # Mantenemos menu_activo sincronizado por compatibilidad con enlaces internos
+            st.session_state.menu_activo = clave_sec
             st.rerun()
-        if expandido:
-            n = st.session_state.grupo_menu_apertura_n
-            for clave, etiqueta in items:
-                if clave in ("registrar", "modificar", "configuracion") and not ES_ADMIN:
-                    continue
-                tipo_item = "primary" if menu_actual == clave else "secondary"
-                if st.sidebar.button(f"\u200b{etiqueta}", use_container_width=True, key=f"item_{clave}_{n}", type=tipo_item):
-                    st.session_state.menu_activo = clave
-                    st.session_state.grupo_menu_abierto = session_key
-                    st.rerun()
-
-    # --- Inicio (ítem plano, sin acordeón) ---
-    etiqueta_inicio = "🏠" if compacto else "🏠  Inicio"
-    if st.sidebar.button(etiqueta_inicio, use_container_width=True, key="menu_inicio", type=("primary" if menu_actual == "inicio" else "secondary"), help="Inicio" if compacto else None):
-        st.session_state.menu_activo = "inicio"
-        st.rerun()
 
     st.sidebar.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
-
-    render_grupo_acordeon("📊", "Prendas", [
-        ("existencias", "Prendas"), ("etiquetas", "Etiquetas de Precios"), ("registrar", "Registrar Prenda"), ("modificar", "Eliminar Prenda"),
-    ], "acc_inventario")
-
-    render_grupo_acordeon("🛍️", "Ventas", [
-        ("vender", "Nueva Venta"), ("ventas_pagadas", "Ventas Pagadas"), ("facturas", "Factura"), ("deudores", "Ventas por Pagar"),
-    ], "acc_ventas")
-
-    render_grupo_acordeon("📦", "Compras", [
-        ("comprar", "Registrar Compra"), ("movimientos", "Movimientos"),
-    ], "acc_compras")
-
-    if not compacto:
-        st.sidebar.markdown("<p class='menu-group-title'>Negocio</p>", unsafe_allow_html=True)
-    for clave, icono, etiqueta in [("reportes", "📈", "Reportes"), ("configuracion", "⚙️", "Configuración")]:
-        if clave == "configuracion" and not ES_ADMIN:
-            continue
-        tipo_boton = "primary" if menu_actual == clave else "secondary"
-        label_boton = icono if compacto else f"{icono}  {etiqueta}"
-        if st.sidebar.button(label_boton, use_container_width=True, key=f"menu_{clave}", type=tipo_boton, help=etiqueta if compacto else None):
-            st.session_state.menu_activo = clave
-            st.rerun()
+    etiqueta_catalogo = "🌐" if compacto else "🌐  Ver Catálogo Web"
+    st.sidebar.markdown(
+        f'<a class="win-sidebar-link" href="{URL_CATALOGO_WEB}" target="_blank" rel="noopener">{etiqueta_catalogo}</a>',
+        unsafe_allow_html=True,
+    )
 
     st.sidebar.markdown("<hr style='margin: 20px 0 15px 0; border-color: var(--border-color);'>", unsafe_allow_html=True)
 
@@ -2392,143 +2440,16 @@ else:
             del st.query_params["recuerdame_user"]
         st.rerun()
 
-    menu = st.session_state.get("menu_activo", "inicio")
+    seccion_activa = st.session_state.get("seccion_activa", "dashboard")
     # Si un vendedor quedó apuntando a una página de admin (por sesión previa), lo regresamos
-    if menu in ("registrar", "modificar", "configuracion") and not ES_ADMIN:
-        menu = "existencias"
-        st.session_state.menu_activo = "existencias"
+    if seccion_activa == "personalizar" and not ES_ADMIN:
+        seccion_activa = "dashboard"
+        st.session_state.seccion_activa = "dashboard"
 
     # -----------------------------------------------------------------------------
-    # INICIO (dashboard resumen)
+    # DASHBOARD (resumen)
     # -----------------------------------------------------------------------------
-    if menu == "inicio":
-        st.markdown(
-            f"""
-<div class="page-header">
-    <div class="page-title">🏠 Inicio</div>
-    <div class="page-subtitle">Resumen general de Lewin Boutique, {st.session_state.usuario_actual.capitalize()}.</div>
-</div>
-""",
-            unsafe_allow_html=True,
-        )
-
-        movs_inicio = cargar_movimientos()
-        deudores_inicio = cargar_deudores()
-
-        total_prendas_inicio = len(df) if not df.empty else 0
-        alertas_inicio = int((df["cantidad"] <= df["alerta"]).sum()) if not df.empty else 0
-        valor_inventario_inicio = float((df["cantidad"] * df["precio_venta"]).sum()) if not df.empty else 0.0
-        deudores_count_inicio = int((deudores_inicio["saldo"] > 0).sum()) if not deudores_inicio.empty else 0
-
-        ventas_df_inicio = movs_inicio[movs_inicio["tipo"] == "venta"].copy() if not movs_inicio.empty else pd.DataFrame()
-        if not ventas_df_inicio.empty:
-            ventas_df_inicio["monto"] = ventas_df_inicio["cantidad"] * ventas_df_inicio["precio_unitario"]
-        total_ventas_monto = float(ventas_df_inicio["monto"].sum()) if not ventas_df_inicio.empty else 0.0
-
-        # --- 3 tarjetas KPI con ícono cuadrado y enlace de acción ---
-        tarjetas_kpi = [
-            ("📦", "6a5ff0", total_prendas_inicio, "prendas", "Total Prendas", "existencias", "Ver inventario"),
-            ("$", "5aa7f7", moneda(valor_inventario_inicio), "", "Valor del Inventario", "reportes", "Ver detalle"),
-            ("⚠️", "ef4444", alertas_inicio, "prendas", "Stock Bajo", "existencias", "Ver productos"),
-        ]
-        cols_kpi = st.columns(3)
-        for idx, (icono_k, color_k, valor_k, sufijo_k, label_k, destino_k, texto_link_k) in enumerate(tarjetas_kpi):
-            with cols_kpi[idx]:
-                st.markdown(
-                    f"""<div class="kpi-card">
-<div class="kpi-icon-box" style="background: #{color_k}22; color: #{color_k};">{icono_k}</div>
-<div class="kpi-label">{label_k}</div>
-<div class="kpi-value">{valor_k} <span style="font-size:13px; font-weight:500; color:var(--text-secondary);">{sufijo_k}</span></div>
-</div>""",
-                    unsafe_allow_html=True,
-                )
-                if st.button(f"{texto_link_k} →", key=f"kpi_link_{idx}", use_container_width=True):
-                    st.session_state.menu_activo = destino_k
-                    st.rerun()
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
-        # --- Tarjeta ancha: Total Ventas con tendencia ---
-        with st.container(border=True):
-            st.markdown(
-                f"""<div class="kpi-label">Total Ventas (histórico)</div>
-<div class="kpi-value" style="font-size: 26px;">{moneda(total_ventas_monto)}</div>""",
-                unsafe_allow_html=True,
-            )
-            if not ventas_df_inicio.empty:
-                ventas_df_inicio["fecha_dt"] = pd.to_datetime(ventas_df_inicio["fecha"], errors="coerce")
-                ventas_df_inicio["mes"] = ventas_df_inicio["fecha_dt"].dt.to_period("M").astype(str)
-                tendencia_mensual = ventas_df_inicio.groupby("mes")["monto"].sum().sort_index()
-                if len(tendencia_mensual) >= 2:
-                    cambio_pct = ((tendencia_mensual.iloc[-1] - tendencia_mensual.iloc[-2]) / tendencia_mensual.iloc[-2] * 100) if tendencia_mensual.iloc[-2] > 0 else 0
-                    flecha = "↑" if cambio_pct >= 0 else "↓"
-                    color_cambio = "#22c55e" if cambio_pct >= 0 else "#ef4444"
-                    st.markdown(f"<div style='color:{color_cambio}; font-size:12px; font-weight:700;'>{flecha} {abs(cambio_pct):.1f}% vs mes anterior</div>", unsafe_allow_html=True)
-                fig_tendencia = go.Figure(data=[go.Scatter(
-                    x=list(tendencia_mensual.index), y=tendencia_mensual.values,
-                    mode="lines", line=dict(color="#4a6fa5", width=3, shape="spline"),
-                    fill="tozeroy", fillcolor="rgba(74, 111, 165, 0.12)",
-                )])
-                fig_tendencia.update_layout(
-                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                    margin=dict(l=0, r=0, t=10, b=0), height=140, showlegend=False,
-                    xaxis=dict(visible=False), yaxis=dict(visible=False),
-                )
-                st.plotly_chart(fig_tendencia, use_container_width=True, config={"displayModeBar": False})
-            else:
-                st.caption("Todavía no hay ventas para mostrar la tendencia.")
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
-        # --- Dona de categorías + Movimientos recientes ---
-        col_izq_inicio, col_der_inicio = st.columns([1, 1.2])
-        with col_izq_inicio:
-            with st.container(border=True):
-                st.markdown("<div class='kpi-label' style='margin-bottom: 10px;'>Ventas por categoría</div>", unsafe_allow_html=True)
-                if not ventas_df_inicio.empty and not df.empty:
-                    ventas_cat_inicio = ventas_df_inicio.copy()
-                    ventas_cat_inicio["prenda_id"] = ventas_cat_inicio["prenda_id"].astype(str)
-                    mapa_cat_inicio = df.set_index(df["ID"].astype(str))["Categoria"]
-                    ventas_cat_inicio["Categoria"] = ventas_cat_inicio["prenda_id"].map(mapa_cat_inicio)
-                    agrupado_cat_inicio = ventas_cat_inicio.dropna(subset=["Categoria"]).groupby("Categoria")["cantidad"].sum()
-                    agrupado_cat_inicio = agrupado_cat_inicio[agrupado_cat_inicio > 0]
-                    if not agrupado_cat_inicio.empty:
-                        st.plotly_chart(grafico_dona(agrupado_cat_inicio, altura=240), use_container_width=True, config={"displayModeBar": False})
-                    else:
-                        st.caption("Sin datos suficientes todavía.")
-                else:
-                    st.caption("Sin ventas registradas todavía.")
-
-        with col_der_inicio:
-            with st.container(border=True):
-                st.markdown("<div class='kpi-label' style='margin-bottom: 10px;'>Movimientos recientes</div>", unsafe_allow_html=True)
-                if not movs_inicio.empty:
-                    recientes = movs_inicio.sort_values("fecha", ascending=False).head(5)
-                    for _, mov_r in recientes.iterrows():
-                        es_venta_r = mov_r["tipo"] == "venta"
-                        color_r = "#22c55e" if es_venta_r else "#ef4444"
-                        signo_r = "↑" if es_venta_r else "↓"
-                        monto_r = float(mov_r["cantidad"]) * float(mov_r["precio_unitario"] if es_venta_r else mov_r["costo_unitario"])
-                        st.markdown(
-                            f"""<div class="mov-reciente-item">
-<div>
-<div style="font-size:9.5px; font-weight:700; color:{color_r}; letter-spacing:0.5px;">{mov_r['tipo'].upper()}</div>
-<div style="font-size:13px; font-weight:600; color:var(--text-color);">{mov_r['producto']}</div>
-</div>
-<div style="text-align:right;">
-<div style="font-size:13px; font-weight:700; color:{color_r};">{signo_r} {moneda(monto_r)}</div>
-<div style="font-size:10.5px; color:var(--text-secondary);">{formatear_fecha_corta(mov_r['fecha'])}</div>
-</div>
-</div>""",
-                            unsafe_allow_html=True,
-                        )
-                else:
-                    st.caption("Todavía no hay movimientos registrados.")
-
-    # -----------------------------------------------------------------------------
-    # EXISTENCIAS
-    # -----------------------------------------------------------------------------
-    elif menu == "existencias":
+    def _sec_existencias():
         st.markdown(
             """
 <div class="page-header">
@@ -2814,7 +2735,8 @@ else:
         # -----------------------------------------------------------------------------
     # ETIQUETAS Y FICHAS DE PRODUCTO
     # -----------------------------------------------------------------------------
-    elif menu == "etiquetas":
+
+    def _sec_etiquetas():
         st.markdown(
             """
 <div class="page-header">
@@ -3032,7 +2954,8 @@ else:
     # -----------------------------------------------------------------------------
     # VENDER
     # -----------------------------------------------------------------------------
-    elif menu == "vender":
+
+    def _sec_vender():
         st.markdown(
             """
 <div class="page-header">
@@ -3186,7 +3109,8 @@ else:
     # -----------------------------------------------------------------------------
     # VENTAS PAGADAS (historial de ventas cobradas de una vez)
     # -----------------------------------------------------------------------------
-    elif menu == "ventas_pagadas":
+
+    def _sec_ventas_pagadas():
         st.markdown(
             """
 <div class="page-header">
@@ -3216,7 +3140,8 @@ else:
     # -----------------------------------------------------------------------------
     # COMPRAR / REPONER STOCK
     # -----------------------------------------------------------------------------
-    elif menu == "comprar":
+
+    def _sec_comprar():
         st.markdown(
             """
 <div class="page-header">
@@ -3272,7 +3197,8 @@ else:
     # -----------------------------------------------------------------------------
     # REGISTRAR PRENDA (solo admin)
     # -----------------------------------------------------------------------------
-    elif menu == "registrar":
+
+    def _sec_registrar():
         st.markdown(
             """
 <div class="page-header">
@@ -3307,11 +3233,13 @@ else:
             with col7:
                 alerta = st.number_input("Alerta de stock", min_value=0, value=0, step=1)
 
-            col8, col9 = st.columns(2)
+            col8, col9, col10 = st.columns(3)
             with col8:
                 costo = st.number_input("Costo por unidad", min_value=0.0, value=0.0, step=1.0)
             with col9:
                 precio_venta = st.number_input("Precio de venta", min_value=0.0, value=0.0, step=1.0)
+            with col10:
+                precio_final = st.number_input("Precio Final de Venta", min_value=0.0, value=0.0, step=1.0, help="Si lo dejas en 0, se usará el Precio de venta.")
 
             encabezado_seccion_form("📷", "Foto del producto (opcional)")
             foto_subida = st.file_uploader("Sube una imagen", type=["png", "jpg", "jpeg", "webp"])
@@ -3325,7 +3253,9 @@ else:
                     nueva_prenda = {
                         "ID": sku.strip(), "Producto": nombre.strip(), "Categoria": categoria,
                         "talla": talla, "color": color, "cantidad": cantidad, "alerta": alerta,
-                        "costo": costo, "precio_venta": precio_venta, "foto_url": foto_url or "",
+                        "costo": costo, "precio_venta": precio_venta,
+                        "precio_final": precio_final if precio_final > 0 else precio_venta,
+                        "foto_url": foto_url or "",
                         "favorito": False,
                     }
                     if guardar_prenda(nueva_prenda):
@@ -3336,7 +3266,8 @@ else:
     # -----------------------------------------------------------------------------
     # MODIFICAR / ELIMINAR (solo admin)
     # -----------------------------------------------------------------------------
-    elif menu == "modificar":
+
+    def _sec_modificar():
         st.markdown(
             """
 <div class="page-header">
@@ -3353,7 +3284,9 @@ else:
 
             if modo_seleccion == "Seleccionar de la lista":
                 lista_ids = df["ID"].astype(str).tolist()
-                id_seleccionado = st.selectbox("Seleccione el ID de la prenda", lista_ids)
+                id_rapido = st.session_state.pop("id_editar_rapido", None)
+                idx_default = lista_ids.index(str(id_rapido)) if id_rapido and str(id_rapido) in lista_ids else 0
+                id_seleccionado = st.selectbox("Seleccione el ID de la prenda", lista_ids, index=idx_default)
             else:
                 texto_busqueda = st.text_input("Escribe el ID o nombre del producto a buscar:", placeholder="Ej: A1 o Short...")
                 if texto_busqueda.strip():
@@ -3408,11 +3341,13 @@ else:
                     with col7:
                         nueva_alerta = st.number_input("alerta de stock", min_value=0, value=int(fila_data["alerta"]), step=1)
 
-                    col8, col9 = st.columns(2)
+                    col8, col9, col10 = st.columns(3)
                     with col8:
                         nuevo_costo = st.number_input("costo por unidad", min_value=0.0, value=float(fila_data.get("costo", 0) or 0), step=1.0)
                     with col9:
                         nuevo_precio = st.number_input("precio de venta", min_value=0.0, value=float(fila_data.get("precio_venta", 0) or 0), step=1.0)
+                    with col10:
+                        nuevo_precio_final = st.number_input("Precio Final de Venta", min_value=0.0, value=float(fila_data.get("precio_final", 0) or fila_data.get("precio_venta", 0) or 0), step=1.0, help="Si lo dejas en 0, se usará el Precio de venta.")
 
                     nueva_foto = st.file_uploader("Reemplazar foto (opcional)", type=["png", "jpg", "jpeg", "webp"])
 
@@ -3431,6 +3366,7 @@ else:
                             "ID": nuevo_id, "Producto": nuevo_nombre, "Categoria": nueva_categoria,
                             "talla": nueva_talla, "color": nuevo_color, "cantidad": nueva_cantidad,
                             "alerta": nueva_alerta, "costo": nuevo_costo, "precio_venta": nuevo_precio,
+                            "precio_final": nuevo_precio_final if nuevo_precio_final > 0 else nuevo_precio,
                             "foto_url": foto_final, "favorito": bool(fila_data.get("favorito", False)),
                         }
                         if actualizar_prenda(id_seleccionado, datos_mod):
@@ -3447,7 +3383,8 @@ else:
     # -----------------------------------------------------------------------------
     # MOVIMIENTOS (historial / kardex)
     # -----------------------------------------------------------------------------
-    elif menu == "movimientos":
+
+    def _sec_movimientos():
         st.markdown(
             """
 <div class="page-header">
@@ -3486,7 +3423,8 @@ else:
     # -----------------------------------------------------------------------------
     # FACTURAS
     # -----------------------------------------------------------------------------
-    elif menu == "facturas":
+
+    def _sec_facturas():
         st.markdown(
             """
 <div class="page-header">
@@ -3632,7 +3570,8 @@ else:
     # -----------------------------------------------------------------------------
     # DEUDORES (cuentas por cobrar)
     # -----------------------------------------------------------------------------
-    elif menu == "deudores":
+
+    def _sec_deudores():
         st.markdown(
             """
 <div class="page-header">
@@ -3797,7 +3736,8 @@ else:
     # -----------------------------------------------------------------------------
     # REPORTES
     # -----------------------------------------------------------------------------
-    elif menu == "reportes":
+
+    def _sec_reportes():
         st.markdown(
             """
 <div class="page-header">
@@ -3887,7 +3827,7 @@ else:
                 inv_por_cat = inv_por_cat[inv_por_cat > 0]
                 if not inv_por_cat.empty:
                     st.plotly_chart(
-                        grafico_dona(inv_por_cat, texto_centro_arriba=str(int(inv_por_cat.sum())), texto_centro_abajo="unidades"),
+                        grafico_dona(inv_por_cat, texto_centro_arriba=str(int(inv_por_cat.sum())), texto_centro_abajo="unidades", altura=190),
                         use_container_width=True, config={"displayModeBar": False},
                     )
                 else:
@@ -3906,7 +3846,7 @@ else:
                 ventas_por_cat = ventas_por_cat[ventas_por_cat > 0]
                 if not ventas_por_cat.empty:
                     st.plotly_chart(
-                        grafico_dona(ventas_por_cat, texto_centro_arriba=str(int(ventas_por_cat.sum())), texto_centro_abajo="vendidas"),
+                        grafico_dona(ventas_por_cat, texto_centro_arriba=str(int(ventas_por_cat.sum())), texto_centro_abajo="vendidas", altura=190),
                         use_container_width=True, config={"displayModeBar": False},
                     )
                 else:
@@ -3917,11 +3857,12 @@ else:
     # -----------------------------------------------------------------------------
     # CONFIGURACIÓN (solo admin)
     # -----------------------------------------------------------------------------
-    elif menu == "configuracion":
+
+    def _sec_configuracion():
         st.markdown(
             """
 <div class="page-header">
-    <div class="page-title">⚙️ Configuración del Sistema</div>
+    <div class="page-title">⚙️ Personalizar Prendas</div>
     <div class="page-subtitle">Gestiona y personaliza las opciones maestras de categorías, tallas y colores.</div>
 </div>
 """,
@@ -4016,3 +3957,385 @@ else:
                     st.success("¡Configuración guardada en GitHub exitosamente!")
                     st.rerun()
 
+    def _sec_finanzas():
+        st.markdown(
+            """
+<div class="page-header">
+    <div class="page-title">💰 Finanzas</div>
+    <div class="page-subtitle">Balance general, gastos operativos y cierre de caja.</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        tab_balance, tab_gasto, tab_cierre = st.tabs(["📊 Balance General", "🧾 Registrar Gasto", "🔒 Cierre de Caja"])
+        movs_fin = cargar_movimientos()
+
+        with tab_balance:
+            ventas_fin = movs_fin[movs_fin["tipo"] == "venta"].copy() if not movs_fin.empty else pd.DataFrame()
+            gastos_fin = movs_fin[movs_fin["tipo"] == "gasto"].copy() if not movs_fin.empty else pd.DataFrame()
+            compras_fin = movs_fin[movs_fin["tipo"] == "compra"].copy() if not movs_fin.empty else pd.DataFrame()
+
+            ingresos_totales = float((ventas_fin["cantidad"] * ventas_fin["precio_unitario"]).sum()) if not ventas_fin.empty else 0.0
+            gastos_operativos_totales = float((gastos_fin["cantidad"] * gastos_fin["precio_unitario"]).sum()) if not gastos_fin.empty else 0.0
+            costo_compras_totales = float((compras_fin["cantidad"] * compras_fin["costo_unitario"]).sum()) if not compras_fin.empty else 0.0
+            gastos_totales = gastos_operativos_totales + costo_compras_totales
+            ganancia_neta_fin = ingresos_totales - gastos_totales
+
+            col_b1, col_b2, col_b3 = st.columns(3)
+            with col_b1:
+                st.markdown(f"""<div class="win-kpi-card">
+<div class="win-kpi-icon" style="background: #4a6fa51f; color: #4a6fa5;">💵</div>
+<div class="win-kpi-num">{moneda(ingresos_totales)}</div>
+<div class="win-kpi-label">Ingresos Totales</div>
+</div>""", unsafe_allow_html=True)
+            with col_b2:
+                st.markdown(f"""<div class="win-kpi-card">
+<div class="win-kpi-icon" style="background: #ea580c1f; color: #ea580c;">🧾</div>
+<div class="win-kpi-num">{moneda(gastos_totales)}</div>
+<div class="win-kpi-label">Gastos Totales</div>
+</div>""", unsafe_allow_html=True)
+            with col_b3:
+                color_gan = "#16a34a" if ganancia_neta_fin >= 0 else "#dc2626"
+                st.markdown(f"""<div class="win-kpi-card">
+<div class="win-kpi-icon" style="background: {color_gan}1f; color: {color_gan};">📈</div>
+<div class="win-kpi-num" style="color:{color_gan};">{moneda(ganancia_neta_fin)}</div>
+<div class="win-kpi-label">Ganancia Neta</div>
+</div>""", unsafe_allow_html=True)
+
+            st.markdown("<br>", unsafe_allow_html=True)
+
+            with st.container(border=True):
+                st.markdown("<div class='section-title'>Ingresos vs. Gastos por mes</div>", unsafe_allow_html=True)
+                if not movs_fin.empty:
+                    movs_fin_mes = movs_fin.copy()
+                    movs_fin_mes["fecha_dt"] = pd.to_datetime(movs_fin_mes["fecha"], errors="coerce")
+                    movs_fin_mes["mes"] = movs_fin_mes["fecha_dt"].dt.to_period("M").astype(str)
+                    movs_fin_mes["monto_ingreso"] = movs_fin_mes.apply(lambda r: r["cantidad"] * r["precio_unitario"] if r["tipo"] == "venta" else 0.0, axis=1)
+                    movs_fin_mes["monto_gasto"] = movs_fin_mes.apply(
+                        lambda r: (r["cantidad"] * r["precio_unitario"] if r["tipo"] == "gasto" else (r["cantidad"] * r["costo_unitario"] if r["tipo"] == "compra" else 0.0)),
+                        axis=1,
+                    )
+                    resumen_mes = movs_fin_mes.groupby("mes")[["monto_ingreso", "monto_gasto"]].sum().sort_index()
+                    if not resumen_mes.empty:
+                        fig_bal = go.Figure()
+                        fig_bal.add_bar(x=list(resumen_mes.index), y=resumen_mes["monto_ingreso"], name="Ingresos", marker_color="#4a6fa5")
+                        fig_bal.add_bar(x=list(resumen_mes.index), y=resumen_mes["monto_gasto"], name="Gastos", marker_color="#ea580c")
+                        fig_bal.update_layout(
+                            barmode="group", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                            margin=dict(l=10, r=10, t=20, b=10), height=300,
+                            legend=dict(orientation="h", yanchor="bottom", y=1.02),
+                            xaxis=dict(type="category", tickfont=dict(color="#64748b")),
+                            yaxis=dict(showgrid=True, gridcolor="#eef2f9", tickfont=dict(color="#64748b")),
+                        )
+                        st.plotly_chart(fig_bal, use_container_width=True, config={"displayModeBar": False})
+                    else:
+                        st.caption("Sin datos suficientes todavía.")
+                else:
+                    st.caption("Todavía no hay movimientos registrados.")
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            with st.container(border=True):
+                st.markdown("<div class='section-title'>Últimos movimientos</div>", unsafe_allow_html=True)
+                if not movs_fin.empty:
+                    render_tabla_movimientos(movs_fin.sort_values("fecha", ascending=False).head(15))
+                else:
+                    st.caption("Todavía no hay movimientos registrados.")
+
+        with tab_gasto:
+            st.markdown("<div class='section-title'>Registrar un gasto operativo</div>", unsafe_allow_html=True)
+            st.caption("Publicidad, envíos, empaques u otros gastos del negocio.")
+            with st.form("form_registrar_gasto"):
+                col_g1, col_g2 = st.columns(2)
+                with col_g1:
+                    descripcion_gasto = st.text_input("Descripción del gasto", placeholder="Ej: Publicidad en Instagram")
+                with col_g2:
+                    categoria_gasto = st.selectbox("Categoría", ["Publicidad", "Envíos", "Empaques", "Servicios", "Otro"])
+                col_g3, col_g4 = st.columns(2)
+                with col_g3:
+                    monto_gasto = st.number_input("Monto ($)", min_value=0.0, value=0.0, step=1.0)
+                with col_g4:
+                    medio_pago_gasto = st.selectbox("Medio de pago", ["Efectivo", "Transferencia", "Zelle", "Pago Móvil", "Otro"])
+                if st.form_submit_button("💾 Registrar Gasto", use_container_width=True):
+                    if not descripcion_gasto.strip():
+                        st.error("Escribe una descripción para el gasto.")
+                    elif monto_gasto <= 0:
+                        st.error("El monto debe ser mayor a 0.")
+                    else:
+                        exito_gasto = registrar_movimiento(
+                            prenda_id="", producto=f"{categoria_gasto}: {descripcion_gasto.strip()}",
+                            tipo="gasto", cantidad=1, precio_unitario=monto_gasto, costo_unitario=0,
+                            pagado=True, medio_pago=medio_pago_gasto,
+                        )
+                        if exito_gasto:
+                            st.success("¡Gasto registrado correctamente!")
+                            st.rerun()
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown("<div class='section-title'>Gastos recientes</div>", unsafe_allow_html=True)
+            gastos_recientes = movs_fin[movs_fin["tipo"] == "gasto"].sort_values("fecha", ascending=False).head(10) if not movs_fin.empty else pd.DataFrame()
+            if not gastos_recientes.empty:
+                render_tabla_movimientos(gastos_recientes)
+            else:
+                st.caption("Todavía no hay gastos registrados.")
+
+        with tab_cierre:
+            st.markdown("<div class='section-title'>Cierre de caja del día</div>", unsafe_allow_html=True)
+            hoy_cierre = datetime.now().date()
+            if not movs_fin.empty:
+                movs_cierre = movs_fin.copy()
+                movs_cierre["fecha_dt"] = pd.to_datetime(movs_cierre["fecha"], errors="coerce")
+                movs_hoy_cierre = movs_cierre[movs_cierre["fecha_dt"].dt.date == hoy_cierre]
+            else:
+                movs_hoy_cierre = pd.DataFrame()
+
+            total_hoy_cierre = 0.0
+            if not movs_hoy_cierre.empty:
+                ventas_hoy_cierre = movs_hoy_cierre[movs_hoy_cierre["tipo"] == "venta"].copy()
+                gastos_hoy_cierre = movs_hoy_cierre[movs_hoy_cierre["tipo"] == "gasto"].copy()
+                if not ventas_hoy_cierre.empty:
+                    ventas_hoy_cierre["monto"] = ventas_hoy_cierre["cantidad"] * ventas_hoy_cierre["precio_unitario"]
+                    ventas_hoy_cierre["medio_pago"] = ventas_hoy_cierre["medio_pago"].replace("", "Sin especificar")
+                    resumen_medio = ventas_hoy_cierre.groupby("medio_pago")["monto"].sum().sort_values(ascending=False)
+                    st.markdown("<div class='win-kpi-label' style='margin-bottom:8px;'>Ventas de hoy por medio de pago</div>", unsafe_allow_html=True)
+                    cols_medios = st.columns(max(1, len(resumen_medio)))
+                    for idx, (medio, monto) in enumerate(resumen_medio.items()):
+                        with cols_medios[idx]:
+                            st.markdown(f"""<div class="win-kpi-card">
+<div class="win-kpi-label">{medio}</div>
+<div class="win-kpi-num">{moneda(monto)}</div>
+</div>""", unsafe_allow_html=True)
+                    total_hoy_cierre = float(ventas_hoy_cierre["monto"].sum())
+                else:
+                    st.caption("No hay ventas registradas hoy.")
+
+                total_gastos_hoy_cierre = float((gastos_hoy_cierre["cantidad"] * gastos_hoy_cierre["precio_unitario"]).sum()) if not gastos_hoy_cierre.empty else 0.0
+
+                st.markdown("<br>", unsafe_allow_html=True)
+                col_c1, col_c2, col_c3 = st.columns(3)
+                with col_c1:
+                    st.markdown(f"""<div class="win-kpi-card">
+<div class="win-kpi-label">Total Vendido Hoy</div>
+<div class="win-kpi-num">{moneda(total_hoy_cierre)}</div>
+</div>""", unsafe_allow_html=True)
+                with col_c2:
+                    st.markdown(f"""<div class="win-kpi-card">
+<div class="win-kpi-label">Gastos de Hoy</div>
+<div class="win-kpi-num">{moneda(total_gastos_hoy_cierre)}</div>
+</div>""", unsafe_allow_html=True)
+                with col_c3:
+                    neto_hoy_cierre = total_hoy_cierre - total_gastos_hoy_cierre
+                    color_neto = "#16a34a" if neto_hoy_cierre >= 0 else "#dc2626"
+                    st.markdown(f"""<div class="win-kpi-card">
+<div class="win-kpi-label">Neto del Día</div>
+<div class="win-kpi-num" style="color:{color_neto};">{moneda(neto_hoy_cierre)}</div>
+</div>""", unsafe_allow_html=True)
+            else:
+                st.info("Todavía no hay movimientos registrados hoy.")
+
+
+
+    if seccion_activa == "dashboard":
+        nombre_usuario = st.session_state.usuario_actual.capitalize()
+        col_head1, col_head2 = st.columns([3, 1])
+        with col_head1:
+            st.markdown(
+                f"""<div class="win-greeting">¡Hola, {nombre_usuario}! 👋</div>
+<div class="win-greeting-sub">Aquí está el resumen de tu boutique hoy.</div>""",
+                unsafe_allow_html=True,
+            )
+        with col_head2:
+            st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+            if st.button("➕ Nueva Venta", use_container_width=True, key="dash_btn_nueva_venta", type="primary"):
+                st.session_state.seccion_activa = "ventas"
+                st.session_state.menu_activo = "ventas"
+                st.rerun()
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        movs_dash = cargar_movimientos()
+        hoy_dash = datetime.now().date()
+
+        ventas_dash = movs_dash[movs_dash["tipo"] == "venta"].copy() if not movs_dash.empty else pd.DataFrame()
+        if not ventas_dash.empty:
+            ventas_dash["fecha_dt"] = pd.to_datetime(ventas_dash["fecha"], errors="coerce")
+            ventas_hoy_df = ventas_dash[ventas_dash["fecha_dt"].dt.date == hoy_dash]
+        else:
+            ventas_hoy_df = pd.DataFrame()
+
+        ventas_hoy_monto = float((ventas_hoy_df["cantidad"] * ventas_hoy_df["precio_unitario"]).sum()) if not ventas_hoy_df.empty else 0.0
+        ganancia_hoy = float((ventas_hoy_df["cantidad"] * (ventas_hoy_df["precio_unitario"] - ventas_hoy_df["costo_unitario"])).sum()) if not ventas_hoy_df.empty else 0.0
+
+        gastos_dash = movs_dash[movs_dash["tipo"] == "gasto"].copy() if not movs_dash.empty else pd.DataFrame()
+        if not gastos_dash.empty:
+            gastos_dash["fecha_dt"] = pd.to_datetime(gastos_dash["fecha"], errors="coerce")
+            gastos_hoy_df = gastos_dash[gastos_dash["fecha_dt"].dt.date == hoy_dash]
+        else:
+            gastos_hoy_df = pd.DataFrame()
+        gastos_hoy_monto = float((gastos_hoy_df["cantidad"] * gastos_hoy_df["precio_unitario"]).sum()) if not gastos_hoy_df.empty else 0.0
+
+        stock_bajo_count = int((df["cantidad"] <= df["alerta"]).sum()) if not df.empty else 0
+
+        kpis_dash = [
+            ("💼", "4a6fa5", moneda(ventas_hoy_monto), "Ventas de Hoy", "↑ Hoy", "var(--win-verde)"),
+            ("📈", "16a34a", moneda(ganancia_hoy), "Ganancia Neta", "↑ Hoy", "var(--win-verde)"),
+            ("🧾", "ea580c", moneda(gastos_hoy_monto), "Gastos de Hoy", "Actualizado hoy", "var(--text-secondary)"),
+            ("⚠️", "dc2626", str(stock_bajo_count), "Stock Bajo", "Requiere atención", "var(--win-rojo)"),
+        ]
+        cols_kpi_dash = st.columns(4)
+        for idx, (icono_k, color_k, valor_k, label_k, tag_k, color_tag_k) in enumerate(kpis_dash):
+            with cols_kpi_dash[idx]:
+                st.markdown(
+                    f"""<div class="win-kpi-card">
+<div class="win-kpi-top">
+<div class="win-kpi-icon" style="background: #{color_k}1f; color: #{color_k};">{icono_k}</div>
+</div>
+<div class="win-kpi-num">{valor_k}</div>
+<div class="win-kpi-label">{label_k}</div>
+<div class="win-kpi-tag" style="color:{color_tag_k};">{tag_k}</div>
+</div>""",
+                    unsafe_allow_html=True,
+                )
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # --- Gráfico de líneas: ventas de los últimos 7 días ---
+        with st.container(border=True):
+            st.markdown("<div class='win-kpi-label' style='margin-bottom:10px; font-weight:700;'>Ventas de la semana</div>", unsafe_allow_html=True)
+            dias_semana = [hoy_dash - timedelta(days=i) for i in range(6, -1, -1)]
+            if not ventas_dash.empty:
+                ventas_dash["solo_fecha"] = ventas_dash["fecha_dt"].dt.date
+                ventas_dash["monto_dia"] = ventas_dash["cantidad"] * ventas_dash["precio_unitario"]
+                por_dia = ventas_dash.groupby("solo_fecha")["monto_dia"].sum()
+                valores_semana = [float(por_dia.get(d, 0.0)) for d in dias_semana]
+            else:
+                valores_semana = [0.0] * 7
+            etiquetas_dias = [d.strftime("%a %d") for d in dias_semana]
+            fig_semana = go.Figure(data=[go.Scatter(
+                x=etiquetas_dias, y=valores_semana,
+                mode="lines", line=dict(color="#4a6fa5", width=3, shape="spline"),
+                fill="tozeroy", fillcolor="rgba(74, 111, 165, 0.10)",
+            )])
+            fig_semana.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                margin=dict(l=10, r=10, t=10, b=10), height=220, showlegend=False,
+                xaxis=dict(showgrid=False, tickfont=dict(color="#64748b")),
+                yaxis=dict(visible=False),
+            )
+            st.plotly_chart(fig_semana, use_container_width=True, config={"displayModeBar": False})
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # --- Mis Productos ---
+        st.markdown("<div class='section-title'>👕 Mis Productos</div>", unsafe_allow_html=True)
+        busqueda_dash = st.text_input("Buscar producto", placeholder="Buscar por nombre o ID...", key="dash_busqueda_prod", label_visibility="collapsed")
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        df_dash_prod = df.copy()
+        if busqueda_dash.strip():
+            q_dash = busqueda_dash.strip().lower()
+            df_dash_prod = df_dash_prod[
+                df_dash_prod["ID"].astype(str).str.lower().str.contains(q_dash)
+                | df_dash_prod["Producto"].astype(str).str.lower().str.contains(q_dash)
+            ]
+        df_dash_prod = df_dash_prod.head(4)
+
+        if not df_dash_prod.empty:
+            cols_prod_dash = st.columns(4)
+            for idx, (_, row) in enumerate(df_dash_prod.iterrows()):
+                with cols_prod_dash[idx % 4]:
+                    en_oferta_d = bool(row.get("en_oferta", False))
+                    precio_normal_d = float(row.get("precio_venta", 0) or 0)
+                    precio_oferta_d = float(row.get("precio_oferta", 0) or 0)
+                    precio_final_d = float(row.get("precio_final", 0) or precio_normal_d)
+                    is_alerta_d = int(row["cantidad"]) <= int(row["alerta"])
+                    foto_html_d = (
+                        f'<img class="win-prod-photo" src="{row["foto_url"]}" />'
+                        if row.get("foto_url") else
+                        '<div class="win-prod-photo-placeholder">👕</div>'
+                    )
+                    badge_oferta_d = '<span class="win-badge win-badge-oferta">🎁 OFERTA</span>' if (en_oferta_d and precio_oferta_d > 0) else ""
+                    badge_stock_d = '<span class="win-badge win-badge-stock">STOCK BAJO</span>' if is_alerta_d else ""
+                    precio_mostrar_d = precio_oferta_d if (en_oferta_d and precio_oferta_d > 0) else precio_final_d
+                    st.markdown(
+                        f"""<div class="win-prod-card">
+{badge_oferta_d}
+{badge_stock_d}
+{foto_html_d}
+<div class="win-prod-body">
+<div class="win-prod-name">{row['Producto']}</div>
+<div class="win-prod-meta">ID: {row['ID']} · {row['Categoria']} · Talla {row['talla']}</div>
+<div class="win-prod-price">{moneda(precio_mostrar_d)}</div>
+</div>
+</div>""",
+                        unsafe_allow_html=True,
+                    )
+                    b1, b2, b3 = st.columns(3)
+                    with b1:
+                        if st.button("⭐" if not row.get("favorito", False) else "☆", key=f"dash_fav_{row['ID']}", use_container_width=True, help="Favorito"):
+                            datos_act_d = row.to_dict()
+                            datos_act_d["favorito"] = not bool(row.get("favorito", False))
+                            if actualizar_prenda(row["ID"], datos_act_d):
+                                st.rerun()
+                    with b2:
+                        if st.button("🎁", key=f"dash_oferta_{row['ID']}", use_container_width=True, help="Oferta"):
+                            st.session_state.seccion_activa = "inventario"
+                            st.session_state.menu_activo = "inventario"
+                            st.session_state[f"editando_oferta_{row['ID']}"] = True
+                            st.rerun()
+                    with b3:
+                        if st.button("✏️", key=f"dash_editar_{row['ID']}", use_container_width=True, help="Editar"):
+                            st.session_state.seccion_activa = "inventario"
+                            st.session_state.menu_activo = "inventario"
+                            st.session_state["id_editar_rapido"] = row["ID"]
+                            st.rerun()
+        else:
+            st.info("No se encontraron productos.")
+
+    # -----------------------------------------------------------------------------
+    # EXISTENCIAS
+    # -----------------------------------------------------------------------------
+
+    elif seccion_activa == "inventario":
+        _tabs_inv = st.tabs(["👕 Ver Prendas", "🏷️ Etiquetas de Precios", "➕ Registrar Prenda", "✏️ Modificar Prenda"])
+        with _tabs_inv[0]:
+            _sec_existencias()
+        with _tabs_inv[1]:
+            _sec_etiquetas()
+        with _tabs_inv[2]:
+            if ES_ADMIN:
+                _sec_registrar()
+            else:
+                st.info("Solo el administrador puede registrar prendas nuevas.")
+        with _tabs_inv[3]:
+            if ES_ADMIN:
+                _sec_modificar()
+            else:
+                st.info("Solo el administrador puede modificar o eliminar prendas.")
+
+    elif seccion_activa == "ventas":
+        _tabs_ven = st.tabs(["🛒 Nueva Venta", "💰 Ventas Pagadas", "🧾 Facturas", "📇 Deudores"])
+        with _tabs_ven[0]:
+            _sec_vender()
+        with _tabs_ven[1]:
+            _sec_ventas_pagadas()
+        with _tabs_ven[2]:
+            _sec_facturas()
+        with _tabs_ven[3]:
+            _sec_deudores()
+
+    elif seccion_activa == "compras":
+        _tabs_com = st.tabs(["📥 Registrar Compra", "📋 Movimientos"])
+        with _tabs_com[0]:
+            _sec_comprar()
+        with _tabs_com[1]:
+            _sec_movimientos()
+
+    elif seccion_activa == "finanzas":
+        _sec_finanzas()
+
+    elif seccion_activa == "reportes":
+        _sec_reportes()
+
+    elif seccion_activa == "personalizar":
+        _sec_configuracion()
