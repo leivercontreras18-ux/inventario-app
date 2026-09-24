@@ -1782,10 +1782,16 @@ section[data-testid="stSidebar"] button[kind="primary"][aria-label^="​"] * {{
     background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px;
     box-shadow: 0 4px 20px rgba(74,111,165,0.06); overflow: hidden; position: relative;
 }}
-.win-prod-photo {{ width: 100%; height: 150px; object-fit: cover; display: block; }}
-.win-prod-photo-placeholder {{
+.win-prod-img-wrap {{
+    position: relative; width: 100%; overflow: hidden; border-radius: 16px 16px 0 0;
+}}
+.win-prod-img {{
+    width: 100%; height: 150px; object-fit: cover; display: block;
+    background: #f1f5f9; border-radius: 16px 16px 0 0;
+}}
+.win-prod-placeholder {{
     width: 100%; height: 150px; display: flex; align-items: center; justify-content: center;
-    background: var(--accent-light); font-size: 30px; color: var(--accent);
+    background: #f1f5f9; font-size: 45px; color: #94a3b8;
 }}
 .win-prod-body {{ padding: 14px; }}
 .win-prod-name {{ font-size: 14.5px; font-weight: 700; color: var(--text-color); margin-bottom: 2px; }}
@@ -2566,9 +2572,9 @@ else:
                     col_actual = cols_tarjetas[idx % 3]
                     is_alerta = int(row["cantidad"]) <= int(row["alerta"])
                     foto_html = (
-                        f'<img class="win-prod-photo" src="{row["foto_url"]}" />'
+                        f'<div class="win-prod-img-wrap"><img class="win-prod-img" src="{row["foto_url"]}" /></div>'
                         if row.get("foto_url") else
-                        '<div class="win-prod-photo-placeholder">👕</div>'
+                        '<div class="win-prod-img-wrap"><div class="win-prod-placeholder">👕</div></div>'
                     )
                     en_oferta_row = bool(row.get("en_oferta", False))
                     precio_normal = float(row.get("precio_venta", 0) or 0)
@@ -2693,91 +2699,95 @@ else:
 
             # ===== PESTAÑA 1: FICHA DIGITAL =====
             with tab_ficha:
-                st.markdown("<div class='section-subtitle'>Selecciona un producto y genera una ficha lista para enviar por WhatsApp.</div>", unsafe_allow_html=True)
-
                 tasa_ficha, _ = selector_tasa_cambio("ficha_tasa")
 
                 ids_ficha = df["ID"].astype(str).tolist()
                 id_ficha_sel = st.selectbox(
                     "Seleccionar producto",
                     ids_ficha,
-                    format_func=lambda x: f"{x} - {df[df['ID'].astype(str) == x]['Producto'].values[0]}",
+                    format_func=lambda x: f"{x} — {df[df['ID'].astype(str) == x]['Producto'].values[0]}",
                     key="select_ficha_producto",
                 )
 
                 fila_ficha = df[df["ID"].astype(str) == str(id_ficha_sel)].iloc[0]
                 prenda_dict = fila_ficha.to_dict()
 
-                col_ficha_prev, col_ficha_btn = st.columns([1, 1])
+                st.markdown("<br>", unsafe_allow_html=True)
+                col_ficha_prev, col_ficha_der = st.columns([0.4, 0.6])
 
-                with col_ficha_btn:
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    st.markdown(f"### {fila_ficha['Producto']}")
-                    st.markdown(f"**Talla:** {fila_ficha['talla']} | **Color:** {fila_ficha['color']}")
-                    st.markdown(f"**Precio:** {moneda(fila_ficha.get('precio_venta', 0))}")
-                    if tasa_ficha > 0:
-                        st.caption(f"💱 {float(fila_ficha.get('precio_venta', 0)) * tasa_ficha:,.2f} Bs")
-                    st.markdown("<br>", unsafe_allow_html=True)
+                with col_ficha_prev:
+                    st.markdown(
+                        "<div style='font-size:11px; font-weight:700; color:#64748b; letter-spacing:1px; margin-bottom:8px;'>VISTA PREVIA</div>",
+                        unsafe_allow_html=True,
+                    )
+                    with st.container(border=True):
+                        imagen_preview = generar_ficha_como_imagen(prenda_dict, tasa_ficha)
+                        if imagen_preview:
+                            st.image(imagen_preview, use_container_width=True)
+                        else:
+                            st.info("Vista previa no disponible.")
 
-                pdf_ficha = generar_ficha_digital_pdf(prenda_dict, tasa_ficha)
+                with col_ficha_der:
+                    pdf_ficha = generar_ficha_digital_pdf(prenda_dict, tasa_ficha)
+                    imagen_ficha = generar_ficha_como_imagen(prenda_dict, tasa_ficha)
 
-                if pdf_ficha:
-                        col_btn_pdf, col_btn_png = st.columns(2)
-
-                        with col_btn_pdf:
+                    col_btn_pdf, col_btn_png = st.columns(2)
+                    with col_btn_pdf:
+                        if pdf_ficha:
                             st.download_button(
-                                "📄 PDF",
+                                "📄 Descargar PDF",
                                 data=pdf_ficha,
                                 file_name=f"ficha_{id_ficha_sel}.pdf",
                                 mime="application/pdf",
                                 use_container_width=True,
+                                type="primary",
                                 key=f"btn_ficha_pdf_{id_ficha_sel}",
                             )
+                        else:
+                            st.caption("⚠️ PDF no disponible")
+                    with col_btn_png:
+                        if imagen_ficha:
+                            st.download_button(
+                                "🖼️ Descargar Imagen (PNG)",
+                                data=imagen_ficha,
+                                file_name=f"ficha_{id_ficha_sel}.png",
+                                mime="image/png",
+                                use_container_width=True,
+                                type="primary",
+                                key=f"btn_ficha_png_{id_ficha_sel}",
+                            )
+                        else:
+                            st.caption("⚠️ PNG no disponible")
 
-                        with col_btn_png:
-                            imagen_ficha = generar_ficha_como_imagen(prenda_dict, tasa_ficha)
-                            if imagen_ficha:
-                                st.download_button(
-                                    "🖼️ Imagen (PNG)",
-                                    data=imagen_ficha,
-                                    file_name=f"ficha_{id_ficha_sel}.png",
-                                    mime="image/png",
-                                    use_container_width=True,
-                                    key=f"btn_ficha_png_{id_ficha_sel}",
-                                )
-                            else:
-                                st.caption("⚠️ PNG no disponible")
+                    st.markdown("<br>", unsafe_allow_html=True)
 
-                        texto_wa = f"""🛍️ *LEWIN BOUTIQUE*
+                    texto_wa = f"""🛍️ *LEWIN BOUTIQUE*
 
 👕 {fila_ficha['Producto']}
 📏 Talla: {fila_ficha['talla']}
 🎨 Color: {fila_ficha['color']}
 💰 Precio: {moneda(fila_ficha.get('precio_venta', 0))}"""
 
-                        if tasa_ficha > 0:
-                            texto_wa += f" ({float(fila_ficha.get('precio_venta', 0)) * tasa_ficha:,.2f} Bs)"
+                    if tasa_ficha > 0:
+                        texto_wa += f" ({float(fila_ficha.get('precio_venta', 0)) * tasa_ficha:,.2f} Bs)"
 
-                        texto_wa += f"""
+                    texto_wa += f"""
 
 🛒 Ver catálogo: {URL_CATALOGO_WEB}"""
 
-                        if WHATSAPP_BOUTIQUE:
-                            texto_wa += f"\n📱 WhatsApp: {WHATSAPP_BOUTIQUE}"
+                    if WHATSAPP_BOUTIQUE:
+                        texto_wa += f"\n📱 WhatsApp: {WHATSAPP_BOUTIQUE}"
 
-                        st.text_area("Texto para copiar y pegar:", value=texto_wa, height=180, key=f"txt_wa_{id_ficha_sel}")
+                    st.markdown(
+                        "<div style='font-size:11px; font-weight:700; color:#64748b; letter-spacing:1px; margin-bottom:6px;'>TEXTO PARA COPIAR Y PEGAR</div>",
+                        unsafe_allow_html=True,
+                    )
+                    st.text_area(
+                        "Texto para copiar y pegar", value=texto_wa, height=220,
+                        label_visibility="collapsed", key=f"txt_wa_{id_ficha_sel}",
+                    )
 
-                        st.caption("💡 Descarga la ficha y mándala como imagen por WhatsApp. Copia el texto si quieres acompañarla.")
-                else:
-                    st.caption("⚠️ No se pudo generar la ficha. Revisa que `fpdf2` esté instalado.")
-
-                with col_ficha_prev:
-                    st.markdown("**Vista previa:**")
-                    imagen_preview = generar_ficha_como_imagen(prenda_dict, tasa_ficha)
-                    if imagen_preview:
-                        st.image(imagen_preview, width=480)
-                    else:
-                        st.info("Vista previa no disponible.")
+                    st.caption("💡 Descarga la ficha y mándala como imagen por WhatsApp.")
 
             # ===== PESTAÑA 2: ETIQUETAS FÍSICAS =====
             with tab_etiqueta:
@@ -4189,9 +4199,9 @@ else:
                     precio_final_d = float(row.get("precio_final", 0) or precio_normal_d)
                     is_alerta_d = int(row["cantidad"]) <= int(row["alerta"])
                     foto_html_d = (
-                        f'<img class="win-prod-photo" src="{row["foto_url"]}" />'
+                        f'<div class="win-prod-img-wrap"><img class="win-prod-img" src="{row["foto_url"]}" /></div>'
                         if row.get("foto_url") else
-                        '<div class="win-prod-photo-placeholder">👕</div>'
+                        '<div class="win-prod-img-wrap"><div class="win-prod-placeholder">👕</div></div>'
                     )
                     badge_oferta_d = '<span class="win-badge win-badge-oferta">🎁 OFERTA</span>' if (en_oferta_d and precio_oferta_d > 0) else ""
                     badge_stock_d = '<span class="win-badge win-badge-stock">STOCK BAJO</span>' if is_alerta_d else ""
