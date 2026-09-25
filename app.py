@@ -910,25 +910,28 @@ def generar_etiquetas_pdf(lista_prendas, tasa_cambio):
 
 
 def generar_ficha_como_imagen(prenda, tasa_cambio):
-    """Genera la ficha del producto como imagen PNG (diseño centrado y compacto)."""
+    """Genera la ficha del producto como imagen PNG (diseño centrado y compacto, renderizado a 2x para nitidez)."""
     try:
-        ancho = 540
-        alto_foto = 400
-        alto_info = 140
-        alto_bottom = 100
-        alto = alto_foto + alto_info + alto_bottom  # 640
+        ESCALA = 2
+        ancho_final, alto_final = 540, 640
+
+        ancho = 540 * ESCALA
+        alto_foto = 400 * ESCALA
+        alto_info = 140 * ESCALA
+        alto_bottom = 100 * ESCALA
+        alto = alto_foto + alto_info + alto_bottom  # 1280 (a 2x)
         img = Image.new("RGB", (ancho, alto), (255, 255, 255))
         draw = ImageDraw.Draw(img)
 
-        # Fuentes
+        # Fuentes (tamaños x ESCALA para que el downscale final salga nítido)
         try:
-            font_nombre = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
-            font_info = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
-            font_precio = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 28)
-            font_precio_bs = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
-            font_escanea = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 16)
-            font_subtexto = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 12)
-            font_contacto = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 11)
+            font_nombre = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22 * ESCALA)
+            font_info = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14 * ESCALA)
+            font_precio = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 28 * ESCALA)
+            font_precio_bs = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14 * ESCALA)
+            font_escanea = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 16 * ESCALA)
+            font_subtexto = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 12 * ESCALA)
+            font_contacto = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 11 * ESCALA)
         except Exception:
             font_nombre = ImageFont.load_default()
             font_info = ImageFont.load_default()
@@ -974,11 +977,11 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
             logo_resp = requests.get(LOGO_URL, timeout=5)
             if logo_resp.status_code == 200:
                 logo_img = Image.open(BytesIO(logo_resp.content)).convert("RGBA")
-                logo_img.thumbnail((60, 40))
-                w_fondo, h_fondo = 80, 60
+                logo_img.thumbnail((60 * ESCALA, 40 * ESCALA))
+                w_fondo, h_fondo = 80 * ESCALA, 60 * ESCALA
                 fondo_logo = Image.new("RGBA", (w_fondo, h_fondo), (0, 0, 0, 0))
                 draw_fondo = ImageDraw.Draw(fondo_logo)
-                draw_fondo.rounded_rectangle([(0, 0), (w_fondo - 1, h_fondo - 1)], radius=12, fill=(255, 255, 255, 255))
+                draw_fondo.rounded_rectangle([(0, 0), (w_fondo - 1, h_fondo - 1)], radius=12 * ESCALA, fill=(255, 255, 255, 255))
                 offset_logo_x = (w_fondo - logo_img.width) // 2
                 offset_logo_y = (h_fondo - logo_img.height) // 2
                 fondo_logo.paste(logo_img, (offset_logo_x, offset_logo_y), logo_img)
@@ -995,14 +998,14 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
         id_prenda = str(prenda.get("ID", "")).strip()
         nombre_prenda = str(prenda.get("Producto", "")).strip()
         nombre = f"{id_prenda} — {nombre_prenda}" if id_prenda else nombre_prenda
-        y_nombre = y_info + 15
+        y_nombre = y_info + 15 * ESCALA
         draw.text((centrar_x(nombre, font_nombre), y_nombre), nombre, fill=(30, 41, 59), font=font_nombre)
         bbox_nombre = draw.textbbox((0, y_nombre), nombre, font=font_nombre)
         y_tras_nombre = bbox_nombre[3]
 
         # b) Línea "Talla: X · Color: X", centrada, 8px debajo del nombre
         talla_color_txt = f"Talla: {prenda.get('talla', '-')} · Color: {prenda.get('color', '-')}"
-        y_talla_color = y_tras_nombre + 8
+        y_talla_color = y_tras_nombre + 8 * ESCALA
         draw.text((centrar_x(talla_color_txt, font_info), y_talla_color), talla_color_txt, fill=(100, 116, 139), font=font_info)
         bbox_talla_color = draw.textbbox((0, y_talla_color), talla_color_txt, font=font_info)
         y_tras_talla_color = bbox_talla_color[3]
@@ -1010,7 +1013,7 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
         # c) Precio USD, centrado, 12px debajo de la línea info
         precio_usd = float(prenda.get("precio_venta", 0) or 0)
         precio_txt = f"${precio_usd:,.2f}"
-        y_precio = y_tras_talla_color + 12
+        y_precio = y_tras_talla_color + 12 * ESCALA
         draw.text((centrar_x(precio_txt, font_precio), y_precio), precio_txt, fill=(74, 111, 165), font=font_precio)
         bbox_precio = draw.textbbox((0, y_precio), precio_txt, font=font_precio)
         y_tras_precio = bbox_precio[3]
@@ -1018,37 +1021,37 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
         # d) Precio Bs, centrado, 4px debajo del precio USD
         if tasa_cambio > 0 and precio_usd > 0:
             bs_txt = f"{precio_usd * tasa_cambio:,.2f} Bs"
-            y_bs = y_tras_precio + 4
+            y_bs = y_tras_precio + 4 * ESCALA
             draw.text((centrar_x(bs_txt, font_precio_bs), y_bs), bs_txt, fill=(148, 163, 184), font=font_precio_bs)
 
         # ===== 3) BLOQUE AZUL INFERIOR (100px de alto, padding 15px) =====
-        y_bottom = y_info + alto_info  # 540
+        y_bottom = y_info + alto_info
         draw.rectangle([(0, y_bottom), (ancho, alto)], fill=(74, 111, 165))
 
-        pad_bottom = 15
-        qr_size_total = 80
+        pad_bottom = 15 * ESCALA
+        qr_size_total = 80 * ESCALA
 
         # a) QR a la izquierda (fondo blanco 80x80, padding 8px, radius 6px)
         x_qr = pad_bottom
         y_qr = y_bottom + (alto_bottom - qr_size_total) // 2
         draw.rounded_rectangle(
             [(x_qr, y_qr), (x_qr + qr_size_total, y_qr + qr_size_total)],
-            radius=6, fill=(255, 255, 255),
+            radius=6 * ESCALA, fill=(255, 255, 255),
         )
         if QR_DISPONIBLE:
             qr_bytes_data = generar_qr_bytes(URL_CATALOGO_WEB)
             if qr_bytes_data:
-                pad_qr = 8
+                pad_qr = 8 * ESCALA
                 qr_interior = qr_size_total - pad_qr * 2
                 qr_img = Image.open(BytesIO(qr_bytes_data)).convert("RGB")
                 qr_img = qr_img.resize((qr_interior, qr_interior))
                 img.paste(qr_img, (x_qr + pad_qr, y_qr + pad_qr))
 
         # b) Textos a la derecha del QR, centrados verticalmente con el QR
-        x_texto = x_qr + qr_size_total + 20
+        x_texto = x_qr + qr_size_total + 20 * ESCALA
         centro_y = y_bottom + alto_bottom // 2
-        draw.text((x_texto, centro_y - 28), "Escanea el QR", fill=(255, 255, 255), font=font_escanea)
-        draw.text((x_texto, centro_y - 6), "para ver más productos", fill=(255, 255, 255), font=font_subtexto)
+        draw.text((x_texto, centro_y - 28 * ESCALA), "Escanea el QR", fill=(255, 255, 255), font=font_escanea)
+        draw.text((x_texto, centro_y - 6 * ESCALA), "para ver más productos", fill=(255, 255, 255), font=font_subtexto)
 
         pie_textos = []
         if WHATSAPP_BOUTIQUE:
@@ -1062,11 +1065,14 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
             pie_textos.append(INSTAGRAM_BOUTIQUE)
         if pie_textos:
             texto_pie = " · ".join(pie_textos)
-            draw.text((x_texto, centro_y + 14), texto_pie, fill=(255, 255, 255), font=font_contacto)
+            draw.text((x_texto, centro_y + 14 * ESCALA), texto_pie, fill=(255, 255, 255), font=font_contacto)
+
+        # Downscale final a la nitidez pedida (2x -> tamaño real, filtro BICUBIC)
+        img_final = img.resize((ancho_final, alto_final), Image.BICUBIC)
 
         # Guardar
         buf = BytesIO()
-        img.save(buf, format="PNG")
+        img_final.save(buf, format="PNG")
         return buf.getvalue()
     except Exception as e:
         st.warning(f"No se pudo generar la ficha como imagen: {e}")
@@ -1826,6 +1832,19 @@ section[data-testid="stSidebar"] button[kind="primary"][aria-label^="​"] * {{
 }}
 .win-badge-oferta {{ top: 8px; left: 8px; background: #db2777; }}
 .win-badge-stock {{ top: 8px; right: 8px; background: var(--win-rojo); }}
+
+.win-field-label {{
+    font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;
+    letter-spacing: 0.3px; margin-bottom: 4px;
+}}
+.win-upload-box {{
+    border: 2px dashed #cbd5e1; border-radius: 12px; background: #f8fafc;
+    padding: 30px 20px; text-align: center; color: #94a3b8;
+}}
+.win-badge-disponible {{
+    display: inline-block; background: #dcfce7; color: #16a34a; font-size: 11px;
+    font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-top: 6px;
+}}
 
 .win-chip {{
     background: var(--accent-light); color: #1e3a5f; border-radius: 20px;
@@ -3215,66 +3234,133 @@ else:
         st.markdown(
             """
 <div class="page-header">
-    <div class="page-title">✨ Registro de Nuevas Prendas</div>
-    <div class="page-subtitle">Añade nuevos artículos al catálogo, con foto, costo y precio de venta.</div>
+    <div class="page-title">➕ Registrar Prenda</div>
+    <div class="page-subtitle">Añade un nuevo artículo al catálogo con foto, costo y precio de venta</div>
 </div>
 """,
             unsafe_allow_html=True,
         )
 
-        with st.form(f"form_ropa_{st.session_state.form_version}", clear_on_submit=True):
-            encabezado_seccion_form("📦", "Información Básica")
-            col1, col2 = st.columns(2)
-            with col1:
-                sku = st.text_input("ID", placeholder="Ej: A1")
-            with col2:
-                nombre = st.text_input("Producto", placeholder="Ej: Short")
+        v = st.session_state.form_version  # namespacing de keys para poder "limpiar" tras guardar
 
-            encabezado_seccion_form("🏷️", "Clasificación y Atributos")
-            col3, col4, col5 = st.columns(3)
-            with col3:
-                categoria = st.selectbox("Categoría", st.session_state.categorias_maestras)
-            with col4:
-                talla = st.selectbox("Talla", st.session_state.tallas_maestras)
-            with col5:
-                color = st.selectbox("Color", st.session_state.colores_maestros)
+        col_izq, col_der = st.columns([0.55, 0.45])
 
-            encabezado_seccion_form("📊", "Control de Stock, Precios y Alertas")
-            col6, col7 = st.columns(2)
-            with col6:
-                cantidad = st.number_input("Cantidad", min_value=0, value=0, step=1)
-            with col7:
-                alerta = st.number_input("Alerta de stock", min_value=0, value=0, step=1)
+        with col_izq:
+            with st.container(border=True):
+                st.markdown("<div class='win-field-label'>📋 INFORMACIÓN BÁSICA</div>", unsafe_allow_html=True)
+                c1, c2 = st.columns(2)
+                with c1:
+                    st.markdown("<div class='win-field-label'>ID</div>", unsafe_allow_html=True)
+                    sku = st.text_input("ID", placeholder="Ej: A1", label_visibility="collapsed", key=f"reg_sku_{v}")
+                with c2:
+                    st.markdown("<div class='win-field-label'>PRODUCTO</div>", unsafe_allow_html=True)
+                    nombre = st.text_input("Producto", placeholder="Ej: Short", label_visibility="collapsed", key=f"reg_nombre_{v}")
 
-            col8, col9, col10 = st.columns(3)
-            with col8:
-                costo = st.number_input("Costo por unidad", min_value=0.0, value=0.0, step=1.0)
-            with col9:
-                precio_venta = st.number_input("Precio de venta", min_value=0.0, value=0.0, step=1.0)
-            with col10:
-                precio_final = st.number_input("Precio Final de Venta", min_value=0.0, value=0.0, step=1.0, help="Si lo dejas en 0, se usará el Precio de venta.")
+                st.markdown("<div style='margin-top:12px;'></div>", unsafe_allow_html=True)
+                st.markdown("<div class='win-field-label'>🏷️ CLASIFICACIÓN</div>", unsafe_allow_html=True)
+                c3, c4, c5 = st.columns(3)
+                with c3:
+                    st.markdown("<div class='win-field-label'>CATEGORÍA</div>", unsafe_allow_html=True)
+                    categoria = st.selectbox("Categoría", st.session_state.categorias_maestras, label_visibility="collapsed", key=f"reg_cat_{v}")
+                with c4:
+                    st.markdown("<div class='win-field-label'>TALLA</div>", unsafe_allow_html=True)
+                    talla = st.selectbox("Talla", st.session_state.tallas_maestras, label_visibility="collapsed", key=f"reg_talla_{v}")
+                with c5:
+                    st.markdown("<div class='win-field-label'>COLOR</div>", unsafe_allow_html=True)
+                    color = st.selectbox("Color", st.session_state.colores_maestros, label_visibility="collapsed", key=f"reg_color_{v}")
 
-            encabezado_seccion_form("📷", "Foto del producto (opcional)")
-            foto_subida = st.file_uploader("Sube una imagen", type=["png", "jpg", "jpeg", "webp"])
+                st.markdown("<div style='margin-top:12px;'></div>", unsafe_allow_html=True)
+                st.markdown("<div class='win-field-label'>💰 PRECIOS Y STOCK</div>", unsafe_allow_html=True)
+                c6, c7 = st.columns(2)
+                with c6:
+                    st.markdown("<div class='win-field-label'>CANTIDAD</div>", unsafe_allow_html=True)
+                    cantidad = st.number_input("Cantidad", min_value=0, value=0, step=1, label_visibility="collapsed", key=f"reg_cant_{v}")
+                with c7:
+                    st.markdown("<div class='win-field-label'>ALERTA DE STOCK</div>", unsafe_allow_html=True)
+                    alerta = st.number_input("Alerta de stock", min_value=0, value=0, step=1, label_visibility="collapsed", key=f"reg_alerta_{v}")
+
+                c8, c9, c10 = st.columns(3)
+                with c8:
+                    st.markdown("<div class='win-field-label'>COSTO POR UNIDAD</div>", unsafe_allow_html=True)
+                    costo = st.number_input("Costo por unidad", min_value=0.0, value=0.0, step=1.0, label_visibility="collapsed", key=f"reg_costo_{v}")
+                with c9:
+                    st.markdown("<div class='win-field-label'>PRECIO DE VENTA</div>", unsafe_allow_html=True)
+                    precio_venta = st.number_input("Precio de venta", min_value=0.0, value=0.0, step=1.0, label_visibility="collapsed", key=f"reg_pv_{v}")
+                with c10:
+                    st.markdown("<div class='win-field-label'>PRECIO FINAL</div>", unsafe_allow_html=True)
+                    precio_final = st.number_input("Precio final", min_value=0.0, value=0.0, step=1.0, label_visibility="collapsed", key=f"reg_pf_{v}", help="Si lo dejas en 0, se usará el Precio de venta.")
+
+                st.markdown("<br>", unsafe_allow_html=True)
+                guardar_click = st.button("💾 Guardar Prenda en el Sistema", use_container_width=True, type="primary", key=f"reg_guardar_{v}")
+
+        with col_der:
+            with st.container(border=True):
+                st.markdown("<div class='win-field-label'>📷 FOTO DEL PRODUCTO</div>", unsafe_allow_html=True)
+                foto_subida = st.file_uploader("Sube una imagen", type=["png", "jpg", "jpeg", "webp"], label_visibility="collapsed", key=f"reg_foto_{v}")
+                if foto_subida:
+                    st.image(foto_subida, use_container_width=True)
+                else:
+                    st.markdown(
+                        """<div class="win-upload-box">
+<div style="font-size:34px;">📷</div>
+<div style="margin-top:8px; font-weight:600;">Haz clic o arrastra tu foto aquí</div>
+<div style="font-size:12px; margin-top:4px;">PNG, JPG o WEBP — Máx 200MB</div>
+</div>""",
+                        unsafe_allow_html=True,
+                    )
 
             st.markdown("<br>", unsafe_allow_html=True)
-            if st.form_submit_button("💾 Guardar Prenda en el Sistema", use_container_width=True):
-                if sku.strip() == "":
-                    st.error("El campo ID es obligatorio.")
+
+            with st.container(border=True):
+                st.markdown("<div class='win-field-label'>👁️ VISTA PREVIA EN CATÁLOGO</div>", unsafe_allow_html=True)
+
+                if foto_subida:
+                    foto_subida.seek(0)
+                    b64_foto = base64.b64encode(foto_subida.read()).decode()
+                    ext_foto = foto_subida.type or "image/png"
+                    foto_prev_html = f'<div class="win-prod-img-wrap" style="height:160px;"><img class="win-prod-img" src="data:{ext_foto};base64,{b64_foto}" /></div>'
                 else:
-                    foto_url = subir_imagen(foto_subida, sku.strip()) if foto_subida else ""
-                    nueva_prenda = {
-                        "ID": sku.strip(), "Producto": nombre.strip(), "Categoria": categoria,
-                        "talla": talla, "color": color, "cantidad": cantidad, "alerta": alerta,
-                        "costo": costo, "precio_venta": precio_venta,
-                        "precio_final": precio_final if precio_final > 0 else precio_venta,
-                        "foto_url": foto_url or "",
-                        "favorito": False,
-                    }
-                    if guardar_prenda(nueva_prenda):
-                        st.success("¡Prenda guardada con éxito!")
-                        st.session_state.form_version += 1
-                        st.rerun()
+                    foto_prev_html = '<div class="win-prod-img-wrap" style="height:160px;"><div class="win-prod-placeholder">👕</div></div>'
+
+                id_prev = sku.strip() if sku.strip() else "ID"
+                nombre_prev = nombre.strip() if nombre.strip() else "Nombre del producto"
+                precio_prev = precio_final if precio_final > 0 else precio_venta
+
+                st.markdown(
+                    f"""<div class="win-prod-card">
+{foto_prev_html}
+<div class="win-prod-body">
+<div style="font-size:11px; color:#94a3b8;">ID: {id_prev}</div>
+<div class="win-prod-name">{nombre_prev}</div>
+<div class="win-prod-meta">{categoria} · {talla} · {color}</div>
+<div style="font-size:17px; font-weight:800; color:#4a6fa5; margin-top:4px;">{moneda(precio_prev)}</div>
+<span class="win-badge-disponible">✅ Disponible</span>
+</div>
+</div>""",
+                    unsafe_allow_html=True,
+                )
+                st.markdown(
+                    "<div style='font-size:12px; color:#94a3b8; font-style:italic; margin-top:8px;'>Así se verá tu producto en el catálogo web</div>",
+                    unsafe_allow_html=True,
+                )
+
+        if guardar_click:
+            if sku.strip() == "":
+                st.error("El campo ID es obligatorio.")
+            else:
+                foto_url = subir_imagen(foto_subida, sku.strip()) if foto_subida else ""
+                nueva_prenda = {
+                    "ID": sku.strip(), "Producto": nombre.strip(), "Categoria": categoria,
+                    "talla": talla, "color": color, "cantidad": cantidad, "alerta": alerta,
+                    "costo": costo, "precio_venta": precio_venta,
+                    "precio_final": precio_final if precio_final > 0 else precio_venta,
+                    "foto_url": foto_url or "",
+                    "favorito": False,
+                }
+                if guardar_prenda(nueva_prenda):
+                    st.success("¡Prenda guardada con éxito!")
+                    st.session_state.form_version += 1
+                    st.rerun()
 
     # -----------------------------------------------------------------------------
     # MODIFICAR / ELIMINAR (solo admin)
@@ -3284,114 +3370,204 @@ else:
         st.markdown(
             """
 <div class="page-header">
-    <div class="page-title">Modificar o Eliminar Prenda</div>
-    <div class="page-subtitle">Busca o selecciona una prenda existente para actualizar sus datos o borrarla.</div>
+    <div class="page-title">✏️ Modificar Prenda</div>
+    <div class="page-subtitle">Edita los datos del producto seleccionado</div>
 </div>
 """,
             unsafe_allow_html=True,
         )
 
-        if not df.empty:
-            modo_seleccion = st.radio("¿Cómo deseas encontrar la prenda?", ["Seleccionar de la lista", "Buscar por ID / Nombre"], horizontal=True)
-            id_seleccionado = None
-
-            if modo_seleccion == "Seleccionar de la lista":
-                lista_ids = df["ID"].astype(str).tolist()
-                id_rapido = st.session_state.pop("id_editar_rapido", None)
-                idx_default = lista_ids.index(str(id_rapido)) if id_rapido and str(id_rapido) in lista_ids else 0
-                id_seleccionado = st.selectbox("Seleccione el ID de la prenda", lista_ids, index=idx_default)
-            else:
-                texto_busqueda = st.text_input("Escribe el ID o nombre del producto a buscar:", placeholder="Ej: A1 o Short...")
-                if texto_busqueda.strip():
-                    q = texto_busqueda.strip().lower()
-                    df_coincidencias = df[
-                        df["ID"].astype(str).str.lower().str.contains(q) | df["Producto"].astype(str).str.lower().str.contains(q)
-                    ]
-                    if not df_coincidencias.empty:
-                        opciones_encontradas = df_coincidencias["ID"].astype(str).tolist()
-                        id_seleccionado = st.selectbox(
-                            f"Coincidencias encontradas ({len(opciones_encontradas)}):", opciones_encontradas,
-                            format_func=lambda x: f"ID: {x} - {df_coincidencias[df_coincidencias['ID'].astype(str) == x]['Producto'].values[0]}",
-                        )
-                    else:
-                        st.warning("No se encontraron prendas con ese criterio.")
-
-            if id_seleccionado:
-                fila_data = df[df["ID"].astype(str) == str(id_seleccionado)].iloc[0]
-
-                if fila_data.get("foto_url"):
-                    st.image(fila_data["foto_url"], width=180)
-
-                st.markdown("<br>", unsafe_allow_html=True)
-                with st.form("form_editar"):
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        nuevo_id = st.text_input("ID", value=str(fila_data["ID"]))
-                    with col2:
-                        nuevo_nombre = st.text_input("Producto", value=str(fila_data["Producto"]))
-
-                    st.markdown("---")
-                    col3, col4, col5 = st.columns(3)
-                    cat_actual = str(fila_data["Categoria"])
-                    idx_cat = st.session_state.categorias_maestras.index(cat_actual) if cat_actual in st.session_state.categorias_maestras else 0
-                    with col3:
-                        nueva_categoria = st.selectbox("Categoria", st.session_state.categorias_maestras, index=idx_cat)
-
-                    talla_actual = str(fila_data["talla"])
-                    idx_talla = st.session_state.tallas_maestras.index(talla_actual) if talla_actual in st.session_state.tallas_maestras else 0
-                    with col4:
-                        nueva_talla = st.selectbox("talla", st.session_state.tallas_maestras, index=idx_talla)
-
-                    color_actual = str(fila_data["color"])
-                    idx_color = st.session_state.colores_maestros.index(color_actual) if color_actual in st.session_state.colores_maestros else 0
-                    with col5:
-                        nuevo_color = st.selectbox("color", st.session_state.colores_maestros, index=idx_color)
-
-                    st.markdown("---")
-                    col6, col7 = st.columns(2)
-                    with col6:
-                        nueva_cantidad = st.number_input("cantidad", min_value=0, value=int(fila_data["cantidad"]), step=1)
-                    with col7:
-                        nueva_alerta = st.number_input("alerta de stock", min_value=0, value=int(fila_data["alerta"]), step=1)
-
-                    col8, col9, col10 = st.columns(3)
-                    with col8:
-                        nuevo_costo = st.number_input("costo por unidad", min_value=0.0, value=float(fila_data.get("costo", 0) or 0), step=1.0)
-                    with col9:
-                        nuevo_precio = st.number_input("precio de venta", min_value=0.0, value=float(fila_data.get("precio_venta", 0) or 0), step=1.0)
-                    with col10:
-                        nuevo_precio_final = st.number_input("Precio Final de Venta", min_value=0.0, value=float(fila_data.get("precio_final", 0) or fila_data.get("precio_venta", 0) or 0), step=1.0, help="Si lo dejas en 0, se usará el Precio de venta.")
-
-                    nueva_foto = st.file_uploader("Reemplazar foto (opcional)", type=["png", "jpg", "jpeg", "webp"])
-
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    col_btn1, col_btn2 = st.columns(2)
-                    actualizar = col_btn1.form_submit_button("💾 Guardar Cambios", use_container_width=True)
-                    eliminar = col_btn2.form_submit_button("🗑️ Eliminar Prenda", use_container_width=True)
-
-                    if actualizar:
-                        foto_final = fila_data.get("foto_url", "")
-                        if nueva_foto:
-                            subida = subir_imagen(nueva_foto, nuevo_id)
-                            if subida:
-                                foto_final = subida
-                        datos_mod = {
-                            "ID": nuevo_id, "Producto": nuevo_nombre, "Categoria": nueva_categoria,
-                            "talla": nueva_talla, "color": nuevo_color, "cantidad": nueva_cantidad,
-                            "alerta": nueva_alerta, "costo": nuevo_costo, "precio_venta": nuevo_precio,
-                            "precio_final": nuevo_precio_final if nuevo_precio_final > 0 else nuevo_precio,
-                            "foto_url": foto_final, "favorito": bool(fila_data.get("favorito", False)),
-                        }
-                        if actualizar_prenda(id_seleccionado, datos_mod):
-                            st.success("¡Prenda actualizada correctamente!")
-                            st.rerun()
-
-                    if eliminar:
-                        if eliminar_prenda(id_seleccionado):
-                            st.success("¡Prenda eliminada del sistema!")
-                            st.rerun()
-        else:
+        if df.empty:
             st.info("No hay registros disponibles para modificar.")
+            return
+
+        with st.container(border=True):
+            st.markdown("<div class='win-field-label'>BUSCAR PRODUCTO</div>", unsafe_allow_html=True)
+            texto_busqueda = st.text_input("Buscar", placeholder="Buscar por ID o nombre...", label_visibility="collapsed", key="mod_busqueda")
+
+            df_opciones = df.copy()
+            if texto_busqueda.strip():
+                q = texto_busqueda.strip().lower()
+                df_opciones = df_opciones[
+                    df_opciones["ID"].astype(str).str.lower().str.contains(q) | df_opciones["Producto"].astype(str).str.lower().str.contains(q)
+                ]
+
+            if df_opciones.empty:
+                st.warning("No se encontraron prendas con ese criterio.")
+                return
+
+            lista_ids = df_opciones["ID"].astype(str).tolist()
+            id_rapido = st.session_state.pop("id_editar_rapido", None)
+            idx_default = lista_ids.index(str(id_rapido)) if id_rapido and str(id_rapido) in lista_ids else 0
+            id_seleccionado = st.selectbox(
+                "Seleccionar producto", lista_ids, index=idx_default, label_visibility="collapsed",
+                format_func=lambda x: f"{x} — {df_opciones[df_opciones['ID'].astype(str) == x]['Producto'].values[0]}",
+                key="mod_select_id",
+            )
+
+        if not id_seleccionado:
+            return
+
+        fila_data = df[df["ID"].astype(str) == str(id_seleccionado)].iloc[0]
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # ===== CARD RESUMEN SUPERIOR =====
+        with st.container(border=True):
+            col_foto, col_info, col_acciones = st.columns([0.2, 0.5, 0.3])
+            with col_foto:
+                if fila_data.get("foto_url"):
+                    st.markdown(
+                        f'<div class="win-prod-img-wrap" style="height:140px; width:140px; border-radius:12px;"><img class="win-prod-img" src="{fila_data["foto_url"]}" style="border-radius:12px;" /></div>',
+                        unsafe_allow_html=True,
+                    )
+                else:
+                    st.markdown(
+                        '<div class="win-prod-img-wrap" style="height:140px; width:140px; border-radius:12px;"><div class="win-prod-placeholder" style="border-radius:12px;">👕</div></div>',
+                        unsafe_allow_html=True,
+                    )
+            with col_info:
+                precio_mostrar = float(fila_data.get("precio_final", 0) or fila_data.get("precio_venta", 0) or 0)
+                cantidad_actual = int(fila_data["cantidad"])
+                stock_color = "#dc2626" if cantidad_actual <= int(fila_data["alerta"]) else "#16a34a"
+                st.markdown(
+                    f"""<div style="font-size:20px; font-weight:800; color:#1e293b;">{fila_data['Producto']}</div>
+<div style="font-size:13px; color:#64748b; margin-top:2px;">{fila_data['ID']} · {fila_data['Categoria']} · Talla {fila_data['talla']} · {fila_data['color']}</div>
+<div style="margin-top:8px;">
+<span style="font-size:22px; font-weight:800; color:#4a6fa5;">{moneda(precio_mostrar)}</span>
+<span style="font-size:13px; font-weight:700; color:{stock_color}; margin-left:14px;">Stock: {cantidad_actual} unidad{'es' if cantidad_actual != 1 else ''}</span>
+</div>""",
+                    unsafe_allow_html=True,
+                )
+            with col_acciones:
+                if st.button("🔄 Cambiar foto", key=f"mod_cambiar_foto_{id_seleccionado}", use_container_width=True):
+                    st.session_state[f"mod_mostrar_foto_{id_seleccionado}"] = True
+                if st.button("⭐ Favorito" if not fila_data.get("favorito", False) else "☆ Quitar favorito", key=f"mod_fav_{id_seleccionado}", use_container_width=True):
+                    datos_act = fila_data.to_dict()
+                    datos_act["favorito"] = not bool(fila_data.get("favorito", False))
+                    if actualizar_prenda(id_seleccionado, datos_act):
+                        st.rerun()
+                if st.button("🎁 Oferta", key=f"mod_oferta_btn_{id_seleccionado}", use_container_width=True):
+                    st.session_state[f"editando_oferta_{id_seleccionado}"] = True
+                    st.info("Abre la pestaña '👕 Ver Prendas' para completar la oferta.")
+
+        nueva_foto = None
+        if st.session_state.get(f"mod_mostrar_foto_{id_seleccionado}", False):
+            with st.container(border=True):
+                st.markdown("<div class='win-field-label'>NUEVA FOTO</div>", unsafe_allow_html=True)
+                nueva_foto = st.file_uploader("Nueva foto", type=["png", "jpg", "jpeg", "webp"], label_visibility="collapsed", key=f"mod_foto_{id_seleccionado}")
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # ===== CARD EDITAR DATOS =====
+        with st.container(border=True):
+            st.markdown("<div class='win-field-label'>✏️ EDITAR DATOS</div>", unsafe_allow_html=True)
+
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown("<div class='win-field-label'>ID</div>", unsafe_allow_html=True)
+                nuevo_id = st.text_input("ID", value=str(fila_data["ID"]), label_visibility="collapsed", key=f"mod_id_{id_seleccionado}")
+            with col2:
+                st.markdown("<div class='win-field-label'>PRODUCTO</div>", unsafe_allow_html=True)
+                nuevo_nombre = st.text_input("Producto", value=str(fila_data["Producto"]), label_visibility="collapsed", key=f"mod_nombre_{id_seleccionado}")
+
+            st.markdown("<div style='margin-top:12px;'></div>", unsafe_allow_html=True)
+            col3, col4, col5 = st.columns(3)
+            cat_actual = str(fila_data["Categoria"])
+            idx_cat = st.session_state.categorias_maestras.index(cat_actual) if cat_actual in st.session_state.categorias_maestras else 0
+            with col3:
+                st.markdown("<div class='win-field-label'>CATEGORÍA</div>", unsafe_allow_html=True)
+                nueva_categoria = st.selectbox("Categoria", st.session_state.categorias_maestras, index=idx_cat, label_visibility="collapsed", key=f"mod_cat_{id_seleccionado}")
+
+            talla_actual = str(fila_data["talla"])
+            idx_talla = st.session_state.tallas_maestras.index(talla_actual) if talla_actual in st.session_state.tallas_maestras else 0
+            with col4:
+                st.markdown("<div class='win-field-label'>TALLA</div>", unsafe_allow_html=True)
+                nueva_talla = st.selectbox("talla", st.session_state.tallas_maestras, index=idx_talla, label_visibility="collapsed", key=f"mod_talla_{id_seleccionado}")
+
+            color_actual = str(fila_data["color"])
+            idx_color = st.session_state.colores_maestros.index(color_actual) if color_actual in st.session_state.colores_maestros else 0
+            with col5:
+                st.markdown("<div class='win-field-label'>COLOR</div>", unsafe_allow_html=True)
+                nuevo_color = st.selectbox("color", st.session_state.colores_maestros, index=idx_color, label_visibility="collapsed", key=f"mod_color_{id_seleccionado}")
+
+            st.markdown("<div style='margin-top:12px;'></div>", unsafe_allow_html=True)
+            col6, col7, col8, col9, col10 = st.columns(5)
+            with col6:
+                st.markdown("<div class='win-field-label'>CANTIDAD</div>", unsafe_allow_html=True)
+                nueva_cantidad = st.number_input("cantidad", min_value=0, value=int(fila_data["cantidad"]), step=1, label_visibility="collapsed", key=f"mod_cant_{id_seleccionado}")
+            with col7:
+                st.markdown("<div class='win-field-label'>ALERTA</div>", unsafe_allow_html=True)
+                nueva_alerta = st.number_input("alerta", min_value=0, value=int(fila_data["alerta"]), step=1, label_visibility="collapsed", key=f"mod_alerta_{id_seleccionado}")
+            with col8:
+                st.markdown("<div class='win-field-label'>COSTO</div>", unsafe_allow_html=True)
+                nuevo_costo = st.number_input("costo", min_value=0.0, value=float(fila_data.get("costo", 0) or 0), step=1.0, label_visibility="collapsed", key=f"mod_costo_{id_seleccionado}")
+            with col9:
+                st.markdown("<div class='win-field-label'>PRECIO VENTA</div>", unsafe_allow_html=True)
+                nuevo_precio = st.number_input("precio venta", min_value=0.0, value=float(fila_data.get("precio_venta", 0) or 0), step=1.0, label_visibility="collapsed", key=f"mod_pv_{id_seleccionado}")
+            with col10:
+                st.markdown("<div class='win-field-label'>PRECIO FINAL</div>", unsafe_allow_html=True)
+                nuevo_precio_final = st.number_input("precio final", min_value=0.0, value=float(fila_data.get("precio_final", 0) or fila_data.get("precio_venta", 0) or 0), step=1.0, label_visibility="collapsed", key=f"mod_pf_{id_seleccionado}", help="Si lo dejas en 0, se usará el Precio de venta.")
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown(
+                """<div style="background:#f0f6ff; border:1px dashed #4a6fa5; border-radius:12px; padding:16px;">
+<div style="font-size:12px; font-weight:700; color:#4a6fa5; text-transform:uppercase; margin-bottom:10px;">⚡ Ajuste Rápido de Stock</div>
+</div>""",
+                unsafe_allow_html=True,
+            )
+            col_menos, col_mas = st.columns(2)
+            with col_menos:
+                if st.button("➖ Quitar 1", use_container_width=True, key=f"mod_menos1_{id_seleccionado}"):
+                    nueva_cant_rapida = max(0, int(fila_data["cantidad"]) - 1)
+                    datos_act = fila_data.to_dict()
+                    datos_act["cantidad"] = nueva_cant_rapida
+                    if actualizar_prenda(id_seleccionado, datos_act):
+                        st.success(f"Stock actualizado a {nueva_cant_rapida}")
+                        st.rerun()
+            with col_mas:
+                if st.button("➕ Añadir 1", use_container_width=True, key=f"mod_mas1_{id_seleccionado}"):
+                    nueva_cant_rapida = int(fila_data["cantidad"]) + 1
+                    datos_act = fila_data.to_dict()
+                    datos_act["cantidad"] = nueva_cant_rapida
+                    if actualizar_prenda(id_seleccionado, datos_act):
+                        st.success(f"Stock actualizado a {nueva_cant_rapida}")
+                        st.rerun()
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            col_btn1, col_btn2, col_btn3 = st.columns([0.6, 0.2, 0.2])
+            with col_btn1:
+                actualizar = st.button("💾 Guardar Cambios", use_container_width=True, type="primary", key=f"mod_guardar_{id_seleccionado}")
+            with col_btn2:
+                eliminar = st.button("🗑️ Eliminar Prenda", use_container_width=True, key=f"mod_eliminar_{id_seleccionado}")
+            with col_btn3:
+                cancelar = st.button("❌ Cancelar", use_container_width=True, key=f"mod_cancelar_{id_seleccionado}")
+
+            if actualizar:
+                foto_final = fila_data.get("foto_url", "")
+                if nueva_foto:
+                    subida = subir_imagen(nueva_foto, nuevo_id)
+                    if subida:
+                        foto_final = subida
+                datos_mod = {
+                    "ID": nuevo_id, "Producto": nuevo_nombre, "Categoria": nueva_categoria,
+                    "talla": nueva_talla, "color": nuevo_color, "cantidad": nueva_cantidad,
+                    "alerta": nueva_alerta, "costo": nuevo_costo, "precio_venta": nuevo_precio,
+                    "precio_final": nuevo_precio_final if nuevo_precio_final > 0 else nuevo_precio,
+                    "foto_url": foto_final, "favorito": bool(fila_data.get("favorito", False)),
+                }
+                if actualizar_prenda(id_seleccionado, datos_mod):
+                    st.success("¡Prenda actualizada correctamente!")
+                    st.rerun()
+
+            if eliminar:
+                if eliminar_prenda(id_seleccionado):
+                    st.success("¡Prenda eliminada del sistema!")
+                    st.rerun()
+
+            if cancelar:
+                st.session_state["mod_busqueda"] = ""
+                st.rerun()
 
     # -----------------------------------------------------------------------------
     # MOVIMIENTOS (historial / kardex)
