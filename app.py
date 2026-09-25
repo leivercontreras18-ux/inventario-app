@@ -3268,28 +3268,230 @@ else:
         st.markdown(
             """
 <div class="page-header">
-    <div class="page-title">✅ Ventas Pagadas</div>
-    <div class="page-subtitle">Historial de ventas que se cobraron completas al momento (sin fiar).</div>
+    <div class="page-title">💰 Ventas Pagadas</div>
+    <div class="page-subtitle">Historial de ventas cobradas</div>
 </div>
 """,
             unsafe_allow_html=True,
         )
 
         movs_todos = cargar_movimientos()
-        ventas_pagadas_df = movs_todos[(movs_todos["tipo"] == "venta") & (movs_todos["pagado"] == True)] if not movs_todos.empty else pd.DataFrame()  # noqa: E712
+        ventas_df = movs_todos[(movs_todos["tipo"] == "venta") & (movs_todos["pagado"] == True)].copy() if not movs_todos.empty else pd.DataFrame()  # noqa: E712
 
-        total_pagado_hist = float((ventas_pagadas_df["cantidad"] * ventas_pagadas_df["precio_unitario"]).sum()) if not ventas_pagadas_df.empty else 0.0
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown(f"""<div class="metric-card"><div class="metric-label">Total Vendido (pagado)</div><div class="metric-value">{moneda(total_pagado_hist)}</div></div>""", unsafe_allow_html=True)
-        with col2:
-            st.markdown(f"""<div class="metric-card"><div class="metric-label">Cantidad de Ventas</div><div class="metric-value">{len(ventas_pagadas_df)}</div></div>""", unsafe_allow_html=True)
+        if ventas_df.empty:
+            st.info("Todavía no hay ventas pagadas registradas. Usa 'Nueva Venta' para empezar.")
+            return
+
+        ventas_df["fecha_dt"] = pd.to_datetime(ventas_df["fecha"], errors="coerce")
+        ventas_df["monto"] = ventas_df["cantidad"] * ventas_df["precio_unitario"]
+
+        hoy_vp = datetime.now().date()
+        inicio_semana_vp = hoy_vp - timedelta(days=hoy_vp.weekday())
+        inicio_mes_vp = hoy_vp.replace(day=1)
+
+        # ===== KPIs =====
+        ventas_hoy_vp = ventas_df[ventas_df["fecha_dt"].dt.date == hoy_vp]
+        ventas_mes_vp = ventas_df[ventas_df["fecha_dt"].dt.date >= inicio_mes_vp]
+        ventas_por_id_mes = ventas_mes_vp.groupby("venta_id")["monto"].sum() if not ventas_mes_vp.empty else pd.Series(dtype=float)
+        promedio_venta = float(ventas_por_id_mes.mean()) if not ventas_por_id_mes.empty else 0.0
+        total_hoy_vp = float(ventas_hoy_vp["monto"].sum())
+        total_mes_vp = float(ventas_mes_vp["monto"].sum())
+
+        kpis_vp = [
+            ("💼", "#e0ecff", "#4a6fa5", moneda(total_hoy_vp), "Total Ventas de Hoy"),
+            ("📊", "#dcfce7", "#16a34a", moneda(promedio_venta), "Promedio por Venta"),
+            ("📅", "#fed7aa", "#ea580c", moneda(total_mes_vp), "Total Ventas del Mes"),
+        ]
+        cols_kpi_vp = st.columns(3)
+        for col_k, (icono_k, bg_k, color_k, valor_k, label_k) in zip(cols_kpi_vp, kpis_vp):
+            with col_k:
+                st.markdown(
+                    f"""<div class="win-kpi-card">
+<div class="win-kpi-top">
+<div class="win-kpi-label" style="text-transform:uppercase;">{label_k}</div>
+<div class="win-kpi-icon" style="background:{bg_k}; color:{color_k};">{icono_k}</div>
+</div>
+<div class="win-kpi-num">{valor_k}</div>
+</div>""",
+                    unsafe_allow_html=True,
+                )
 
         st.markdown("<br>", unsafe_allow_html=True)
-        if ventas_pagadas_df.empty:
-            st.info("Todavía no hay ventas pagadas registradas. Usa 'Nueva Venta' para empezar.")
+
+        # ===== Filtros rápidos =====
+        if "vp_filtro_rango" not in st.session_state:
+            st.session_state.vp_filtro_rango = "TODAS"
+
+        col_f1, col_f2, col_f3, col_f4, col_f5 = st.columns([1, 1, 1, 1, 2])
+        opciones_rango = [("HOY", "HOY"), ("ESTA SEMANA", "SEMANA"), ("ESTE MES", "MES"), ("TODAS", "TODAS")]
+        for col_r, (etiqueta_r, clave_r) in zip([col_f1, col_f2, col_f3, col_f4], opciones_rango):
+            with col_r:
+                if st.button(
+                    etiqueta_r, key=f"vp_rango_{clave_r}", use_container_width=True,
+                    type=("primary" if st.session_state.vp_filtro_rango == clave_r else "secondary"),
+                ):
+                    st.session_state.vp_filtro_rango = clave_r
+                    st.rerun()
+        with col_f5:
+            busqueda_vp = st.text_input(
+                "Buscar", placeholder="Buscar por cliente o producto...",
+                label_visibility="collapsed", key="vp_busqueda",
+            )
+
+        rango_activo = st.session_state.vp_filtro_rango
+        if rango_activo == "HOY":
+            ventas_df_filtradas = ventas_df[ventas_df["fecha_dt"].dt.date == hoy_vp]
+        elif rango_activo == "SEMANA":
+            ventas_df_filtradas = ventas_df[ventas_df["fecha_dt"].dt.date >= inicio_semana_vp]
+        elif rango_activo == "MES":
+            ventas_df_filtradas = ventas_df[ventas_df["fecha_dt"].dt.date >= inicio_mes_vp]
         else:
-            render_tabla_movimientos(ventas_pagadas_df)
+            ventas_df_filtradas = ventas_df
+
+        if busqueda_vp.strip():
+            qvp = busqueda_vp.strip().lower()
+            ventas_df_filtradas = ventas_df_filtradas[
+                ventas_df_filtradas["cliente"].astype(str).str.lower().str.contains(qvp)
+                | ventas_df_filtradas["producto"].astype(str).str.lower().str.contains(qvp)
+            ]
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        if ventas_df_filtradas.empty:
+            st.info("No se encontraron ventas con esos filtros.")
+            return
+
+        # ===== Agrupar por venta_id (una venta puede tener varias líneas de producto) =====
+        ventas_df_filtradas = ventas_df_filtradas.sort_values("fecha_dt", ascending=False)
+        ids_orden = ventas_df_filtradas["venta_id"].drop_duplicates().tolist()
+
+        # ===== Paginación =====
+        items_por_pagina_vp = 8
+        total_ventas_vp = len(ids_orden)
+        total_paginas_vp = max(1, (total_ventas_vp - 1) // items_por_pagina_vp + 1)
+
+        pagina_vp = st.session_state.get("vp_pagina_actual", 1)
+        if pagina_vp > total_paginas_vp:
+            pagina_vp = 1
+            st.session_state["vp_pagina_actual"] = 1
+
+        inicio_vp = (pagina_vp - 1) * items_por_pagina_vp
+        fin_vp = min(inicio_vp + items_por_pagina_vp, total_ventas_vp)
+        ids_pagina = ids_orden[inicio_vp:fin_vp]
+
+        colores_medio = {
+            "Efectivo": ("#e0ecff", "#4a6fa5"),
+            "Zelle": ("#dcfce7", "#16a34a"),
+            "Pago Móvil": ("#fed7aa", "#ea580c"),
+            "Transferencia": ("#ede9fe", "#7c3aed"),
+        }
+
+        # ===== Tabla expandible =====
+        with st.container(border=True):
+            for venta_id_actual in ids_pagina:
+                filas_venta = ventas_df_filtradas[ventas_df_filtradas["venta_id"] == venta_id_actual]
+                primera_fila = filas_venta.iloc[0]
+                total_venta_actual = float(filas_venta["monto"].sum())
+                cliente_actual = primera_fila.get("cliente", "") or "Consumidor final"
+                medio_actual = primera_fila.get("medio_pago", "") or "Sin especificar"
+                fecha_actual = primera_fila["fecha_dt"]
+                fecha_txt = fecha_actual.strftime("%d/%m/%Y %H:%M") if pd.notna(fecha_actual) else "-"
+                bg_medio, color_medio = colores_medio.get(medio_actual, ("#f1f5f9", "#64748b"))
+
+                clave_exp = f"vp_exp_{venta_id_actual}"
+                expandido_actual = st.session_state.get(clave_exp, False)
+
+                col_exp, col_fecha, col_cliente, col_total, col_medio = st.columns([0.06, 0.22, 0.28, 0.2, 0.24])
+                with col_exp:
+                    if st.button("▼" if expandido_actual else "▶", key=f"vp_toggle_{venta_id_actual}"):
+                        st.session_state[clave_exp] = not expandido_actual
+                        st.rerun()
+                with col_fecha:
+                    st.markdown(f"<div style='font-size:13px; color:#64748b; padding-top:6px;'>{fecha_txt}</div>", unsafe_allow_html=True)
+                with col_cliente:
+                    st.markdown(f"<div style='font-size:13px; font-weight:600; color:#1e293b; padding-top:6px;'>{cliente_actual}</div>", unsafe_allow_html=True)
+                with col_total:
+                    st.markdown(f"<div style='font-size:14px; font-weight:800; color:#4a6fa5; padding-top:6px;'>{moneda(total_venta_actual)}</div>", unsafe_allow_html=True)
+                with col_medio:
+                    st.markdown(
+                        f"<span style='background:{bg_medio}; color:{color_medio}; font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px;'>{medio_actual}</span>",
+                        unsafe_allow_html=True,
+                    )
+
+                if expandido_actual:
+                    with st.container(border=True):
+                        for _, fila_item in filas_venta.iterrows():
+                            col_foto_it, col_nom_it = st.columns([0.08, 0.92])
+                            with col_foto_it:
+                                foto_item_url = ""
+                                fila_prod_match = df[df["ID"].astype(str) == str(fila_item.get("prenda_id", ""))]
+                                if not fila_prod_match.empty:
+                                    foto_item_url = fila_prod_match.iloc[0].get("foto_url", "")
+                                if foto_item_url:
+                                    st.markdown(f'<img src="{foto_item_url}" style="width:60px; height:60px; object-fit:cover; border-radius:8px;" />', unsafe_allow_html=True)
+                                else:
+                                    st.markdown('<div style="width:60px; height:60px; border-radius:8px; background:#f1f5f9; display:flex; align-items:center; justify-content:center;">👕</div>', unsafe_allow_html=True)
+                            with col_nom_it:
+                                st.markdown(
+                                    f"<div style='font-size:13px; padding-top:18px;'>{fila_item['producto']} — {int(fila_item['cantidad'])}x {moneda(float(fila_item['precio_unitario']))}</div>",
+                                    unsafe_allow_html=True,
+                                )
+
+                        st.markdown(
+                            f"<div style='font-size:13px; color:#64748b; margin-top:8px;'>Cliente: <b>{cliente_actual}</b> · Medio: <b>{medio_actual}</b></div>",
+                            unsafe_allow_html=True,
+                        )
+
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        col_a1, col_a2, col_a3, col_a4 = st.columns(4)
+                        with col_a1:
+                            if st.button("✏️ Editar cliente", key=f"vp_editar_cli_{venta_id_actual}", use_container_width=True):
+                                st.info("Próximamente: edición de cliente.")
+                        with col_a2:
+                            if st.button("💳 Cambiar pago", key=f"vp_cambiar_pago_{venta_id_actual}", use_container_width=True):
+                                st.info("Próximamente: cambio de medio de pago.")
+                        with col_a3:
+                            if st.button("🧾 Ver factura", key=f"vp_ver_factura_{venta_id_actual}", use_container_width=True):
+                                st.info("Próximamente: ver factura completa.")
+                        with col_a4:
+                            if st.button("🗑️ Anular", key=f"vp_anular_{venta_id_actual}", use_container_width=True):
+                                st.info("Próximamente: anular venta y devolver stock.")
+
+                st.markdown("<div style='border-bottom:1px solid #eef2f9; margin:8px 0;'></div>", unsafe_allow_html=True)
+
+        # ===== Paginación al pie =====
+        if total_paginas_vp > 1:
+            st.markdown("<br>", unsafe_allow_html=True)
+            _, col_pag_center_vp, _ = st.columns([1, 3, 1])
+            with col_pag_center_vp:
+                col_prev_vp, col_pags_vp, col_next_vp = st.columns([1, 3, 1])
+                with col_prev_vp:
+                    if pagina_vp > 1:
+                        if st.button("◀ Prev", key="vp_pag_prev"):
+                            st.session_state["vp_pagina_actual"] = pagina_vp - 1
+                            st.rerun()
+                    else:
+                        st.button("◀ Prev", key="vp_pag_prev_disabled", disabled=True)
+                with col_pags_vp:
+                    inicio_rango_vp = max(1, pagina_vp - 2)
+                    fin_rango_vp = min(total_paginas_vp, inicio_rango_vp + 4)
+                    if fin_rango_vp - inicio_rango_vp < 4:
+                        inicio_rango_vp = max(1, fin_rango_vp - 4)
+                    paginas_mostrar_vp = list(range(inicio_rango_vp, fin_rango_vp + 1))
+                    cols_nums_vp = st.columns(len(paginas_mostrar_vp))
+                    for i, num_pag in enumerate(paginas_mostrar_vp):
+                        with cols_nums_vp[i]:
+                            tipo_vp = "primary" if num_pag == pagina_vp else "secondary"
+                            if st.button(str(num_pag), key=f"vp_pag_num_{num_pag}", type=tipo_vp, use_container_width=True):
+                                st.session_state["vp_pagina_actual"] = num_pag
+                                st.rerun()
+                with col_next_vp:
+                    if pagina_vp < total_paginas_vp:
+                        if st.button("Next ▶", key="vp_pag_next"):
+                            st.session_state["vp_pagina_actual"] = pagina_vp + 1
+                            st.rerun()
+                    else:
+                        st.button("Next ▶", key="vp_pag_next_disabled", disabled=True)
 
     # -----------------------------------------------------------------------------
     # COMPRAR / REPONER STOCK
