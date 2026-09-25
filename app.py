@@ -912,25 +912,23 @@ def generar_etiquetas_pdf(lista_prendas, tasa_cambio):
 def generar_ficha_como_imagen(prenda, tasa_cambio):
     """Genera la ficha del producto como imagen PNG (diseño centrado y compacto)."""
     try:
-        ESCALA = 2  # Renderizar a 2x para evitar borrosidad
-
-        ancho = 540 * ESCALA
-        alto_foto = 400 * ESCALA
-        alto_info = 140 * ESCALA
-        alto_bottom = 100 * ESCALA
-        alto = alto_foto + alto_info + alto_bottom
+        ancho = 540
+        alto_foto = 400
+        alto_info = 140
+        alto_bottom = 100
+        alto = alto_foto + alto_info + alto_bottom  # 640
         img = Image.new("RGB", (ancho, alto), (255, 255, 255))
         draw = ImageDraw.Draw(img)
 
         # Fuentes
         try:
-            font_nombre = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22 * ESCALA)
-            font_info = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14 * ESCALA)
-            font_precio = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 28 * ESCALA)
-            font_precio_bs = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14 * ESCALA)
-            font_escanea = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 16 * ESCALA)
-            font_subtexto = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 12 * ESCALA)
-            font_contacto = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 11 * ESCALA)
+            font_nombre = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
+            font_info = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
+            font_precio = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 28)
+            font_precio_bs = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
+            font_escanea = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 16)
+            font_subtexto = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 12)
+            font_contacto = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 11)
         except Exception:
             font_nombre = ImageFont.load_default()
             font_info = ImageFont.load_default()
@@ -944,7 +942,7 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
             bbox = draw.textbbox((0, 0), texto, font=font)
             return (ancho - (bbox[2] - bbox[0])) // 2
 
-        # ===== 1) FOTO =====
+        # ===== 1) FOTO (400px de alto, full width, sin márgenes) =====
         draw.rectangle([(0, 0), (ancho, alto_foto)], fill=(245, 243, 255))
 
         if prenda.get("foto_url"):
@@ -952,6 +950,7 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
                 foto_resp = requests.get(prenda["foto_url"], timeout=10)
                 if foto_resp.status_code == 200:
                     foto = Image.open(BytesIO(foto_resp.content)).convert("RGB")
+                    # Crop to cover (llenar el espacio sin deformar)
                     ratio_dest = ancho / alto_foto
                     ratio_foto = foto.width / foto.height
                     if ratio_foto > ratio_dest:
@@ -970,87 +969,86 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
             except Exception:
                 pass
 
-        # ===== LOGO OVERLAY =====
+        # ===== LOGO OVERLAY (centrado, mitad en la foto y mitad en el bloque info) =====
         try:
             logo_resp = requests.get(LOGO_URL, timeout=5)
             if logo_resp.status_code == 200:
                 logo_img = Image.open(BytesIO(logo_resp.content)).convert("RGBA")
-                logo_img.thumbnail((80 * ESCALA, 40 * ESCALA))
-                w_fondo, h_fondo = 80 * ESCALA, 60 * ESCALA
+                logo_img.thumbnail((60, 40))
+                w_fondo, h_fondo = 80, 60
                 fondo_logo = Image.new("RGBA", (w_fondo, h_fondo), (0, 0, 0, 0))
                 draw_fondo = ImageDraw.Draw(fondo_logo)
-                draw_fondo.rounded_rectangle([(0, 0), (w_fondo - 1, h_fondo - 1)], radius=12 * ESCALA, fill=(255, 255, 255, 255))
+                draw_fondo.rounded_rectangle([(0, 0), (w_fondo - 1, h_fondo - 1)], radius=12, fill=(255, 255, 255, 255))
                 offset_logo_x = (w_fondo - logo_img.width) // 2
                 offset_logo_y = (h_fondo - logo_img.height) // 2
                 fondo_logo.paste(logo_img, (offset_logo_x, offset_logo_y), logo_img)
                 x_logo = (ancho - w_fondo) // 2
-                y_logo = alto_foto - h_fondo // 2
+                y_logo = alto_foto - h_fondo // 2  # mitad dentro de la foto, mitad fuera
                 img.paste(fondo_logo, (x_logo, y_logo), fondo_logo)
         except Exception:
             pass
 
-        # ===== 2) BLOQUE INFO =====
+        # ===== 2) BLOQUE BLANCO DE INFO (140px de alto, todo centrado) =====
         y_info = alto_foto
 
-        # a) Nombre
+        # a) Nombre del producto: "ID — Nombre", centrado, 15px desde el inicio del bloque
         id_prenda = str(prenda.get("ID", "")).strip()
         nombre_prenda = str(prenda.get("Producto", "")).strip()
         nombre = f"{id_prenda} — {nombre_prenda}" if id_prenda else nombre_prenda
-        y_nombre = y_info + 15 * ESCALA
+        y_nombre = y_info + 15
         draw.text((centrar_x(nombre, font_nombre), y_nombre), nombre, fill=(30, 41, 59), font=font_nombre)
         bbox_nombre = draw.textbbox((0, y_nombre), nombre, font=font_nombre)
         y_tras_nombre = bbox_nombre[3]
 
-        # b) Línea info
+        # b) Línea "Talla: X · Color: X", centrada, 8px debajo del nombre
         talla_color_txt = f"Talla: {prenda.get('talla', '-')} · Color: {prenda.get('color', '-')}"
-        y_talla_color = y_tras_nombre + 8 * ESCALA
+        y_talla_color = y_tras_nombre + 8
         draw.text((centrar_x(talla_color_txt, font_info), y_talla_color), talla_color_txt, fill=(100, 116, 139), font=font_info)
         bbox_talla_color = draw.textbbox((0, y_talla_color), talla_color_txt, font=font_info)
         y_tras_talla_color = bbox_talla_color[3]
 
-        # c) Precio USD
+        # c) Precio USD, centrado, 12px debajo de la línea info
         precio_usd = float(prenda.get("precio_venta", 0) or 0)
         precio_txt = f"${precio_usd:,.2f}"
-        y_precio = y_tras_talla_color + 12 * ESCALA
+        y_precio = y_tras_talla_color + 12
         draw.text((centrar_x(precio_txt, font_precio), y_precio), precio_txt, fill=(74, 111, 165), font=font_precio)
         bbox_precio = draw.textbbox((0, y_precio), precio_txt, font=font_precio)
         y_tras_precio = bbox_precio[3]
 
-        # d) Precio Bs
+        # d) Precio Bs, centrado, 4px debajo del precio USD
         if tasa_cambio > 0 and precio_usd > 0:
             bs_txt = f"{precio_usd * tasa_cambio:,.2f} Bs"
-            y_bs = y_tras_precio + 4 * ESCALA
+            y_bs = y_tras_precio + 4
             draw.text((centrar_x(bs_txt, font_precio_bs), y_bs), bs_txt, fill=(148, 163, 184), font=font_precio_bs)
 
-        # ===== 3) BLOQUE AZUL =====
-        y_bottom = y_info + alto_info
+        # ===== 3) BLOQUE AZUL INFERIOR (100px de alto, padding 15px) =====
+        y_bottom = y_info + alto_info  # 540
         draw.rectangle([(0, y_bottom), (ancho, alto)], fill=(74, 111, 165))
 
-        pad_bottom = 15 * ESCALA
-        qr_size_total = 80 * ESCALA
+        pad_bottom = 15
+        qr_size_total = 80
 
-        # a) QR
+        # a) QR a la izquierda (fondo blanco 80x80, padding 8px, radius 6px)
         x_qr = pad_bottom
         y_qr = y_bottom + (alto_bottom - qr_size_total) // 2
         draw.rounded_rectangle(
             [(x_qr, y_qr), (x_qr + qr_size_total, y_qr + qr_size_total)],
-            radius=6 * ESCALA, fill=(255, 255, 255),
+            radius=6, fill=(255, 255, 255),
         )
-
         if QR_DISPONIBLE:
             qr_bytes_data = generar_qr_bytes(URL_CATALOGO_WEB)
             if qr_bytes_data:
-                pad_qr = 8 * ESCALA
+                pad_qr = 8
                 qr_interior = qr_size_total - pad_qr * 2
                 qr_img = Image.open(BytesIO(qr_bytes_data)).convert("RGB")
                 qr_img = qr_img.resize((qr_interior, qr_interior))
                 img.paste(qr_img, (x_qr + pad_qr, y_qr + pad_qr))
 
-        # b) Textos a la derecha del QR
-        x_texto = x_qr + qr_size_total + 20 * ESCALA
+        # b) Textos a la derecha del QR, centrados verticalmente con el QR
+        x_texto = x_qr + qr_size_total + 20
         centro_y = y_bottom + alto_bottom // 2
-        draw.text((x_texto, centro_y - 28 * ESCALA), "Escanea el QR", fill=(255, 255, 255), font=font_escanea)
-        draw.text((x_texto, centro_y - 6 * ESCALA), "para ver más productos", fill=(255, 255, 255), font=font_subtexto)
+        draw.text((x_texto, centro_y - 28), "Escanea el QR", fill=(255, 255, 255), font=font_escanea)
+        draw.text((x_texto, centro_y - 6), "para ver más productos", fill=(255, 255, 255), font=font_subtexto)
 
         pie_textos = []
         if WHATSAPP_BOUTIQUE:
@@ -1064,17 +1062,16 @@ def generar_ficha_como_imagen(prenda, tasa_cambio):
             pie_textos.append(INSTAGRAM_BOUTIQUE)
         if pie_textos:
             texto_pie = " · ".join(pie_textos)
-            draw.text((x_texto, centro_y + 14 * ESCALA), texto_pie, fill=(255, 255, 255), font=font_contacto)
+            draw.text((x_texto, centro_y + 14), texto_pie, fill=(255, 255, 255), font=font_contacto)
 
-        # Redimensionar a la mitad para nitidez (anti-aliasing)
-        img_final = img.resize((540, 640), Image.LANCZOS)
-
+        # Guardar
         buf = BytesIO()
-        img_final.save(buf, format="PNG")
+        img.save(buf, format="PNG")
         return buf.getvalue()
     except Exception as e:
         st.warning(f"No se pudo generar la ficha como imagen: {e}")
         return None
+
 
 def generar_ficha_digital_pdf(prenda, tasa_cambio):
     """Genera un PDF con formato de ficha digital para compartir por WhatsApp."""
