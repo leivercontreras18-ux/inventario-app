@@ -1874,6 +1874,9 @@ section[data-testid="stSidebar"] button[kind="primary"][aria-label^="​"] * {{
 .st-key-fact_wa_btn a[kind="primary"], .st-key-fact_wa_btn a[kind="primary"] p {{
     background: #25D366 !important; border-color: #25D366 !important; color: #ffffff !important;
 }}
+.st-key-compra_confirmar_verde button[kind="primary"] {{
+    background: #16a34a !important; border-color: #16a34a !important; color: #ffffff !important;
+}}
 
 .win-chip {{
     background: var(--accent-light); color: #1e3a5f; border-radius: 20px;
@@ -3561,7 +3564,7 @@ else:
         st.markdown(
             """
 <div class="page-header">
-    <div class="page-title">📦 Registrar Compra a Proveedores</div>
+    <div class="page-title">📥 Registrar Compra</div>
     <div class="page-subtitle">Suma unidades al stock existente y registra a quién le compraste y cuánto pagaste.</div>
 </div>
 """,
@@ -3570,45 +3573,301 @@ else:
 
         if df.empty:
             st.info("No hay prendas registradas. Primero registra una prenda desde el menú correspondiente.")
-        else:
-            proveedor_nombre = st.text_input("Proveedor", placeholder="Ej: Textiles Andina, María la mayorista, etc.")
+            return
 
-            ids_compra = df["ID"].astype(str).tolist()
-            id_compra = st.selectbox(
-                "Prenda", ids_compra,
-                format_func=lambda x: f"{x} — {df[df['ID'].astype(str) == x]['Producto'].values[0]}",
-            )
-            fila = df[df["ID"].astype(str) == str(id_compra)].iloc[0]
+        if "paso_compra" not in st.session_state:
+            st.session_state.paso_compra = 1
+        if "compra_proveedor" not in st.session_state:
+            st.session_state.compra_proveedor = ""
+        if "carrito_compra" not in st.session_state:
+            st.session_state.carrito_compra = []
 
-            col1, col2 = st.columns(2)
-            with col1:
-                cantidad_comprar = st.number_input("Cantidad a añadir", min_value=1, value=1, step=1)
-            with col2:
-                costo_unit = st.number_input("Costo por unidad", min_value=0.0, value=float(fila.get("costo", 0) or 0), step=1.0)
+        paso_actual = st.session_state.paso_compra
 
-            monto_total_compra = cantidad_comprar * costo_unit
-            st.markdown(f"**Monto total de la compra: {moneda(monto_total_compra)}**")
+        # ===== Barra de progreso =====
+        pasos_wizard = [("1", "Proveedor"), ("2", "Productos"), ("3", "Confirmar")]
+        cols_progreso = st.columns(3)
+        for idx, (num, etiqueta) in enumerate(pasos_wizard):
+            with cols_progreso[idx]:
+                if paso_actual > idx + 1:
+                    circulo_html = "<div style='width:32px; height:32px; border-radius:50%; background:#4a6fa5; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; margin:0 auto;'>✓</div>"
+                    color_txt = "#4a6fa5"
+                elif paso_actual == idx + 1:
+                    circulo_html = f"<div style='width:32px; height:32px; border-radius:50%; background:#4a6fa5; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; margin:0 auto;'>{num}</div>"
+                    color_txt = "#4a6fa5"
+                else:
+                    circulo_html = f"<div style='width:32px; height:32px; border-radius:50%; background:#e2e8f0; color:#94a3b8; display:flex; align-items:center; justify-content:center; font-weight:700; margin:0 auto;'>{num}</div>"
+                    color_txt = "#94a3b8"
+                st.markdown(
+                    f"""<div style="text-align:center;">
+{circulo_html}
+<div style="font-size:12px; font-weight:600; color:{color_txt}; margin-top:6px;">{etiqueta}</div>
+</div>""",
+                    unsafe_allow_html=True,
+                )
 
-            actualizar_costo = st.checkbox("Actualizar el costo registrado de esta prenda con este valor", value=True)
+        st.markdown("<br>", unsafe_allow_html=True)
 
-            proveedor_valido = proveedor_nombre.strip() != ""
+        # ================= PASO 1: PROVEEDOR =================
+        if paso_actual == 1:
+            _, col_centro, _ = st.columns([0.2, 0.6, 0.2])
+            with col_centro:
+                with st.container(border=True):
+                    st.markdown("<div class='win-field-label'>PROVEEDORES RECIENTES</div>", unsafe_allow_html=True)
 
-            if st.button("📦 Confirmar Compra", use_container_width=True, disabled=not proveedor_valido):
-                datos_act = fila.to_dict()
-                datos_act["cantidad"] = int(fila["cantidad"]) + int(cantidad_comprar)
-                if actualizar_costo:
-                    datos_act["costo"] = costo_unit
-                if actualizar_prenda(id_compra, datos_act):
-                    registrar_movimiento(
-                        prenda_id=id_compra, producto=fila["Producto"], tipo="compra",
-                        cantidad=cantidad_comprar, costo_unitario=costo_unit,
-                        proveedor=proveedor_nombre,
+                    movs_compra_hist = cargar_movimientos()
+                    proveedores_recientes = []
+                    if not movs_compra_hist.empty:
+                        compras_hist = movs_compra_hist[(movs_compra_hist["tipo"] == "compra") & (movs_compra_hist["proveedor"] != "")].copy()
+                        if not compras_hist.empty:
+                            compras_hist["fecha_dt"] = pd.to_datetime(compras_hist["fecha"], errors="coerce")
+                            compras_hist["monto"] = compras_hist["cantidad"] * compras_hist["costo_unitario"]
+                            resumen_prov = compras_hist.groupby("proveedor").agg(
+                                ultima_fecha=("fecha_dt", "max"), total=("monto", "sum"),
+                            ).reset_index().sort_values("ultima_fecha", ascending=False)
+                            proveedores_recientes = resumen_prov.head(3).to_dict("records")
+
+                    if not proveedores_recientes:
+                        st.caption("Todavía no tienes proveedores recientes.")
+                    else:
+                        for prov in proveedores_recientes:
+                            dias_prov = (datetime.now() - prov["ultima_fecha"].to_pydatetime().replace(tzinfo=None)).days
+                            col_ic, col_nom, col_btn = st.columns([0.12, 0.58, 0.3])
+                            with col_ic:
+                                st.markdown(
+                                    "<div style='width:36px; height:36px; border-radius:8px; background:#e0ecff; display:flex; align-items:center; justify-content:center; font-size:16px;'>🏢</div>",
+                                    unsafe_allow_html=True,
+                                )
+                            with col_nom:
+                                st.markdown(
+                                    f"<div style='font-size:14px; font-weight:700; color:#1e293b;'>{prov['proveedor']}</div>"
+                                    f"<div style='font-size:11px; color:#64748b;'>Última compra: hace {dias_prov} día{'s' if dias_prov != 1 else ''} · {moneda(prov['total'])}</div>",
+                                    unsafe_allow_html=True,
+                                )
+                            with col_btn:
+                                if st.button("Seleccionar →", key=f"prov_sel_{prov['proveedor']}", use_container_width=True):
+                                    st.session_state.compra_proveedor = prov["proveedor"]
+                                    st.session_state.paso_compra = 2
+                                    st.rerun()
+
+                    st.markdown("<div style='text-align:center; color:#94a3b8; margin:16px 0; font-size:12px;'>o</div>", unsafe_allow_html=True)
+                    st.markdown("<div class='win-field-label'>NUEVO PROVEEDOR</div>", unsafe_allow_html=True)
+                    nuevo_proveedor_txt = st.text_input(
+                        "Nuevo proveedor", placeholder="Escribe el nombre del nuevo proveedor...",
+                        label_visibility="collapsed", key="compra_nuevo_proveedor",
                     )
-                    st.success(f"¡Compra registrada a {proveedor_nombre}! Total: {moneda(monto_total_compra)}")
-                    st.rerun()
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    if st.button(
+                        "Continuar →", use_container_width=True, type="primary",
+                        key="compra_continuar_paso1", disabled=not nuevo_proveedor_txt.strip(),
+                    ):
+                        st.session_state.compra_proveedor = nuevo_proveedor_txt.strip()
+                        st.session_state.paso_compra = 2
+                        st.rerun()
 
-            if not proveedor_valido:
-                st.caption("⚠️ Escribe el nombre del proveedor para poder confirmar.")
+        # ================= PASO 2: PRODUCTOS =================
+        elif paso_actual == 2:
+            st.markdown(
+                f"""<div style="background:#e0ecff; border-radius:12px; padding:14px 18px; margin-bottom:16px;">
+<div style="font-size:14px; font-weight:700; color:#1e3a5f;">🏢 Proveedor: {st.session_state.compra_proveedor}</div>
+</div>""",
+                unsafe_allow_html=True,
+            )
+            if st.button("Cambiar proveedor", key="compra_cambiar_proveedor"):
+                st.session_state.paso_compra = 1
+                st.rerun()
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            col_izq_c, col_der_c = st.columns([0.55, 0.45])
+
+            with col_izq_c:
+                with st.container(border=True):
+                    busqueda_c = st.text_input(
+                        "Buscar", placeholder="🔍 Buscar producto para comprar...",
+                        label_visibility="collapsed", key="compra_busqueda",
+                    )
+                    col_fc1, col_fc2 = st.columns(2)
+                    with col_fc1:
+                        cats_c = ["Todas"] + sorted(list(df["Categoria"].dropna().unique()))
+                        filtro_cat_c = st.selectbox("Categoría", cats_c, label_visibility="collapsed", key="compra_filtro_cat")
+                    with col_fc2:
+                        tallas_c = ["Todas"] + sorted(list(df["talla"].dropna().unique()))
+                        filtro_talla_c = st.selectbox("Talla", tallas_c, label_visibility="collapsed", key="compra_filtro_talla")
+
+                    df_compra = df.copy()
+                    if busqueda_c.strip():
+                        qc = busqueda_c.strip().lower()
+                        df_compra = df_compra[
+                            df_compra["ID"].astype(str).str.lower().str.contains(qc)
+                            | df_compra["Producto"].astype(str).str.lower().str.contains(qc)
+                        ]
+                    if filtro_cat_c != "Todas":
+                        df_compra = df_compra[df_compra["Categoria"] == filtro_cat_c]
+                    if filtro_talla_c != "Todas":
+                        df_compra = df_compra[df_compra["talla"] == filtro_talla_c]
+                    df_compra = df_compra.head(6)
+
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    if df_compra.empty:
+                        st.info("No se encontraron productos.")
+                    else:
+                        cols_compra_grid = st.columns(2)
+                        for idx, (_, row) in enumerate(df_compra.iterrows()):
+                            with cols_compra_grid[idx % 2]:
+                                foto_html_c = (
+                                    f'<div class="win-prod-img-wrap" style="height:100px;"><img class="win-prod-img" src="{row["foto_url"]}" /></div>'
+                                    if row.get("foto_url") else
+                                    '<div class="win-prod-img-wrap" style="height:100px;"><div class="win-prod-placeholder" style="font-size:28px;">👕</div></div>'
+                                )
+                                st.markdown(
+                                    f"""<div class="win-prod-card">
+{foto_html_c}
+<div class="win-prod-body">
+<div class="win-prod-name">{row['Producto']}</div>
+<div class="win-prod-meta">Stock actual: {int(row['cantidad'])}</div>
+</div>
+</div>""",
+                                    unsafe_allow_html=True,
+                                )
+                                if st.button("+ Agregar", key=f"compra_add_{row['ID']}", use_container_width=True):
+                                    carrito_c = st.session_state.carrito_compra
+                                    existente_c = next((it for it in carrito_c if it["id"] == row["ID"]), None)
+                                    if existente_c:
+                                        existente_c["cantidad"] += 1
+                                    else:
+                                        carrito_c.append({
+                                            "id": row["ID"], "producto": row["Producto"],
+                                            "cantidad": 1, "costo_unitario": float(row.get("costo", 0) or 0),
+                                            "foto_url": row.get("foto_url", ""),
+                                        })
+                                    st.rerun()
+                                st.markdown("<div style='margin-bottom:10px;'></div>", unsafe_allow_html=True)
+
+            with col_der_c:
+                with st.container(border=True):
+                    st.markdown("<div class='win-field-label'>🛒 PRODUCTOS A COMPRAR</div>", unsafe_allow_html=True)
+                    if not st.session_state.carrito_compra:
+                        st.caption("Aún no has agregado productos.")
+                    else:
+                        for idx, item in enumerate(st.session_state.carrito_compra):
+                            c_nom, c_cant, c_costo, c_quitar = st.columns([0.34, 0.22, 0.28, 0.16])
+                            with c_nom:
+                                st.markdown(f"<div style='font-size:12.5px; font-weight:700; padding-top:8px;'>{item['producto']}</div>", unsafe_allow_html=True)
+                            with c_cant:
+                                item["cantidad"] = st.number_input(
+                                    "Cant.", min_value=1, value=int(item["cantidad"]), step=1,
+                                    label_visibility="collapsed", key=f"compra_cant_{item['id']}",
+                                )
+                            with c_costo:
+                                item["costo_unitario"] = st.number_input(
+                                    "Costo", min_value=0.0, value=float(item["costo_unitario"]), step=0.5,
+                                    label_visibility="collapsed", key=f"compra_costo_{item['id']}",
+                                )
+                            with c_quitar:
+                                if st.button("✕", key=f"compra_quitar_{item['id']}", use_container_width=True):
+                                    st.session_state.carrito_compra.pop(idx)
+                                    st.rerun()
+
+                        total_compra_carrito = sum(it["cantidad"] * it["costo_unitario"] for it in st.session_state.carrito_compra)
+                        st.markdown("<hr style='margin:10px 0; border-color:#eef2f9;'>", unsafe_allow_html=True)
+                        st.markdown(
+                            f"""<div style="display:flex; justify-content:space-between;">
+<span style="font-size:13px; color:#64748b; font-weight:600;">TOTAL:</span>
+<span style="font-size:20px; font-weight:800; color:#4a6fa5;">{moneda(total_compra_carrito)}</span>
+</div>""",
+                            unsafe_allow_html=True,
+                        )
+
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    col_atras2, col_sig2 = st.columns(2)
+                    with col_atras2:
+                        if st.button("← Atrás", use_container_width=True, key="compra_atras_paso2"):
+                            st.session_state.paso_compra = 1
+                            st.rerun()
+                    with col_sig2:
+                        if st.button(
+                            "Siguiente: Confirmar →", use_container_width=True, type="primary",
+                            key="compra_siguiente_paso2", disabled=not st.session_state.carrito_compra,
+                        ):
+                            st.session_state.paso_compra = 3
+                            st.rerun()
+
+        # ================= PASO 3: CONFIRMAR =================
+        elif paso_actual == 3:
+            st.markdown(
+                f"""<div style="background:#f1f5f9; border-radius:12px; padding:14px 18px; margin-bottom:16px;">
+<div style="font-size:14px; font-weight:700; color:#1e293b;">🏢 Proveedor: {st.session_state.compra_proveedor}</div>
+</div>""",
+                unsafe_allow_html=True,
+            )
+
+            with st.container(border=True):
+                st.markdown("<div class='win-field-label'>PRODUCTOS</div>", unsafe_allow_html=True)
+                for item in st.session_state.carrito_compra:
+                    col_p1, col_p2, col_p3 = st.columns([0.5, 0.3, 0.2])
+                    with col_p1:
+                        st.markdown(f"<div style='font-size:13px; font-weight:600; padding-top:6px;'>{item['producto']}</div>", unsafe_allow_html=True)
+                    with col_p2:
+                        st.markdown(
+                            f"<div style='font-size:13px; color:#64748b; padding-top:6px;'>{item['cantidad']} × {moneda(item['costo_unitario'])} = {moneda(item['cantidad']*item['costo_unitario'])}</div>",
+                            unsafe_allow_html=True,
+                        )
+                    with col_p3:
+                        if st.button("✏️ Editar", key=f"compra_editar_{item['id']}", use_container_width=True):
+                            st.session_state.paso_compra = 2
+                            st.rerun()
+
+                st.markdown("<br>", unsafe_allow_html=True)
+                actualizar_costos_general = st.checkbox(
+                    "Actualizar el costo registrado de cada prenda con estos valores",
+                    value=True, key="compra_actualizar_costos",
+                )
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            with st.container(border=True):
+                st.markdown("<div class='win-field-label' style='color:#4a6fa5;'>📊 IMPACTO EN INVENTARIO</div>", unsafe_allow_html=True)
+                for item in st.session_state.carrito_compra:
+                    fila_item_c = df[df["ID"].astype(str) == str(item["id"])]
+                    stock_actual_c = int(fila_item_c.iloc[0]["cantidad"]) if not fila_item_c.empty else 0
+                    stock_nuevo_c = stock_actual_c + int(item["cantidad"])
+                    st.markdown(
+                        f"<div style='font-size:13px; color:#1e293b; margin-bottom:4px;'>{item['producto']}: {stock_actual_c} → <b>{stock_nuevo_c} unidades</b> ✅</div>",
+                        unsafe_allow_html=True,
+                    )
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            total_general_compra = sum(it["cantidad"] * it["costo_unitario"] for it in st.session_state.carrito_compra)
+            st.markdown(
+                f"""<div style="text-align:right; font-size:24px; font-weight:800; color:#4a6fa5;">Total: {moneda(total_general_compra)}</div>""",
+                unsafe_allow_html=True,
+            )
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            col_atras3, col_confirmar3 = st.columns([0.3, 0.7])
+            with col_atras3:
+                if st.button("← Atrás", use_container_width=True, key="compra_atras_paso3"):
+                    st.session_state.paso_compra = 2
+                    st.rerun()
+            with col_confirmar3:
+                with st.container(key="compra_confirmar_verde"):
+                    if st.button("📦 Confirmar Compra", use_container_width=True, type="primary", key="compra_confirmar_paso3"):
+                        for item in st.session_state.carrito_compra:
+                            fila_actual_c = df[df["ID"].astype(str) == str(item["id"])].iloc[0]
+                            datos_act_c = fila_actual_c.to_dict()
+                            datos_act_c["cantidad"] = int(fila_actual_c["cantidad"]) + int(item["cantidad"])
+                            if actualizar_costos_general:
+                                datos_act_c["costo"] = item["costo_unitario"]
+                            actualizar_prenda(item["id"], datos_act_c)
+                            registrar_movimiento(
+                                prenda_id=item["id"], producto=item["producto"], tipo="compra",
+                                cantidad=item["cantidad"], costo_unitario=item["costo_unitario"],
+                                proveedor=st.session_state.compra_proveedor,
+                            )
+                        st.success(f"¡Compra registrada a {st.session_state.compra_proveedor}! Total: {moneda(total_general_compra)}")
+                        st.session_state.carrito_compra = []
+                        st.session_state.compra_proveedor = ""
+                        st.session_state.paso_compra = 1
+                        st.rerun()
 
     # -----------------------------------------------------------------------------
     # REGISTRAR PRENDA (solo admin)
@@ -4319,6 +4578,40 @@ else:
     # -----------------------------------------------------------------------------
 
     def _sec_deudores():
+        # ===== Diálogo de confirmación: deudor recién saldado =====
+        if st.session_state.get("deudor_saldado_confirmar"):
+            info_saldado = st.session_state.deudor_saldado_confirmar
+
+            @st.dialog("¡Deuda saldada! 🎉")
+            def _dialog_deudor_saldado():
+                st.markdown(
+                    f"""<div style="text-align:center;">
+<div style="font-size:48px;">✅</div>
+<div style="font-size:18px; font-weight:800; color:#1e293b; margin-top:8px;">¡{info_saldado['nombre']} terminó de pagar!</div>
+<div style="font-size:14px; color:#64748b; margin-top:8px;">Su deuda de {moneda(info_saldado['monto_saldado'])} fue saldada. ¿Quieres mover esta venta a "Ventas Pagadas"?</div>
+</div>""",
+                    unsafe_allow_html=True,
+                )
+                st.markdown("<br>", unsafe_allow_html=True)
+                col_si_d, col_no_d = st.columns(2)
+                with col_si_d:
+                    if st.button("✅ Sí, mover a Ventas Pagadas", use_container_width=True, type="primary", key="deu_saldado_si"):
+                        try:
+                            supabase.table("movimientos").update({"pagado": True}).eq("cliente", info_saldado["nombre"]).eq("tipo", "venta").eq("pagado", False).execute()
+                            cargar_movimientos.clear()
+                            st.session_state.deudor_saldado_confirmar = None
+                            st.success("✅ Venta movida a Ventas Pagadas")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"No se pudo mover la venta: {e}")
+                with col_no_d:
+                    if st.button("❌ No, dejarla pendiente", use_container_width=True, key="deu_saldado_no"):
+                        st.session_state.deudor_saldado_confirmar = None
+                        st.info("El deudor quedó al día. Puedes mover la venta después.")
+                        st.rerun()
+
+            _dialog_deudor_saldado()
+
         col_tit_d1, col_tit_d2 = st.columns([3, 1])
         with col_tit_d1:
             st.markdown(
@@ -4438,9 +4731,11 @@ else:
                     punto_relleno = False
                     color_saldo_d = "#16a34a"
                     badge_al_dia = "<span class='win-badge-disponible' style='margin-left:8px;'>✅ Al día</span>"
+                    badge_saldo = ""
                 else:
                     color_saldo_d = "#dc2626"
                     badge_al_dia = ""
+                    badge_saldo = "<span style='background:#fee2e2; color:#dc2626; font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; display:block; margin-top:2px;'>Pendiente</span>"
                     if dias_d is None or dias_d >= 30:
                         punto_color = "#dc2626"
                     elif dias_d >= 8:
@@ -4467,7 +4762,7 @@ else:
                     )
                 with col_saldo_d:
                     st.markdown(
-                        f"<div style='font-size:16px; font-weight:800; color:{color_saldo_d}; padding-top:10px;'>{moneda(saldo_d)}</div>",
+                        f"<div style='font-size:16px; font-weight:800; color:{color_saldo_d}; padding-top:10px;'>{moneda(saldo_d)}</div>{badge_saldo}",
                         unsafe_allow_html=True,
                     )
                 with col_btns_d:
@@ -4525,6 +4820,12 @@ else:
                                     medio_pago=f"{medio_pago_sel} ({moneda_pago_sel})", tasa_cambio=tasa_cobro,
                                 )
                                 st.session_state[f"deu_abonando_{id_d}"] = False
+                                if abs(nuevo_saldo_buscado) < 0.01 and saldo_d > 0:
+                                    st.session_state["deudor_saldado_confirmar"] = {
+                                        "id": id_d,
+                                        "nombre": nombre_d,
+                                        "monto_saldado": monto_pago_usd,
+                                    }
                                 st.success(f"¡Pago registrado! Nuevo saldo de {nombre_d}: {moneda(nuevo_saldo_buscado)}")
                                 st.rerun()
 
