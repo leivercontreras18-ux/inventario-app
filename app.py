@@ -1846,6 +1846,32 @@ section[data-testid="stSidebar"] button[kind="primary"][aria-label^="​"] * {{
     font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-top: 6px;
 }}
 
+/* Grupos de botones tipo "toggle" (activo vs inactivo) */
+.st-key-pagada_toggle button[kind="primary"] {{
+    background: #dcfce7 !important; border: 2px solid #16a34a !important;
+    color: #166534 !important; font-weight: 700 !important;
+}}
+.st-key-pagada_toggle button[kind="secondary"] {{
+    background: #f1f5f9 !important; border: 1px solid #e2e8f0 !important;
+    color: #64748b !important; font-weight: 500 !important;
+}}
+.st-key-medio_toggle button[kind="primary"] {{
+    background: #e0ecff !important; border: 2px solid #4a6fa5 !important;
+    color: #1e3a5f !important; font-weight: 700 !important;
+}}
+.st-key-medio_toggle button[kind="secondary"] {{
+    background: #f1f5f9 !important; border: 1px solid #e2e8f0 !important;
+    color: #64748b !important; font-weight: 500 !important;
+}}
+.st-key-vp_rango_toggle button[kind="primary"] {{
+    background: #e0ecff !important; border: 2px solid #4a6fa5 !important;
+    color: #1e3a5f !important; font-weight: 700 !important;
+}}
+.st-key-vp_rango_toggle button[kind="secondary"] {{
+    background: #f1f5f9 !important; border: 1px solid #e2e8f0 !important;
+    color: #64748b !important; font-weight: 500 !important;
+}}
+
 .win-chip {{
     background: var(--accent-light); color: #1e3a5f; border-radius: 20px;
     padding: 6px 14px; font-size: 12.5px; font-weight: 600; display: inline-flex;
@@ -3138,21 +3164,22 @@ else:
                     st.markdown("<div class='win-field-label'>¿FUE PAGADA?</div>", unsafe_allow_html=True)
                     if "fue_pagada_toggle" not in st.session_state:
                         st.session_state.fue_pagada_toggle = True
-                    col_pg1, col_pg2 = st.columns(2)
-                    with col_pg1:
-                        if st.button(
-                            "✅ Sí, pagada", use_container_width=True, key="btn_pagada_si",
-                            type=("primary" if st.session_state.fue_pagada_toggle else "secondary"),
-                        ):
-                            st.session_state.fue_pagada_toggle = True
-                            st.rerun()
-                    with col_pg2:
-                        if st.button(
-                            "🧾 No, pendiente (fiado)", use_container_width=True, key="btn_pagada_no",
-                            type=("secondary" if st.session_state.fue_pagada_toggle else "primary"),
-                        ):
-                            st.session_state.fue_pagada_toggle = False
-                            st.rerun()
+                    with st.container(key="pagada_toggle"):
+                        col_pg1, col_pg2 = st.columns(2)
+                        with col_pg1:
+                            if st.button(
+                                "✅ Sí, pagada", use_container_width=True, key="btn_pagada_si",
+                                type=("primary" if st.session_state.fue_pagada_toggle else "secondary"),
+                            ):
+                                st.session_state.fue_pagada_toggle = True
+                                st.rerun()
+                        with col_pg2:
+                            if st.button(
+                                "🧾 No, pendiente (fiado)", use_container_width=True, key="btn_pagada_no",
+                                type=("secondary" if st.session_state.fue_pagada_toggle else "primary"),
+                            ):
+                                st.session_state.fue_pagada_toggle = False
+                                st.rerun()
 
                     fue_pagada = st.session_state.fue_pagada_toggle
                     nombre_valido = True
@@ -3165,15 +3192,16 @@ else:
                         opciones_medio = ["Efectivo", "Zelle", "Pago Móvil", "Transferencia", "Otro"]
                         if "medio_pago_venta_nueva" not in st.session_state or st.session_state.medio_pago_venta_nueva not in opciones_medio:
                             st.session_state.medio_pago_venta_nueva = opciones_medio[0]
-                        cols_medio = st.columns(len(opciones_medio))
-                        for i_m, opcion_m in enumerate(opciones_medio):
-                            with cols_medio[i_m]:
-                                if st.button(
-                                    opcion_m, key=f"medio_btn_{opcion_m}", use_container_width=True,
-                                    type=("primary" if st.session_state.medio_pago_venta_nueva == opcion_m else "secondary"),
-                                ):
-                                    st.session_state.medio_pago_venta_nueva = opcion_m
-                                    st.rerun()
+                        with st.container(key="medio_toggle"):
+                            cols_medio = st.columns(len(opciones_medio))
+                            for i_m, opcion_m in enumerate(opciones_medio):
+                                with cols_medio[i_m]:
+                                    if st.button(
+                                        opcion_m, key=f"medio_btn_{opcion_m}", use_container_width=True,
+                                        type=("primary" if st.session_state.medio_pago_venta_nueva == opcion_m else "secondary"),
+                                    ):
+                                        st.session_state.medio_pago_venta_nueva = opcion_m
+                                        st.rerun()
                         medio_pago_venta = st.session_state.medio_pago_venta_nueva
 
                         cliente_pagada_nv = st.text_input(
@@ -3322,20 +3350,21 @@ else:
         if "vp_filtro_rango" not in st.session_state:
             st.session_state.vp_filtro_rango = "TODAS"
 
-        col_f1, col_f2, col_f3, col_f4, col_f5 = st.columns([1, 1, 1, 1, 2])
-        opciones_rango = [("HOY", "HOY"), ("ESTA SEMANA", "SEMANA"), ("ESTE MES", "MES"), ("TODAS", "TODAS")]
-        for col_r, (etiqueta_r, clave_r) in zip([col_f1, col_f2, col_f3, col_f4], opciones_rango):
-            with col_r:
-                if st.button(
-                    etiqueta_r, key=f"vp_rango_{clave_r}", use_container_width=True,
-                    type=("primary" if st.session_state.vp_filtro_rango == clave_r else "secondary"),
-                ):
-                    st.session_state.vp_filtro_rango = clave_r
-                    st.rerun()
-        with col_f5:
-            busqueda_vp = st.text_input(
-                "Buscar", placeholder="Buscar por cliente o producto...",
-                label_visibility="collapsed", key="vp_busqueda",
+        with st.container(key="vp_rango_toggle"):
+            col_f1, col_f2, col_f3, col_f4, col_f5 = st.columns([1, 1, 1, 1, 2])
+            opciones_rango = [("HOY", "HOY"), ("ESTA SEMANA", "SEMANA"), ("ESTE MES", "MES"), ("TODAS", "TODAS")]
+            for col_r, (etiqueta_r, clave_r) in zip([col_f1, col_f2, col_f3, col_f4], opciones_rango):
+                with col_r:
+                    if st.button(
+                        etiqueta_r, key=f"vp_rango_{clave_r}", use_container_width=True,
+                        type=("primary" if st.session_state.vp_filtro_rango == clave_r else "secondary"),
+                    ):
+                        st.session_state.vp_filtro_rango = clave_r
+                        st.rerun()
+            with col_f5:
+                busqueda_vp = st.text_input(
+                    "Buscar", placeholder="Buscar por cliente o producto...",
+                    label_visibility="collapsed", key="vp_busqueda",
             )
 
         rango_activo = st.session_state.vp_filtro_rango
@@ -3446,7 +3475,8 @@ else:
                         col_a1, col_a2, col_a3, col_a4 = st.columns(4)
                         with col_a1:
                             if st.button("✏️ Editar cliente", key=f"vp_editar_cli_{venta_id_actual}", use_container_width=True):
-                                st.info("Próximamente: edición de cliente.")
+                                st.session_state[f"vp_editando_cliente_{venta_id_actual}"] = True
+                                st.rerun()
                         with col_a2:
                             if st.button("💳 Cambiar pago", key=f"vp_cambiar_pago_{venta_id_actual}", use_container_width=True):
                                 st.info("Próximamente: cambio de medio de pago.")
@@ -3456,6 +3486,33 @@ else:
                         with col_a4:
                             if st.button("🗑️ Anular", key=f"vp_anular_{venta_id_actual}", use_container_width=True):
                                 st.info("Próximamente: anular venta y devolver stock.")
+
+                        if st.session_state.get(f"vp_editando_cliente_{venta_id_actual}", False):
+                            with st.container(border=True):
+                                st.markdown("<div class='win-field-label'>NUEVO NOMBRE DEL CLIENTE</div>", unsafe_allow_html=True)
+                                nuevo_nombre_cliente = st.text_input(
+                                    "Nuevo nombre del cliente", value=cliente_actual,
+                                    label_visibility="collapsed", key=f"vp_input_cliente_{venta_id_actual}",
+                                )
+                                col_ec1, col_ec2 = st.columns(2)
+                                with col_ec1:
+                                    if st.button("💾 Guardar", key=f"vp_guardar_cliente_{venta_id_actual}", use_container_width=True, type="primary"):
+                                        nombre_limpio = nuevo_nombre_cliente.strip()
+                                        if not nombre_limpio:
+                                            st.error("El nombre del cliente no puede estar vacío.")
+                                        else:
+                                            try:
+                                                supabase.table("movimientos").update({"cliente": nombre_limpio}).eq("venta_id", venta_id_actual).execute()
+                                                cargar_movimientos.clear()
+                                                st.success("Cliente actualizado correctamente")
+                                                st.session_state[f"vp_editando_cliente_{venta_id_actual}"] = False
+                                                st.rerun()
+                                            except Exception as e:
+                                                st.error(f"No se pudo actualizar el cliente: {e}")
+                                with col_ec2:
+                                    if st.button("❌ Cancelar", key=f"vp_cancelar_cliente_{venta_id_actual}", use_container_width=True):
+                                        st.session_state[f"vp_editando_cliente_{venta_id_actual}"] = False
+                                        st.rerun()
 
                 st.markdown("<div style='border-bottom:1px solid #eef2f9; margin:8px 0;'></div>", unsafe_allow_html=True)
 
