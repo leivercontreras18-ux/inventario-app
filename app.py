@@ -1871,6 +1871,9 @@ section[data-testid="stSidebar"] button[kind="primary"][aria-label^="​"] * {{
     background: #f1f5f9 !important; border: 1px solid #e2e8f0 !important;
     color: #64748b !important; font-weight: 500 !important;
 }}
+.st-key-fact_wa_btn a[kind="primary"], .st-key-fact_wa_btn a[kind="primary"] p {{
+    background: #25D366 !important; border-color: #25D366 !important; color: #ffffff !important;
+}}
 
 .win-chip {{
     background: var(--accent-light); color: #1e3a5f; border-radius: 20px;
@@ -3955,40 +3958,163 @@ else:
     # -----------------------------------------------------------------------------
 
     def _sec_movimientos():
-        st.markdown(
-            """
+        col_tit_m1, col_tit_m2 = st.columns([3, 1])
+        with col_tit_m1:
+            st.markdown(
+                """
 <div class="page-header">
-    <div class="page-title">📜 Historial de Movimientos</div>
-    <div class="page-subtitle">Todas las ventas, compras y ajustes registrados en el sistema.</div>
+    <div class="page-title">📋 Movimientos</div>
+    <div class="page-subtitle">Cronología de tu negocio</div>
 </div>
 """,
-            unsafe_allow_html=True,
-        )
+                unsafe_allow_html=True,
+            )
 
         movs = cargar_movimientos()
+
+        with col_tit_m2:
+            st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+            csv_movs_top = movs.to_csv(index=False, sep=';').encode('utf-8-sig') if not movs.empty else b""
+            st.download_button(
+                "📥 Exportar CSV", data=csv_movs_top, file_name="movimientos_lewin.csv",
+                mime="text/csv", use_container_width=True, disabled=movs.empty,
+            )
+
         if movs.empty:
             st.info("Todavía no hay movimientos registrados. Se irán guardando cuando registres ventas o compras.")
+            return
+
+        movs = movs.copy()
+        movs["fecha_dt"] = pd.to_datetime(movs["fecha"], errors="coerce")
+        movs["monto"] = movs.apply(
+            lambda r: r["cantidad"] * r["precio_unitario"] if r["tipo"] == "venta" else (r["cantidad"] * r["costo_unitario"] if r["tipo"] == "compra" else 0.0),
+            axis=1,
+        )
+
+        hoy_m = datetime.now().date()
+        inicio_mes_m = hoy_m.replace(day=1)
+
+        ventas_hoy_m = movs[(movs["tipo"] == "venta") & (movs["fecha_dt"].dt.date == hoy_m)]
+        compras_mes_m = movs[(movs["tipo"] == "compra") & (movs["fecha_dt"].dt.date >= inicio_mes_m)]
+        ventas_mes_m = movs[(movs["tipo"] == "venta") & (movs["fecha_dt"].dt.date >= inicio_mes_m)]
+
+        total_ventas_hoy_m = float(ventas_hoy_m["monto"].sum())
+        total_compras_mes_m = float(compras_mes_m["monto"].sum())
+        flujo_neto_m = float(ventas_mes_m["monto"].sum()) - total_compras_mes_m
+        color_flujo = "#16a34a" if flujo_neto_m >= 0 else "#dc2626"
+        bg_flujo = "#dcfce7" if flujo_neto_m >= 0 else "#fee2e2"
+
+        col_k1, col_k2, col_k3 = st.columns(3)
+        with col_k1:
+            st.markdown(f"""<div class="win-kpi-card">
+<div class="win-kpi-top">
+<div class="win-kpi-label" style="text-transform:uppercase;">Ventas de Hoy</div>
+<div class="win-kpi-icon" style="background:#e0ecff; color:#4a6fa5;">🟢</div>
+</div>
+<div class="win-kpi-num">{moneda(total_ventas_hoy_m)}</div>
+</div>""", unsafe_allow_html=True)
+        with col_k2:
+            st.markdown(f"""<div class="win-kpi-card">
+<div class="win-kpi-top">
+<div class="win-kpi-label" style="text-transform:uppercase;">Compras del Mes</div>
+<div class="win-kpi-icon" style="background:#e0ecff; color:#4a6fa5;">🔵</div>
+</div>
+<div class="win-kpi-num">{moneda(total_compras_mes_m)}</div>
+</div>""", unsafe_allow_html=True)
+        with col_k3:
+            st.markdown(f"""<div class="win-kpi-card">
+<div class="win-kpi-top">
+<div class="win-kpi-label" style="text-transform:uppercase;">Flujo Neto (mes)</div>
+<div class="win-kpi-icon" style="background:{bg_flujo}; color:{color_flujo};">📊</div>
+</div>
+<div class="win-kpi-num" style="color:{color_flujo};">{moneda(flujo_neto_m)}</div>
+</div>""", unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # ===== Filtros =====
+        col_f1, col_f2, col_f3 = st.columns([2, 1, 1])
+        with col_f1:
+            busqueda_m = st.text_input("Buscar", placeholder="🔍 Buscar movimientos...", label_visibility="collapsed", key="mov_busqueda")
+        with col_f2:
+            fecha_m = st.date_input("Fecha", value=None, label_visibility="collapsed", key="mov_fecha")
+        with col_f3:
+            tipo_m = st.selectbox("Tipo", ["Todos", "Ventas", "Compras"], label_visibility="collapsed", key="mov_tipo")
+
+        movs_filtrado = movs.copy()
+        if tipo_m == "Ventas":
+            movs_filtrado = movs_filtrado[movs_filtrado["tipo"] == "venta"]
+        elif tipo_m == "Compras":
+            movs_filtrado = movs_filtrado[movs_filtrado["tipo"] == "compra"]
         else:
-            col_m1, col_m2 = st.columns(2)
-            with col_m1:
-                tipos_disponibles = ["Todos"] + sorted(movs["tipo"].dropna().unique().tolist())
-                filtro_tipo = st.selectbox("Tipo de movimiento", tipos_disponibles)
-            with col_m2:
-                usuarios_disponibles = ["Todos"] + sorted(movs["usuario"].dropna().unique().tolist())
-                filtro_usuario = st.selectbox("Usuario", usuarios_disponibles)
+            movs_filtrado = movs_filtrado[movs_filtrado["tipo"].isin(["venta", "compra"])]
 
-            movs_filtrado = movs.copy()
-            if filtro_tipo != "Todos":
-                movs_filtrado = movs_filtrado[movs_filtrado["tipo"] == filtro_tipo]
-            if filtro_usuario != "Todos":
-                movs_filtrado = movs_filtrado[movs_filtrado["usuario"] == filtro_usuario]
+        if fecha_m:
+            movs_filtrado = movs_filtrado[movs_filtrado["fecha_dt"].dt.date == fecha_m]
 
-            st.markdown("<br>", unsafe_allow_html=True)
-            render_tabla_movimientos(movs_filtrado)
+        if busqueda_m.strip():
+            qm = busqueda_m.strip().lower()
+            movs_filtrado = movs_filtrado[
+                movs_filtrado["producto"].astype(str).str.lower().str.contains(qm)
+                | movs_filtrado["cliente"].astype(str).str.lower().str.contains(qm)
+                | movs_filtrado["proveedor"].astype(str).str.lower().str.contains(qm)
+            ]
 
-            csv_movs = movs_filtrado.to_csv(index=False, sep=';').encode('utf-8-sig')
-            st.download_button("📥 Exportar Movimientos a CSV", data=csv_movs,
-                                file_name="movimientos_lewin.csv", mime="text/csv")
+        movs_filtrado = movs_filtrado.sort_values("fecha_dt", ascending=False)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        if movs_filtrado.empty:
+            st.info("No se encontraron movimientos con esos filtros.")
+            return
+
+        # ===== Timeline vertical =====
+        for _, mov in movs_filtrado.head(60).iterrows():
+            es_venta = mov["tipo"] == "venta"
+            color_punto = "#16a34a" if es_venta else "#4a6fa5"
+            badge_html = (
+                "<span style='background:#dcfce7; color:#16a34a; font-size:10px; font-weight:700; padding:3px 10px; border-radius:20px;'>VENTA</span>"
+                if es_venta else
+                "<span style='background:#e0ecff; color:#4a6fa5; font-size:10px; font-weight:700; padding:3px 10px; border-radius:20px;'>COMPRA</span>"
+            )
+            hora_txt = mov["fecha_dt"].strftime("%H:%M") if pd.notna(mov["fecha_dt"]) else "--:--"
+
+            foto_mov_url = ""
+            match_prod_mov = df[df["ID"].astype(str) == str(mov.get("prenda_id", ""))]
+            if not match_prod_mov.empty:
+                foto_mov_url = match_prod_mov.iloc[0].get("foto_url", "")
+            foto_html_mov = (
+                f'<img src="{foto_mov_url}" style="width:40px; height:40px; object-fit:cover; border-radius:8px;" />'
+                if foto_mov_url else
+                '<div style="width:40px; height:40px; border-radius:8px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; flex-shrink:0;">👕</div>'
+            )
+
+            persona_txt = f"Cliente: {mov.get('cliente', '') or '—'}" if es_venta else f"Proveedor: {mov.get('proveedor', '') or '—'}"
+            unidad_precio = float(mov['precio_unitario']) if es_venta else float(mov['costo_unitario'])
+
+            st.markdown(
+                f"""<div style="display:flex; gap:10px; align-items:stretch;">
+<div style="width:44px; text-align:right; font-size:11px; color:#94a3b8; padding-top:16px; flex-shrink:0;">{hora_txt}</div>
+<div style="display:flex; flex-direction:column; align-items:center; flex-shrink:0;">
+<div style="width:10px; height:10px; border-radius:50%; background:{color_punto}; margin-top:18px; flex-shrink:0;"></div>
+<div style="flex:1; width:2px; background:#e2e8f0; margin-top:2px;"></div>
+</div>
+<div style="flex:1; background:#ffffff; border:1px solid #eef2f9; border-radius:12px; box-shadow:0 4px 20px rgba(74,111,165,0.06); padding:12px 14px; margin-bottom:10px; display:flex; align-items:center; gap:12px;">
+{foto_html_mov}
+<div style="flex:1;">
+<div style="margin-bottom:2px;">{badge_html}</div>
+<div style="font-size:13px; font-weight:700; color:#1e293b;">{mov['producto']}</div>
+<div style="font-size:12px; color:#64748b;">{int(mov['cantidad'])} unidad{'es' if int(mov['cantidad']) != 1 else ''} · {moneda(unidad_precio)}</div>
+<div style="font-size:11px; color:#94a3b8;">{persona_txt}</div>
+</div>
+<div style="font-size:12px; font-weight:600; color:#64748b; align-self:flex-start;">{mov.get('usuario', '') or '—'}</div>
+</div>
+</div>""",
+                unsafe_allow_html=True,
+            )
+
+        if len(movs_filtrado) > 60:
+            st.caption(f"Mostrando los 60 movimientos más recientes de {len(movs_filtrado)} en total. Usa los filtros para acotar la búsqueda.")
 
     # -----------------------------------------------------------------------------
     # FACTURAS
@@ -4013,66 +4139,116 @@ else:
 
         if ventas_con_id.empty:
             st.info("Todavía no hay ventas con factura disponible. A partir de ahora, cada venta que registres desde 'Nueva Venta' generará su propia factura automáticamente.")
-        else:
-            ventas_con_id = ventas_con_id.copy()
-            ventas_con_id["subtotal"] = ventas_con_id["cantidad"] * ventas_con_id["precio_unitario"]
-            resumen_facturas = ventas_con_id.groupby("venta_id").agg(
-                fecha=("fecha", "first"), cliente=("cliente", "first"),
-                pagado=("pagado", "first"), total=("subtotal", "sum"),
-            ).reset_index().sort_values("fecha", ascending=False)
+            return
 
-            opciones_venta_id = resumen_facturas["venta_id"].tolist()
-            venta_sel = st.selectbox(
-                "Elige la venta",
-                opciones_venta_id,
-                format_func=lambda x: (
-                    f"{formatear_fecha_corta(resumen_facturas[resumen_facturas['venta_id'] == x]['fecha'].values[0])} — "
-                    f"{resumen_facturas[resumen_facturas['venta_id'] == x]['cliente'].values[0]} — "
-                    f"{moneda(resumen_facturas[resumen_facturas['venta_id'] == x]['total'].values[0])}"
-                    + ("" if resumen_facturas[resumen_facturas['venta_id'] == x]['pagado'].values[0] else " (pendiente)")
-                ),
-            )
+        ventas_con_id = ventas_con_id.copy()
+        ventas_con_id["subtotal"] = ventas_con_id["cantidad"] * ventas_con_id["precio_unitario"]
+        resumen_facturas = ventas_con_id.groupby("venta_id").agg(
+            fecha=("fecha", "first"), cliente=("cliente", "first"),
+            pagado=("pagado", "first"), total=("subtotal", "sum"),
+            primer_prenda=("prenda_id", "first"),
+        ).reset_index().sort_values("fecha", ascending=False)
 
-            items_venta_sel = ventas_con_id[ventas_con_id["venta_id"] == venta_sel]
-            fila_resumen = resumen_facturas[resumen_facturas["venta_id"] == venta_sel].iloc[0]
+        if "fact_venta_sel" not in st.session_state or st.session_state.fact_venta_sel not in resumen_facturas["venta_id"].tolist():
+            st.session_state.fact_venta_sel = resumen_facturas["venta_id"].iloc[0]
 
-            st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown("<div class='section-title'>Vista previa</div>", unsafe_allow_html=True)
+        col_izq, col_der = st.columns([0.4, 0.6])
 
-            filas_preview = ""
-            for idx, (_, r) in enumerate(items_venta_sel.iterrows()):
-                bg_fila = "#f5f3ff" if idx % 2 == 0 else "#ffffff"
-                filas_preview += f"""<tr style="background:{bg_fila};">
+        # ===== COLUMNA IZQUIERDA: selector de venta =====
+        with col_izq:
+            with st.container(border=True):
+                st.markdown("<div class='win-field-label'>SELECCIONAR VENTA</div>", unsafe_allow_html=True)
+                busqueda_fact = st.text_input(
+                    "Buscar", placeholder="🔍 Buscar por cliente o fecha...",
+                    label_visibility="collapsed", key="fact_busqueda",
+                )
+
+                resumen_filtrado = resumen_facturas.copy()
+                if busqueda_fact.strip():
+                    qf = busqueda_fact.strip().lower()
+                    resumen_filtrado = resumen_filtrado[
+                        resumen_filtrado["cliente"].astype(str).str.lower().str.contains(qf)
+                        | resumen_filtrado["fecha"].astype(str).str.lower().str.contains(qf)
+                    ]
+
+                st.markdown("<div style='margin-top:8px;'></div>", unsafe_allow_html=True)
+
+                if resumen_filtrado.empty:
+                    st.caption("No se encontraron ventas.")
+                else:
+                    for _, fila_v in resumen_filtrado.iterrows():
+                        vid = fila_v["venta_id"]
+                        activo = st.session_state.fact_venta_sel == vid
+                        foto_prod = ""
+                        match_prod = df[df["ID"].astype(str) == str(fila_v.get("primer_prenda", ""))]
+                        if not match_prod.empty:
+                            foto_prod = match_prod.iloc[0].get("foto_url", "")
+                        bg_fila = "#e0ecff" if activo else "#ffffff"
+                        borde_fila = "2px solid #4a6fa5" if activo else "1px solid #eef2f9"
+                        foto_html_fact = (
+                            f'<img src="{foto_prod}" style="width:40px; height:40px; object-fit:cover; border-radius:8px;" />'
+                            if foto_prod else
+                            '<div style="width:40px; height:40px; border-radius:8px; background:#f1f5f9; display:flex; align-items:center; justify-content:center;">👕</div>'
+                        )
+                        st.markdown(
+                            f"""<div style="background:{bg_fila}; border:{borde_fila}; border-radius:10px; padding:8px 10px; margin-bottom:4px; display:flex; align-items:center; gap:10px;">
+{foto_html_fact}
+<div>
+<div style="font-size:13px; font-weight:700; color:#1e293b;">{fila_v['cliente']}</div>
+<div style="font-size:11px; color:#64748b;">{formatear_fecha_corta(fila_v['fecha'])} · {moneda(fila_v['total'])}</div>
+</div>
+</div>""",
+                            unsafe_allow_html=True,
+                        )
+                        if st.button(
+                            "✓ Seleccionada" if activo else "Seleccionar",
+                            key=f"fact_sel_{vid}", use_container_width=True, disabled=activo,
+                        ):
+                            st.session_state.fact_venta_sel = vid
+                            st.rerun()
+
+        venta_sel = st.session_state.fact_venta_sel
+        items_venta_sel = ventas_con_id[ventas_con_id["venta_id"] == venta_sel]
+        fila_resumen = resumen_facturas[resumen_facturas["venta_id"] == venta_sel].iloc[0]
+
+        # ===== COLUMNA DERECHA: vista previa + acciones =====
+        with col_der:
+            with st.container(border=True):
+                st.markdown("<div class='win-field-label'>VISTA PREVIA DE LA FACTURA</div>", unsafe_allow_html=True)
+
+                filas_preview = ""
+                for idx, (_, r) in enumerate(items_venta_sel.iterrows()):
+                    bg_fila_p = "#f5f3ff" if idx % 2 == 0 else "#ffffff"
+                    filas_preview += f"""<tr style="background:{bg_fila_p};">
 <td style="padding:10px 14px;">{r['producto']}</td>
 <td style="padding:10px 14px; text-align:center;">{int(r['cantidad'])}</td>
 <td style="padding:10px 14px; text-align:right;">{moneda(r['precio_unitario'])}</td>
 <td style="padding:10px 14px; text-align:right;">{moneda(r['cantidad'] * r['precio_unitario'])}</td>
 </tr>"""
 
-            estado_badge = (
-                "<span style='background:#dcfce7; color:#16a34a; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700;'>PAGADA</span>"
-                if fila_resumen["pagado"] else
-                "<span style='background:#fef3c7; color:#b45309; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700;'>PENDIENTE</span>"
-            )
+                estado_badge = (
+                    "<span style='background:#dcfce7; color:#16a34a; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700;'>✅ PAGADA</span>"
+                    if fila_resumen["pagado"] else
+                    "<span style='background:#fef3c7; color:#b45309; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700;'>PENDIENTE</span>"
+                )
 
-            factura_preview_html = f"""<div style="background:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 15px 40px rgba(0,0,0,0.18); max-width:640px; margin:0 auto; font-family:'Poppins',sans-serif;">
-<div style="background:linear-gradient(135deg,#4a6fa5,#5b8fc7); padding:22px 26px; display:flex; justify-content:space-between; align-items:center;">
+                factura_preview_html = f"""<div style="background:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 4px 20px rgba(74,111,165,0.10); border:1px solid #eef2f9; max-width:640px; margin:0 auto; font-family:'Poppins',sans-serif;">
+<div style="background:#4a6fa5; padding:22px 26px; display:flex; justify-content:space-between; align-items:center;">
 <div style="display:flex; align-items:center; gap:12px;">
 {logo_svg_markup(32)}
 <div>
 <div style="color:#fff; font-weight:800; font-size:17px; letter-spacing:0.5px;">LEWIN BOUTIQUE</div>
-<div style="color:#eae6ff; font-size:11px;">Factura de venta</div>
+<div style="color:#dbe6f5; font-size:11px;">Factura N. {str(venta_sel)[:8].upper()}</div>
 </div>
 </div>
 <div style="text-align:right;">
-<div style="color:#fff; font-weight:700; font-size:13px;">N. {str(venta_sel)[:8].upper()}</div>
-<div style="color:#eae6ff; font-size:11px;">{formatear_fecha_corta(fila_resumen['fecha'])}</div>
+<div style="color:#dbe6f5; font-size:11px;">{formatear_fecha_corta(fila_resumen['fecha'])}</div>
 </div>
 </div>
 <div style="padding:20px 26px 6px 26px; display:flex; justify-content:space-between; align-items:flex-start;">
 <div>
-<div style="color:#8b83ad; font-size:10px; font-weight:700; letter-spacing:1px;">FACTURAR A</div>
-<div style="color:#211c3d; font-size:16px; font-weight:700; margin-top:2px;">{fila_resumen['cliente']}</div>
+<div style="color:#94a3b8; font-size:10px; font-weight:700; letter-spacing:1px;">FACTURAR A</div>
+<div style="color:#1e293b; font-size:16px; font-weight:700; margin-top:2px;">{fila_resumen['cliente']}</div>
 </div>
 <div>{estado_badge}</div>
 </div>
@@ -4080,198 +4256,297 @@ else:
 <thead><tr style="background:#4a6fa5;">
 <th style="padding:10px 14px; text-align:left; color:#fff; font-size:11px;">PRODUCTO</th>
 <th style="padding:10px 14px; text-align:center; color:#fff; font-size:11px;">CANT.</th>
-<th style="padding:10px 14px; text-align:right; color:#fff; font-size:11px;">PRECIO UNIT.</th>
+<th style="padding:10px 14px; text-align:right; color:#fff; font-size:11px;">PRECIO</th>
 <th style="padding:10px 14px; text-align:right; color:#fff; font-size:11px;">SUBTOTAL</th>
 </tr></thead>
-<tbody style="color:#3a3355;">{filas_preview}</tbody>
+<tbody style="color:#1e293b;">{filas_preview}</tbody>
 </table>
 <div style="display:flex; justify-content:flex-end; padding:16px 26px;">
 <div style="background:#4a6fa5; color:#fff; padding:10px 24px; border-radius:10px; font-weight:800; font-size:15px; display:flex; gap:18px;">
 <span>TOTAL</span><span>{moneda(fila_resumen['total'])}</span>
 </div>
 </div>
-<div style="text-align:center; padding:8px 20px 22px 20px; color:#9a93b8; font-size:11px; font-style:italic;">Gracias por tu compra</div>
+<div style="text-align:center; padding:8px 20px 22px 20px; color:#94a3b8; font-size:11px; font-style:italic;">Gracias por tu compra</div>
 </div>"""
-            st.markdown(factura_preview_html, unsafe_allow_html=True)
+                st.markdown(factura_preview_html, unsafe_allow_html=True)
 
-            st.markdown("<br>", unsafe_allow_html=True)
-            items_para_pdf = items_venta_sel[["producto", "cantidad", "precio_unitario"]].to_dict("records")
+                st.markdown("<br>", unsafe_allow_html=True)
+                items_para_pdf = items_venta_sel[["producto", "cantidad", "precio_unitario"]].to_dict("records")
 
-            pdf_bytes = None
-            if PDF_DISPONIBLE:
-                pdf_bytes = generar_factura_pdf(
-                    venta_sel, fila_resumen["cliente"], formatear_fecha_corta(fila_resumen["fecha"]),
-                    items_para_pdf, fila_resumen["total"],
-                )
-
-            col_img, col_pdf, col_wa = st.columns(3)
-            with col_img:
-                if IMAGEN_FACTURA_DISPONIBLE and pdf_bytes:
-                    imagen_bytes = generar_factura_imagen(pdf_bytes, len(items_para_pdf))
-                    if imagen_bytes:
-                        st.download_button(
-                            "🖼️ Descargar como Imagen", data=imagen_bytes,
-                            file_name=f"factura_{str(venta_sel)[:8]}.png", mime="image/png",
-                            use_container_width=True,
-                        )
-                        st.caption("Ideal para enviar como foto por WhatsApp.")
-                else:
-                    st.caption("⚠️ Falta instalar `pymupdf` en tu requirements.txt para esta opción.")
-            with col_pdf:
+                pdf_bytes = None
                 if PDF_DISPONIBLE:
-                    st.download_button(
-                        "📄 Descargar en PDF", data=pdf_bytes,
-                        file_name=f"factura_{str(venta_sel)[:8]}.pdf", mime="application/pdf",
-                        use_container_width=True,
+                    pdf_bytes = generar_factura_pdf(
+                        venta_sel, fila_resumen["cliente"], formatear_fecha_corta(fila_resumen["fecha"]),
+                        items_para_pdf, fila_resumen["total"],
                     )
-            with col_wa:
+
                 texto_wa = generar_texto_whatsapp_factura(
                     venta_sel, fila_resumen["cliente"], formatear_fecha_corta(fila_resumen["fecha"]),
                     items_para_pdf, fila_resumen["total"], bool(fila_resumen["pagado"]),
                 )
                 link_wa = "https://wa.me/?text=" + urllib.parse.quote(texto_wa)
-                st.link_button("💬 Enviar Texto por WhatsApp", url=link_wa, use_container_width=True)
 
-            st.caption("Para enviar la imagen por WhatsApp: descárgala con el primer botón y adjúntala como foto en el chat (WhatsApp no permite adjuntar archivos directo desde aquí).")
+                col_pdf, col_img, col_wa = st.columns(3)
+                with col_pdf:
+                    if PDF_DISPONIBLE:
+                        st.download_button(
+                            "📄 Descargar PDF", data=pdf_bytes,
+                            file_name=f"factura_{str(venta_sel)[:8]}.pdf", mime="application/pdf",
+                            use_container_width=True, type="primary",
+                        )
+                with col_img:
+                    if IMAGEN_FACTURA_DISPONIBLE and pdf_bytes:
+                        imagen_bytes = generar_factura_imagen(pdf_bytes, len(items_para_pdf))
+                        if imagen_bytes:
+                            st.download_button(
+                                "🖼️ Descargar Imagen", data=imagen_bytes,
+                                file_name=f"factura_{str(venta_sel)[:8]}.png", mime="image/png",
+                                use_container_width=True, type="primary",
+                            )
+                    else:
+                        st.caption("⚠️ Falta `pymupdf` en requirements.txt")
+                with col_wa:
+                    with st.container(key="fact_wa_btn"):
+                        st.link_button("💬 Enviar por WhatsApp", url=link_wa, use_container_width=True, type="primary")
 
-            with st.expander("Ver / copiar el texto del mensaje"):
-                st.text_area("Mensaje", value=texto_wa, height=220, label_visibility="collapsed", key=f"texto_wa_{venta_sel}")
+                st.caption("Para enviar la imagen por WhatsApp: descárgala con el botón y adjúntala como foto en el chat (WhatsApp no permite adjuntar archivos directo desde aquí).")
+
+                with st.expander("Ver / copiar el texto del mensaje"):
+                    st.text_area("Mensaje", value=texto_wa, height=220, label_visibility="collapsed", key=f"texto_wa_{venta_sel}")
 
     # -----------------------------------------------------------------------------
     # DEUDORES (cuentas por cobrar)
     # -----------------------------------------------------------------------------
 
     def _sec_deudores():
-        st.markdown(
-            """
+        col_tit_d1, col_tit_d2 = st.columns([3, 1])
+        with col_tit_d1:
+            st.markdown(
+                """
 <div class="page-header">
-    <div class="page-title">🧾 Ventas por Pagar</div>
-    <div class="page-subtitle">Lleva el control de quién te debe, cuánto le fiaste y cuánto te ha pagado.</div>
+    <div class="page-title">📇 Ventas por Pagar</div>
+    <div class="page-subtitle">Gestiona tus cobros</div>
 </div>
 """,
-            unsafe_allow_html=True,
-        )
-
-        deudores_df = cargar_deudores()
-        total_por_cobrar = float(deudores_df["saldo"].sum()) if not deudores_df.empty else 0.0
-        cantidad_deudores = int((deudores_df["saldo"] > 0).sum()) if not deudores_df.empty else 0
-
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown(f"""<div class="metric-card"><div class="metric-label">Total por Cobrar</div><div class="metric-value">{moneda(total_por_cobrar)}</div></div>""", unsafe_allow_html=True)
-        with col2:
-            st.markdown(f"""<div class="metric-card"><div class="metric-label">Personas que Deben</div><div class="metric-value">{cantidad_deudores}</div></div>""", unsafe_allow_html=True)
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
-        with st.expander("👥 Ver todas las personas registradas"):
-            if deudores_df.empty:
-                st.info("Todavía no has agregado a nadie.")
-            else:
-                deudores_ordenado = deudores_df.sort_values("saldo", ascending=False)
-                for _, fila in deudores_ordenado.iterrows():
-                    saldo_val = float(fila.get("saldo", 0) or 0)
-                    color_saldo = "#5b8fc7" if saldo_val > 0 else "#34d399"
-                    telefono_txt = fila.get("telefono") or "—"
-                    st.markdown(
-                        f"<div class='config-chip' style='justify-content: space-between;'>"
-                        f"<span>{fila['nombre']} <span style='color: var(--text-secondary); font-size: 11px;'>({telefono_txt})</span></span>"
-                        f"<span style='color: {color_saldo}; font-weight: 700;'>{moneda(saldo_val)}</span></div>",
-                        unsafe_allow_html=True,
-                    )
-
-        st.markdown("<br><hr style='border-color: var(--border-color);'><br>", unsafe_allow_html=True)
-
-        # =========================================================================
-        # SECCIÓN 2: BUSCAR PERSONA Y COBRAR
-        # =========================================================================
-        st.markdown("<div class='section-title'>🔍 Buscar Persona y Cobrar</div><div class='section-subtitle'>Encuentra a alguien para ver su saldo, su historial, o registrarle un pago.</div>", unsafe_allow_html=True)
-
-        if deudores_df.empty:
-            st.info("Todavía no hay personas registradas. Usa la sección de arriba para agregar la primera.")
-        else:
-            ids_buscar = deudores_df["id"].astype(str).tolist()
-            id_buscado = st.selectbox(
-                "Escribe o selecciona el nombre",
-                ids_buscar,
-                format_func=lambda x: deudores_df[deudores_df["id"].astype(str) == x]["nombre"].values[0],
-                key="select_buscar_persona",
-            )
-            fila_buscada = deudores_df[deudores_df["id"].astype(str) == str(id_buscado)].iloc[0]
-            saldo_buscado = float(fila_buscada.get("saldo", 0) or 0)
-            color_saldo_buscado = "#5b8fc7" if saldo_buscado > 0 else "#34d399"
-            telefono_buscado = fila_buscada.get("telefono") or "—"
-
-            st.markdown(
-                f"""<div class="product-card" style="border-color: var(--border-color);">
-<div class="product-card-body">
-<div style="display: flex; justify-content: space-between; align-items: center;">
-<div>
-<div style="font-size: 18px; font-weight: 700; color: var(--text-color);">{fila_buscada['nombre']}</div>
-<div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">📞 {telefono_buscado}</div>
-</div>
-<div style="font-size: 24px; font-weight: 800; color: {color_saldo_buscado};">{moneda(saldo_buscado)}</div>
-</div>
-</div>
-</div>""",
                 unsafe_allow_html=True,
             )
 
-            col_pago1, col_pago2 = st.columns(2)
-            with col_pago1:
-                moneda_pago_sel = st.radio("¿En qué moneda pagó?", ["Dólares ($)", "Bolívares (Bs)"], horizontal=True, key="moneda_pago_sel")
-            with col_pago2:
-                medio_pago_sel = st.selectbox(
-                    "Medio de pago",
-                    ["Efectivo", "Pago Móvil", "Transferencia", "Zelle", "Otro"],
-                    key="medio_pago_buscar",
+        deudores_df = cargar_deudores()
+        deudas_mov = cargar_deudas_movimientos()
+
+        with col_tit_d2:
+            st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+            csv_deudores = deudores_df.to_csv(index=False, sep=';').encode('utf-8-sig') if not deudores_df.empty else b""
+            st.download_button(
+                "📥 Exportar CSV", data=csv_deudores, file_name="deudores_lewin.csv",
+                mime="text/csv", use_container_width=True, disabled=deudores_df.empty,
+            )
+
+        # ===== KPIs =====
+        total_por_cobrar = float(deudores_df["saldo"].sum()) if not deudores_df.empty else 0.0
+        cantidad_deudores = int((deudores_df["saldo"] > 0).sum()) if not deudores_df.empty else 0
+
+        abonos_mes = 0.0
+        if not deudas_mov.empty:
+            deudas_mov_calc = deudas_mov.copy()
+            deudas_mov_calc["fecha_dt"] = pd.to_datetime(deudas_mov_calc["fecha"], errors="coerce")
+            hoy_deu = datetime.now().date()
+            inicio_mes_deu = hoy_deu.replace(day=1)
+            abonos_mes_df = deudas_mov_calc[
+                (deudas_mov_calc["tipo"] == "abono") & (deudas_mov_calc["fecha_dt"].dt.date >= inicio_mes_deu)
+            ]
+            abonos_mes = float(abonos_mes_df["monto"].sum())
+
+        kpis_deu = [
+            ("💵", "#fed7aa", "#ea580c", moneda(total_por_cobrar), "Total por Cobrar"),
+            ("👥", "#e0ecff", "#4a6fa5", str(cantidad_deudores), "Personas que Deben"),
+            ("✅", "#dcfce7", "#16a34a", moneda(abonos_mes), "Abonos del Mes"),
+        ]
+        cols_kpi_deu = st.columns(3)
+        for col_k, (icono_k, bg_k, color_k, valor_k, label_k) in zip(cols_kpi_deu, kpis_deu):
+            with col_k:
+                st.markdown(
+                    f"""<div class="win-kpi-card">
+<div class="win-kpi-top">
+<div class="win-kpi-label" style="text-transform:uppercase;">{label_k}</div>
+<div class="win-kpi-icon" style="background:{bg_k}; color:{color_k};">{icono_k}</div>
+</div>
+<div class="win-kpi-num">{valor_k}</div>
+</div>""",
+                    unsafe_allow_html=True,
                 )
 
-            if moneda_pago_sel == "Bolívares (Bs)":
-                tasa_cobro, fuente_tasa_cobro = selector_tasa_cambio("cobro")
-                monto_bs_ingresado = st.number_input("Monto recibido en Bs", min_value=0.0, step=1.0, key="monto_bs_cobro")
-                monto_pago_usd = (monto_bs_ingresado / tasa_cobro) if tasa_cobro > 0 else 0.0
-                if tasa_cobro > 0:
-                    st.caption(f"💱 Equivalente: {moneda(monto_pago_usd)}")
-                else:
-                    st.caption("⚠️ Elige una tasa para poder calcular el equivalente en dólares.")
-            else:
-                tasa_cobro = 0.0
-                monto_pago_usd = st.number_input("Monto recibido en $", min_value=0.0, step=1.0, key="monto_usd_cobro")
+        st.markdown("<br>", unsafe_allow_html=True)
 
-            nota_pago = st.text_input("Nota (opcional)", placeholder="Ej: abono parcial", key="nota_pago_buscar")
+        if deudores_df.empty:
+            st.info("Todavía no hay personas registradas. Se agregan automáticamente al fiar una venta desde 'Nueva Venta'.")
+            return
 
-            if st.button("💵 Registrar Este Pago", use_container_width=True, key="btn_registrar_pago_buscar"):
-                if monto_pago_usd <= 0:
-                    st.error("El monto debe ser mayor a 0.")
+        # ===== Barra de filtros =====
+        col_bf1, col_bf2 = st.columns([2, 1])
+        with col_bf1:
+            busqueda_deu = st.text_input(
+                "Buscar", placeholder="🔍 Buscar...", label_visibility="collapsed", key="deu_busqueda",
+            )
+        with col_bf2:
+            orden_deu = st.selectbox("Orden", ["Todos", "Recientes"], label_visibility="collapsed", key="deu_orden")
+
+        # ===== Preparar datos de última actividad por persona =====
+        ultima_actividad = {}
+        if not deudas_mov.empty:
+            deudas_mov_fecha = deudas_mov.copy()
+            deudas_mov_fecha["fecha_dt"] = pd.to_datetime(deudas_mov_fecha["fecha"], errors="coerce")
+            ultima_actividad = deudas_mov_fecha.groupby("deudor_id")["fecha_dt"].max().to_dict()
+
+        deudores_lista = deudores_df.copy()
+        if busqueda_deu.strip():
+            qd = busqueda_deu.strip().lower()
+            deudores_lista = deudores_lista[deudores_lista["nombre"].astype(str).str.lower().str.contains(qd)]
+
+        if orden_deu == "Recientes":
+            deudores_lista["_ultima"] = deudores_lista["id"].astype(str).map(
+                lambda x: ultima_actividad.get(x, pd.NaT)
+            )
+            deudores_lista = deudores_lista.sort_values("_ultima", ascending=False, na_position="last")
+        else:
+            deudores_lista = deudores_lista.sort_values("saldo", ascending=False)
+
+        if deudores_lista.empty:
+            st.info("No se encontraron personas con ese criterio.")
+            return
+
+        hoy_deu2 = datetime.now()
+
+        # ===== Lista tipo bandeja de entrada =====
+        with st.container(border=True):
+            for _, fila in deudores_lista.iterrows():
+                id_d = str(fila["id"])
+                nombre_d = fila["nombre"]
+                telefono_d = fila.get("telefono") or "—"
+                saldo_d = float(fila.get("saldo", 0) or 0)
+                ultima_fecha_d = ultima_actividad.get(id_d, pd.NaT)
+
+                if pd.notna(ultima_fecha_d):
+                    dias_d = (hoy_deu2 - ultima_fecha_d.to_pydatetime().replace(tzinfo=None)).days
+                    texto_ultima = f"Último abono: hace {dias_d} día{'s' if dias_d != 1 else ''}"
                 else:
-                    nuevo_saldo_buscado = saldo_buscado - monto_pago_usd
-                    actualizar_saldo_deudor(id_buscado, nuevo_saldo_buscado)
-                    registrar_movimiento_deuda(
-                        deudor_id=id_buscado, deudor_nombre=fila_buscada["nombre"],
-                        tipo="abono", descripcion=nota_pago, monto=monto_pago_usd,
-                        medio_pago=f"{medio_pago_sel} ({moneda_pago_sel})", tasa_cambio=tasa_cobro,
+                    dias_d = None
+                    texto_ultima = "Sin movimientos registrados"
+
+                if saldo_d <= 0:
+                    punto_color = "#16a34a"
+                    punto_relleno = False
+                    color_saldo_d = "#16a34a"
+                    badge_al_dia = "<span class='win-badge-disponible' style='margin-left:8px;'>✅ Al día</span>"
+                else:
+                    color_saldo_d = "#dc2626"
+                    badge_al_dia = ""
+                    if dias_d is None or dias_d >= 30:
+                        punto_color = "#dc2626"
+                    elif dias_d >= 8:
+                        punto_color = "#ea580c"
+                    else:
+                        punto_color = "#4a6fa5"
+                    punto_relleno = True
+
+                punto_html = (
+                    f"<span style='display:inline-block; width:10px; height:10px; border-radius:50%; background:{punto_color}; margin-right:8px;'></span>"
+                    if punto_relleno else
+                    f"<span style='display:inline-block; width:10px; height:10px; border-radius:50%; border:2px solid {punto_color}; margin-right:8px;'></span>"
+                )
+
+                col_dot, col_info_d, col_saldo_d, col_btns_d = st.columns([0.04, 0.42, 0.2, 0.34])
+                with col_dot:
+                    st.markdown(f"<div style='padding-top:8px;'>{punto_html}</div>", unsafe_allow_html=True)
+                with col_info_d:
+                    st.markdown(
+                        f"""<div style="font-size:14px; font-weight:700; color:#1e293b;">{nombre_d}{badge_al_dia}</div>
+<div style="font-size:12px; color:#64748b;">{telefono_d}</div>
+<div style="font-size:11px; color:#94a3b8;">{texto_ultima}</div>""",
+                        unsafe_allow_html=True,
                     )
-                    st.success(f"¡Pago registrado! Nuevo saldo de {fila_buscada['nombre']}: {moneda(nuevo_saldo_buscado)}")
-                    st.rerun()
+                with col_saldo_d:
+                    st.markdown(
+                        f"<div style='font-size:16px; font-weight:800; color:{color_saldo_d}; padding-top:10px;'>{moneda(saldo_d)}</div>",
+                        unsafe_allow_html=True,
+                    )
+                with col_btns_d:
+                    if saldo_d > 0:
+                        col_b1, col_b2 = st.columns(2)
+                        with col_b1:
+                            if st.button("💰 Abonar", key=f"deu_btn_abonar_{id_d}", use_container_width=True):
+                                st.session_state[f"deu_abonando_{id_d}"] = not st.session_state.get(f"deu_abonando_{id_d}", False)
+                                st.rerun()
+                        with col_b2:
+                            if st.button("📜 Historial", key=f"deu_btn_hist_{id_d}", use_container_width=True):
+                                st.session_state[f"deu_historial_{id_d}"] = not st.session_state.get(f"deu_historial_{id_d}", False)
+                                st.rerun()
+                    else:
+                        if st.button("📜 Historial", key=f"deu_btn_hist_{id_d}", use_container_width=True):
+                            st.session_state[f"deu_historial_{id_d}"] = not st.session_state.get(f"deu_historial_{id_d}", False)
+                            st.rerun()
 
-            with st.expander(f"📜 Historial de {fila_buscada['nombre']}"):
-                deudas_mov_todas = cargar_deudas_movimientos()
-                historial_persona = deudas_mov_todas[deudas_mov_todas["deudor_id"].astype(str) == str(id_buscado)] if not deudas_mov_todas.empty else pd.DataFrame()
-                if historial_persona.empty:
-                    st.info("Todavía no hay movimientos con esta persona.")
-                else:
-                    render_tabla_deudas(historial_persona)
+                # ----- Panel de abono (misma lógica de siempre) -----
+                if st.session_state.get(f"deu_abonando_{id_d}", False):
+                    with st.container(border=True):
+                        st.markdown(f"<div class='win-field-label'>REGISTRAR ABONO — {nombre_d}</div>", unsafe_allow_html=True)
+                        col_pago1, col_pago2 = st.columns(2)
+                        with col_pago1:
+                            moneda_pago_sel = st.radio("¿En qué moneda pagó?", ["Dólares ($)", "Bolívares (Bs)"], horizontal=True, key=f"deu_moneda_pago_{id_d}")
+                        with col_pago2:
+                            medio_pago_sel = st.selectbox(
+                                "Medio de pago", ["Efectivo", "Pago Móvil", "Transferencia", "Zelle", "Otro"],
+                                key=f"deu_medio_pago_{id_d}",
+                            )
 
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.button(f"🗑️ Eliminar a {fila_buscada['nombre']} del sistema", key="btn_eliminar_persona_buscada"):
-                if eliminar_deudor(id_buscado):
-                    st.success(f"{fila_buscada['nombre']} fue eliminada/o.")
-                    st.rerun()
+                        if moneda_pago_sel == "Bolívares (Bs)":
+                            tasa_cobro, fuente_tasa_cobro = selector_tasa_cambio(f"deu_cobro_{id_d}")
+                            monto_bs_ingresado = st.number_input("Monto recibido en Bs", min_value=0.0, step=1.0, key=f"deu_monto_bs_{id_d}")
+                            monto_pago_usd = (monto_bs_ingresado / tasa_cobro) if tasa_cobro > 0 else 0.0
+                            if tasa_cobro > 0:
+                                st.caption(f"💱 Equivalente: {moneda(monto_pago_usd)}")
+                            else:
+                                st.caption("⚠️ Elige una tasa para poder calcular el equivalente en dólares.")
+                        else:
+                            tasa_cobro = 0.0
+                            monto_pago_usd = st.number_input("Monto recibido en $", min_value=0.0, step=1.0, key=f"deu_monto_usd_{id_d}")
+
+                        nota_pago = st.text_input("Nota (opcional)", placeholder="Ej: abono parcial", key=f"deu_nota_{id_d}")
+
+                        if st.button("💵 Registrar Este Pago", use_container_width=True, type="primary", key=f"deu_btn_registrar_pago_{id_d}"):
+                            if monto_pago_usd <= 0:
+                                st.error("El monto debe ser mayor a 0.")
+                            else:
+                                nuevo_saldo_buscado = saldo_d - monto_pago_usd
+                                actualizar_saldo_deudor(id_d, nuevo_saldo_buscado)
+                                registrar_movimiento_deuda(
+                                    deudor_id=id_d, deudor_nombre=nombre_d,
+                                    tipo="abono", descripcion=nota_pago, monto=monto_pago_usd,
+                                    medio_pago=f"{medio_pago_sel} ({moneda_pago_sel})", tasa_cambio=tasa_cobro,
+                                )
+                                st.session_state[f"deu_abonando_{id_d}"] = False
+                                st.success(f"¡Pago registrado! Nuevo saldo de {nombre_d}: {moneda(nuevo_saldo_buscado)}")
+                                st.rerun()
+
+                # ----- Panel de historial (misma lógica de siempre) -----
+                if st.session_state.get(f"deu_historial_{id_d}", False):
+                    with st.container(border=True):
+                        st.markdown(f"<div class='win-field-label'>HISTORIAL — {nombre_d}</div>", unsafe_allow_html=True)
+                        historial_persona = deudas_mov[deudas_mov["deudor_id"].astype(str) == id_d] if not deudas_mov.empty else pd.DataFrame()
+                        if historial_persona.empty:
+                            st.info("Todavía no hay movimientos con esta persona.")
+                        else:
+                            render_tabla_deudas(historial_persona)
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        if st.button(f"🗑️ Eliminar a {nombre_d} del sistema", key=f"deu_btn_eliminar_{id_d}"):
+                            if eliminar_deudor(id_d):
+                                st.success(f"{nombre_d} fue eliminada/o.")
+                                st.rerun()
+
+                st.markdown("<div style='border-bottom:1px solid #eef2f9; margin:10px 0;'></div>", unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("<div class='section-title'>📜 Historial General</div><div class='section-subtitle'>Todos los cargos y abonos registrados, de todas las personas.</div>", unsafe_allow_html=True)
-        deudas_mov = cargar_deudas_movimientos()
         if deudas_mov.empty:
             st.info("Aún no hay movimientos de deudores registrados.")
         else:
