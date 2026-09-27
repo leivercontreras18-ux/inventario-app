@@ -1790,7 +1790,7 @@ section[data-testid="stSidebar"] button[kind="primary"][aria-label^="​"] * {{
 .win-greeting-sub {{ font-size: 14px; color: var(--text-secondary); margin-top: 2px; }}
 
 .win-kpi-card {{
-    background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px;
+    background: #f8fafc; border: 1px solid var(--border-color); border-radius: 16px;
     box-shadow: 0 4px 20px rgba(74,111,165,0.06); padding: 20px; height: 100%;
 }}
 .win-kpi-icon {{
