@@ -1,6 +1,9 @@
 import base64
+import hashlib
+import hmac
 import json
 import textwrap
+import time
 import urllib.parse
 import uuid
 from datetime import datetime, timedelta
@@ -1943,6 +1946,41 @@ USUARIOS = {
     "winderly": {"clave": st.secrets.get("CLAVE_WINDERLY", ""), "rol": "vendedor"},
 }
 
+# --- "Recordarme": token firmado (HMAC-SHA256), válido 30 días, en vez del usuario en texto plano en la URL ---
+REMEMBER_ME_SECRET = st.secrets.get("REMEMBER_ME_SECRET", "")
+REMEMBER_ME_DIAS = 30
+
+
+def generar_token_recordar(usuario):
+    """Genera un token firmado para 'Recordarme'. Nadie puede fabricar uno válido sin conocer REMEMBER_ME_SECRET."""
+    if not REMEMBER_ME_SECRET:
+        return None
+    expira = int(time.time()) + REMEMBER_ME_DIAS * 24 * 3600
+    payload = f"{usuario}:{expira}"
+    firma = hmac.new(REMEMBER_ME_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()
+    return base64.urlsafe_b64encode(f"{payload}:{firma}".encode()).decode()
+
+
+def verificar_token_recordar(token):
+    """Valida el token firmado. Devuelve el usuario si es válido, no expiró y la firma coincide; si no, None."""
+    if not REMEMBER_ME_SECRET or not token:
+        return None
+    try:
+        decodificado = base64.urlsafe_b64decode(token.encode()).decode()
+        usuario, expira_str, firma_recibida = decodificado.rsplit(":", 2)
+        expira = int(expira_str)
+        if time.time() > expira:
+            return None
+        payload = f"{usuario}:{expira}"
+        firma_esperada = hmac.new(REMEMBER_ME_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(firma_recibida, firma_esperada):
+            return None
+        if usuario not in USUARIOS:
+            return None
+        return usuario
+    except Exception:
+        return None
+
 # =====================================================================================
 # ESTADO DE SESIÓN
 # =====================================================================================
@@ -1982,12 +2020,14 @@ if "edit_colores" not in st.session_state:
     st.session_state.edit_colores = list(st.session_state.colores_maestros)
 
 query_params = st.query_params
-if not st.session_state.autenticado and "recuerdame_user" in query_params:
-    saved_user = query_params["recuerdame_user"]
-    if saved_user in USUARIOS:
+if not st.session_state.autenticado and "rt" in query_params:
+    usuario_token = verificar_token_recordar(query_params["rt"])
+    if usuario_token:
         st.session_state.autenticado = True
-        st.session_state.usuario_actual = saved_user
-        st.session_state.rol_actual = USUARIOS[saved_user]["rol"]
+        st.session_state.usuario_actual = usuario_token
+        st.session_state.rol_actual = USUARIOS[usuario_token]["rol"]
+    else:
+        del st.query_params["rt"]
 
 if query_params.get("ir") == "login" and st.session_state.etapa == "bienvenida":
     st.session_state.etapa = "login"
@@ -2428,9 +2468,13 @@ elif not st.session_state.autenticado and st.session_state.etapa == "login":
                     st.session_state.rol_actual = USUARIOS[user_clean]["rol"]
 
                     if remember_checked:
-                        st.query_params["recuerdame_user"] = user_clean
-                    elif "recuerdame_user" in st.query_params:
-                        del st.query_params["recuerdame_user"]
+                        token_generado = generar_token_recordar(user_clean)
+                        if token_generado:
+                            st.query_params["rt"] = token_generado
+                        elif "rt" in st.query_params:
+                            del st.query_params["rt"]
+                    elif "rt" in st.query_params:
+                        del st.query_params["rt"]
 
                     st.rerun()
                 else:
@@ -2546,8 +2590,8 @@ else:
         st.session_state.usuario_actual = ""
         st.session_state.rol_actual = ""
         st.session_state.etapa = "bienvenida"
-        if "recuerdame_user" in st.query_params:
-            del st.query_params["recuerdame_user"]
+        if "rt" in st.query_params:
+            del st.query_params["rt"]
         st.rerun()
 
     seccion_activa = st.session_state.get("seccion_activa", "dashboard")
