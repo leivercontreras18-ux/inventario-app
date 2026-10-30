@@ -6,7 +6,7 @@ import io
 from gtts import gTTS
 
 # --- CONFIGURACIÓN DE LA PÁGINA ---
-st.set_page_config(page_title="Leiver AI", page_icon="🤖", layout="wide")
+t.set_page_config(page_title="Leiver AI 2.0", page_icon="🤖", layout="wide")
 
 # --- CSS PERSONALIZADO PARA DISEÑO PREMIUM ---
 st.markdown("""
